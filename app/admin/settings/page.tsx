@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, dynamic } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box, Paper, Typography, TextField, Button, Alert, Switch,
@@ -24,8 +24,13 @@ import {
   adminGetPendingSettings, adminApproveSettingChange, adminRejectSettingChange,
   adminGetAuditLog, adminExportUsers, adminExportAppointments, adminExportPayments,
   adminGlobalSearch, adminSendReminders,
+  adminGetUsers, adminChangeUserRole, adminGetModeratorCount,
   getToken, isSuperAdmin,
 } from "@/services/api";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import GroupIcon from "@mui/icons-material/Group";
+import { Avatar, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemAvatar, ListItemText, Snackbar } from "@mui/material";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
 
@@ -157,7 +162,7 @@ export default function AdminSettings() {
           <Tab value="contact" label={t("settings.tabContact")} />
           {superAdmin && <Tab value="audit" label={t("tools.auditLog")} />}
           {superAdmin && <Tab value="export" label={t("tools.export")} />}
-          {superAdmin && <Tab value="invoices" label={t("settings.tabInvoices")} />}
+          {superAdmin && <Tab value="moderators" label={t("settings.tabModerators")} />}
         </Tabs>
 
 
@@ -181,8 +186,10 @@ export default function AdminSettings() {
                 value={fee}
                 onChange={e => setFee(e.target.value)}
                 fullWidth
-                slotProps={{ input: { startAdornment: <Typography sx={{ mr: 1 }}>&#8377;</Typography> } }}
-                slotProps={{ htmlInput: { "aria-label": t("settings.fee") } }}
+                slotProps={{
+                  input: { startAdornment: <Typography sx={{ mr: 1 }}>&#8377;</Typography> },
+                  htmlInput: { "aria-label": t("settings.fee") },
+                }}
               />
 
               <FormControlLabel
@@ -336,11 +343,16 @@ export default function AdminSettings() {
 
         {settingsTab === "audit" && superAdmin && <AuditLogTab />}
 
-        {/* ── Export Tab (super admin) ── */}
-        {settingsTab === "export" && superAdmin && <ExportTab />}
+        {/* ── Export Tab (super admin) — includes Invoice ZIP download ── */}
+        {settingsTab === "export" && superAdmin && (
+          <Stack spacing={3}>
+            <ExportTab />
+            <InvoiceDownloadSection />
+          </Stack>
+        )}
 
-        {/* ── Invoices Tab (super admin) ── */}
-        {settingsTab === "invoices" && superAdmin && <InvoiceDownloadSection />}
+        {/* ── Moderators Tab (super admin only) ── */}
+        {settingsTab === "moderators" && superAdmin && <ModeratorsTab />}
 
         {/* ── Pending Approvals (super admin only) ── */}
         {superAdmin && pendingChanges.length > 0 && (
@@ -720,7 +732,7 @@ function ExportTab() {
         <DatePicker label={t("settings.invoiceTo")} value={exportTo} onChange={v => setExportTo(v)} format="DD/MM/YYYY"
           slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }} />
       </Box>
-      <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+      <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
         <Button variant="outlined" startIcon={<DownloadIcon />} onClick={() => handleExport("users")}
           disabled={exporting === "users"}>
           {exporting === "users" ? t("common.loading") : t("tools.exportUsers")}
@@ -774,10 +786,10 @@ function InvoiceDownloadSection() {
 
   return (
     <Paper elevation={0} sx={{
-      maxWidth: 800, mx: "auto", mt: 4, p: { xs: 3, md: 5 }, borderRadius: 4,
+      p: { xs: 3, md: 5 }, borderRadius: 4,
       border: `1px solid ${brandColors.sand}`,
     }}>
-      <Typography variant="h5" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
         <ReceiptLongIcon /> {t("settings.invoiceDownload")}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -792,14 +804,14 @@ function InvoiceDownloadSection() {
           value={dateFrom}
           onChange={v => setDateFrom(v)}
           format="DD/MM/YYYY"
-          slotProps={{ textField: { sx: { minWidth: 170 } } }}
+          slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
         />
         <DatePicker
           label={t("settings.invoiceTo")}
           value={dateTo}
           onChange={v => setDateTo(v)}
           format="DD/MM/YYYY"
-          slotProps={{ textField: { sx: { minWidth: 170 } } }}
+          slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
         />
         <Button
           variant="contained"
@@ -811,5 +823,261 @@ function InvoiceDownloadSection() {
         </Button>
       </Box>
     </Paper>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Moderators tab — super-admin only
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ModeratorsTab() {
+  const { t } = useT();
+  const [moderators, setModerators] = useState<any[]>([]);
+  const [cap, setCap] = useState<{ current: number; max: number }>({ current: 0, max: 5 });
+  const [loading, setLoading] = useState(true);
+
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  const [promoteTarget, setPromoteTarget] = useState<any>(null);
+  const [revokeTarget, setRevokeTarget] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+  const [snack, setSnack] = useState<{ msg: string; severity: "success" | "error" } | null>(null);
+  const [error, setError] = useState("");
+
+  async function load() {
+    const token = getToken();
+    if (!token) return;
+    setLoading(true);
+    try {
+      const [mods, count] = await Promise.all([
+        adminGetUsers(token, { role: "moderator" }),
+        adminGetModeratorCount(token),
+      ]);
+      setModerators(mods);
+      setCap(count);
+    } catch (e: any) {
+      setError(e?.detail || "Failed to load moderators");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  async function runSearch() {
+    const token = getToken();
+    if (!token) return;
+    if (search.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    setSearching(true);
+    try {
+      const results = await adminGetUsers(token, { search: search.trim(), role: "user" });
+      setSearchResults(results);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  async function confirmPromote() {
+    if (!promoteTarget) return;
+    const token = getToken();
+    if (!token) return;
+    setBusy(true);
+    try {
+      await adminChangeUserRole(promoteTarget.id, "moderator", token);
+      setSnack({ msg: t("mod.promoted"), severity: "success" });
+      setPromoteTarget(null);
+      setSearch(""); setSearchResults([]);
+      await load();
+    } catch (e: any) {
+      setSnack({ msg: e?.detail || "Failed", severity: "error" });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmRevoke() {
+    if (!revokeTarget) return;
+    const token = getToken();
+    if (!token) return;
+    setBusy(true);
+    try {
+      await adminChangeUserRole(revokeTarget.id, "user", token);
+      setSnack({ msg: t("mod.revoked"), severity: "success" });
+      setRevokeTarget(null);
+      await load();
+    } catch (e: any) {
+      setSnack({ msg: e?.detail || "Failed", severity: "error" });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading) {
+    return <Box sx={{ p: 4, textAlign: "center" }}><CircularProgress /></Box>;
+  }
+
+  const atLimit = cap.current >= cap.max;
+
+  return (
+    <Stack spacing={3}>
+      {/* Header card */}
+      <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, display: "flex", alignItems: "center", gap: 1 }}>
+            <GroupIcon /> {t("mod.title")}
+          </Typography>
+          <Chip
+            label={t("mod.count", { current: cap.current, max: cap.max })}
+            color={atLimit ? "warning" : "primary"}
+            sx={{ fontWeight: 700 }}
+          />
+        </Box>
+        <Typography variant="body2" color="text.secondary">
+          {t("mod.subtitle", { max: cap.max })}
+        </Typography>
+        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+      </Paper>
+
+      {/* Current moderators */}
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>{t("mod.current")}</Typography>
+        {moderators.length === 0 ? (
+          <Typography color="text.secondary">{t("mod.empty")}</Typography>
+        ) : (
+          <List disablePadding>
+            {moderators.map((m: any, i: number) => (
+              <ListItem
+                key={m.id}
+                divider={i < moderators.length - 1}
+                secondaryAction={
+                  <Button
+                    size="small" color="error" variant="outlined"
+                    startIcon={<PersonRemoveIcon />}
+                    onClick={() => setRevokeTarget(m)}
+                  >
+                    {t("mod.revoke")}
+                  </Button>
+                }
+              >
+                <ListItemAvatar>
+                  <Avatar sx={{ bgcolor: brandColors.maroon }}>{m.name?.charAt(0).toUpperCase() || "?"}</Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={<Typography sx={{ fontWeight: 600 }}>{m.name}</Typography>}
+                  secondary={`${m.email || m.mobile || ""}${m.city ? " · " + m.city : ""}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Paper>
+
+      {/* Promote new moderator */}
+      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>{t("mod.add")}</Typography>
+        {atLimit && (
+          <Alert severity="warning" sx={{ mb: 2 }}>{t("mod.atLimit")}</Alert>
+        )}
+        <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
+          <TextField
+            fullWidth size="small"
+            placeholder={t("mod.searchUsers")}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && runSearch()}
+            disabled={atLimit}
+            slotProps={{
+              input: {
+                startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>,
+              },
+            }}
+          />
+          <Button variant="contained" onClick={runSearch} disabled={atLimit || searching || search.trim().length < 2}>
+            {t("common.search")}
+          </Button>
+        </Box>
+
+        {searching && <CircularProgress size={24} />}
+        {!searching && search.trim().length >= 2 && searchResults.length === 0 && (
+          <Typography color="text.secondary" variant="body2">{t("mod.noResults")}</Typography>
+        )}
+        {searchResults.length > 0 && (
+          <List disablePadding>
+            {searchResults.map((u: any, i: number) => (
+              <ListItem
+                key={u.id}
+                divider={i < searchResults.length - 1}
+                secondaryAction={
+                  <Button
+                    size="small" variant="contained"
+                    startIcon={<PersonAddIcon />}
+                    onClick={() => setPromoteTarget(u)}
+                    disabled={atLimit}
+                  >
+                    {t("mod.addBtn")}
+                  </Button>
+                }
+              >
+                <ListItemAvatar>
+                  <Avatar>{u.name?.charAt(0).toUpperCase() || "?"}</Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={<Typography sx={{ fontWeight: 600 }}>{u.name}</Typography>}
+                  secondary={`${u.email || u.mobile || ""}${u.city ? " · " + u.city : ""}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Paper>
+
+      {/* Promote confirm */}
+      <Dialog open={!!promoteTarget} onClose={() => !busy && setPromoteTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: brandColors.maroon }}>{t("mod.addBtn")}</DialogTitle>
+        <DialogContent>
+          <Typography>{t("mod.promoteConfirm", { name: promoteTarget?.name || "" })}</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setPromoteTarget(null)} disabled={busy}>{t("common.cancel")}</Button>
+          <Button variant="contained" onClick={confirmPromote} disabled={busy}>
+            {busy ? t("common.saving") : t("common.confirm")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Revoke confirm */}
+      <Dialog open={!!revokeTarget} onClose={() => !busy && setRevokeTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: "error.main" }}>{t("mod.revoke")}</DialogTitle>
+        <DialogContent>
+          <Typography>{t("mod.revokeConfirm", { name: revokeTarget?.name || "" })}</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setRevokeTarget(null)} disabled={busy}>{t("common.cancel")}</Button>
+          <Button variant="contained" color="error" onClick={confirmRevoke} disabled={busy}>
+            {busy ? t("common.saving") : t("mod.revoke")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={!!snack}
+        autoHideDuration={3500}
+        onClose={() => setSnack(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        {snack ? (
+          <Alert severity={snack.severity} onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+            {snack.msg}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
+    </Stack>
   );
 }

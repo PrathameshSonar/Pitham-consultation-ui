@@ -20,7 +20,7 @@ const SECTIONS = [
   },
   {
     title: "4. Data Sharing",
-    body: "We do not sell, trade, or share your personal information with any third parties. Your consultation details, birth information, and personal records are strictly confidential between you and Shri Mayuresh Vispute Guruji.",
+    body: "We do not sell, trade, or share your personal information with any third parties. Your consultation details, birth information, and personal records are strictly confidential between you and Shri Mayuresh Guruji Vispute.",
   },
   {
     title: "5. Payment Information",

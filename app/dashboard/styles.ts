@@ -23,7 +23,6 @@ export const welcomeCard: SxProps<Theme> = {
   position: "relative",
   overflow: "hidden",
   "&::before": {
-    content: '"ॐ"',
     position: "absolute",
     right: 24,
     top: -20,

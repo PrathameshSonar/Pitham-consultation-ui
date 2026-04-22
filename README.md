@@ -1,6 +1,6 @@
 # Pitham Consultation
 
-Spiritual consultation platform by **Shri Mayuresh Vispute Guruji**.  
+Spiritual consultation platform by **Shri Mayuresh Guruji Vispute**.  
 Built with **Next.js 16** + **FastAPI** + **MySQL**.
 
 ## Tech Stack

@@ -239,7 +239,7 @@ export default function BookAppointment() {
                 onChange={setDob}
                 format="DD/MM/YYYY"
                 maxDate={dayjs()}
-                slotProps={{ textField: { required: true, fullWidth: true, inputProps: { "aria-label": t("auth.register.dob") } } }}
+                slotProps={{ textField: { required: true, fullWidth: true } }}
               />
               <TimePicker
                 label={t("auth.register.tob")}
@@ -249,7 +249,7 @@ export default function BookAppointment() {
                 views={["hours", "minutes", "seconds"]}
                 format="hh:mm:ss A"
                 timeSteps={{ minutes: 1, seconds: 1 }}
-                slotProps={{ textField: { required: true, fullWidth: true, inputProps: { "aria-label": t("auth.register.tob") } } }}
+                slotProps={{ textField: { required: true, fullWidth: true } }}
               />
             </Box>
 

@@ -42,12 +42,13 @@ export default function ForgotPassword() {
 
   async function handleReset(e: React.BaseSyntheticEvent) {
     e.preventDefault();
+    const otp = resetToken.trim();
+    if (!/^\d{6}$/.test(otp)) { setError(t("auth.forgot.enterToken")); return; }
     if (newPassword.length < 6) { setError(t("auth.forgot.minPassword")); return; }
     if (newPassword !== confirmPassword) { setError(t("auth.forgot.mismatch")); return; }
-    if (!resetToken.trim()) { setError(t("auth.forgot.enterToken")); return; }
     setError(""); setLoading(true);
     try {
-      await resetPassword({ token: resetToken, new_password: newPassword });
+      await resetPassword({ token: otp, new_password: newPassword });
       setStep("done");
     } catch (err: any) {
       setError(err?.detail || t("auth.forgot.error"));
@@ -107,9 +108,18 @@ export default function ForgotPassword() {
                   label={t("auth.forgot.resetToken")}
                   fullWidth required
                   value={resetToken}
-                  onChange={e => setResetToken(e.target.value)}
+                  onChange={e => setResetToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   helperText={t("auth.forgot.tokenHelp")}
-                  slotProps={{ htmlInput: { "aria-label": t("auth.forgot.resetToken") } }}
+                  slotProps={{
+                    htmlInput: {
+                      "aria-label": t("auth.forgot.resetToken"),
+                      inputMode: "numeric",
+                      pattern: "\\d{6}",
+                      maxLength: 6,
+                      autoComplete: "one-time-code",
+                      style: { letterSpacing: "0.4em", fontSize: "1.3rem", textAlign: "center", fontWeight: 700 },
+                    },
+                  }}
                 />
                 <TextField
                   label={t("auth.forgot.newPassword")}

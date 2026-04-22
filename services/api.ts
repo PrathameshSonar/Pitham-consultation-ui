@@ -7,14 +7,20 @@ export function fileUrl(path: string): string {
   return `${API_BASE}/${path.replace(/\\/g, "/")}`;
 }
 
+/** Wrap fetch so the httpOnly auth cookie is always sent.
+ *  We still send the Authorization header (legacy Bearer auth) until all clients migrate. */
+function cfetch(url: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(url, { credentials: "include", ...init });
+}
+
 function authHeaders(token: string): Record<string, string> {
-  return { Authorization: `Bearer ${token}` };
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 export async function registerUser(data: Record<string, string>) {
-  const res = await fetch(`${BASE}/auth/register`, {
+  const res = await cfetch(`${BASE}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -24,7 +30,7 @@ export async function registerUser(data: Record<string, string>) {
 }
 
 export async function loginUser(data: { email?: string; mobile?: string; password: string }) {
-  const res = await fetch(`${BASE}/auth/login`, {
+  const res = await cfetch(`${BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -34,7 +40,7 @@ export async function loginUser(data: { email?: string; mobile?: string; passwor
 }
 
 export async function forgotPassword(data: { email?: string; mobile?: string }) {
-  const res = await fetch(`${BASE}/auth/forgot-password`, {
+  const res = await cfetch(`${BASE}/auth/forgot-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -44,7 +50,7 @@ export async function forgotPassword(data: { email?: string; mobile?: string }) 
 }
 
 export async function resetPassword(data: { token: string; new_password: string }) {
-  const res = await fetch(`${BASE}/auth/reset-password`, {
+  const res = await cfetch(`${BASE}/auth/reset-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -54,7 +60,7 @@ export async function resetPassword(data: { token: string; new_password: string 
 }
 
 export async function googleLogin(credential: string) {
-  const res = await fetch(`${BASE}/auth/google`, {
+  const res = await cfetch(`${BASE}/auth/google`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ credential }),
@@ -64,7 +70,7 @@ export async function googleLogin(credential: string) {
 }
 
 export async function getProfile(token: string) {
-  const res = await fetch(`${BASE}/auth/profile`, {
+  const res = await cfetch(`${BASE}/auth/profile`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -74,7 +80,7 @@ export async function getProfile(token: string) {
 // ── Appointments ──────────────────────────────────────────────────────────────
 
 export async function bookAppointment(formData: FormData, token: string) {
-  const res = await fetch(`${BASE}/appointments`, {
+  const res = await cfetch(`${BASE}/appointments`, {
     method: "POST",
     headers: authHeaders(token),
     body: formData,
@@ -84,7 +90,7 @@ export async function bookAppointment(formData: FormData, token: string) {
 }
 
 export async function getMyAppointments(token: string) {
-  const res = await fetch(`${BASE}/appointments/my`, {
+  const res = await cfetch(`${BASE}/appointments/my`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -92,7 +98,7 @@ export async function getMyAppointments(token: string) {
 }
 
 export async function cancelAppointment(id: number, token: string) {
-  const res = await fetch(`${BASE}/appointments/${id}`, {
+  const res = await cfetch(`${BASE}/appointments/${id}`, {
     method: "DELETE",
     headers: authHeaders(token),
   });
@@ -101,7 +107,7 @@ export async function cancelAppointment(id: number, token: string) {
 }
 
 export async function generateReceipt(id: number, token: string) {
-  const res = await fetch(`${BASE}/appointments/${id}/generate-receipt`, {
+  const res = await cfetch(`${BASE}/appointments/${id}/generate-receipt`, {
     method: "POST",
     headers: authHeaders(token),
   });
@@ -112,7 +118,7 @@ export async function generateReceipt(id: number, token: string) {
 // ── Admin: Appointments ───────────────────────────────────────────────────────
 
 export async function adminGetAppointments(token: string) {
-  const res = await fetch(`${BASE}/admin/appointments`, {
+  const res = await cfetch(`${BASE}/admin/appointments`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -124,7 +130,7 @@ export async function adminVerifyPayment(
   payment_reference: string,
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/appointments/${id}/verify-payment`, {
+  const res = await cfetch(`${BASE}/admin/appointments/${id}/verify-payment`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify({ payment_reference }),
@@ -143,7 +149,7 @@ export async function adminAssignSlot(
   },
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/appointments/${id}/assign-slot`, {
+  const res = await cfetch(`${BASE}/admin/appointments/${id}/assign-slot`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -162,7 +168,7 @@ export async function adminReschedule(
   },
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/appointments/${id}/reschedule`, {
+  const res = await cfetch(`${BASE}/admin/appointments/${id}/reschedule`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -186,7 +192,7 @@ export async function adminMarkCompleted(
   fd.append("recording_link", data.recording_link || "");
   fd.append("gallery_doc_ids", JSON.stringify(data.gallery_doc_ids || []));
   if (data.analysis_file) fd.append("analysis_file", data.analysis_file);
-  const res = await fetch(`${BASE}/admin/appointments/${id}/complete`, {
+  const res = await cfetch(`${BASE}/admin/appointments/${id}/complete`, {
     method: "POST",
     headers: authHeaders(token),
     body: fd,
@@ -196,7 +202,7 @@ export async function adminMarkCompleted(
 }
 
 export async function generateInvoice(id: number, token: string) {
-  const res = await fetch(`${BASE}/appointments/${id}/generate-invoice`, {
+  const res = await cfetch(`${BASE}/appointments/${id}/generate-invoice`, {
     method: "POST",
     headers: authHeaders(token),
   });
@@ -205,7 +211,7 @@ export async function generateInvoice(id: number, token: string) {
 }
 
 export async function adminDownloadInvoicesZip(dateFrom: string, dateTo: string, token: string) {
-  const res = await fetch(
+  const res = await cfetch(
     `${BASE}/admin/invoices/download?date_from=${dateFrom}&date_to=${dateTo}`,
     { headers: authHeaders(token) }
   );
@@ -217,7 +223,7 @@ export async function adminDownloadInvoicesZip(dateFrom: string, dateTo: string,
 }
 
 export async function adminCancelAppointment(id: number, token: string) {
-  const res = await fetch(`${BASE}/admin/appointments/${id}`, {
+  const res = await cfetch(`${BASE}/admin/appointments/${id}`, {
     method: "DELETE",
     headers: authHeaders(token),
   });
@@ -225,8 +231,17 @@ export async function adminCancelAppointment(id: number, token: string) {
   return res.json();
 }
 
-export async function updateNotificationPrefs(data: { notify_email?: boolean; notify_sms?: boolean }, token: string) {
-  const res = await fetch(`${BASE}/auth/profile/notifications`, {
+export async function deleteAccount(token: string) {
+  const res = await cfetch(`${BASE}/auth/account`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function updateNotificationPrefs(data: { notify_email?: boolean }, token: string) {
+  const res = await cfetch(`${BASE}/auth/profile/notifications`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -236,7 +251,7 @@ export async function updateNotificationPrefs(data: { notify_email?: boolean; no
 }
 
 export async function sendVerificationEmail(token: string) {
-  const res = await fetch(`${BASE}/auth/send-verification`, {
+  const res = await cfetch(`${BASE}/auth/send-verification`, {
     method: "POST",
     headers: authHeaders(token),
   });
@@ -245,7 +260,7 @@ export async function sendVerificationEmail(token: string) {
 }
 
 export async function adminGenerateInvoice(id: number, token: string) {
-  const res = await fetch(`${BASE}/admin/appointments/${id}/generate-invoice`, {
+  const res = await cfetch(`${BASE}/admin/appointments/${id}/generate-invoice`, {
     method: "POST",
     headers: authHeaders(token),
   });
@@ -254,7 +269,7 @@ export async function adminGenerateInvoice(id: number, token: string) {
 }
 
 export async function adminGenerateReceipt(id: number, token: string) {
-  const res = await fetch(`${BASE}/admin/appointments/${id}/generate-receipt`, {
+  const res = await cfetch(`${BASE}/admin/appointments/${id}/generate-receipt`, {
     method: "POST",
     headers: authHeaders(token),
   });
@@ -266,7 +281,7 @@ export async function adminCreateZoomMeeting(
   data: { topic: string; scheduled_date: string; scheduled_time: string; duration?: number },
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/zoom/create-meeting`, {
+  const res = await cfetch(`${BASE}/admin/zoom/create-meeting`, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -279,22 +294,28 @@ export async function adminCreateZoomMeeting(
 
 export async function adminGetUsers(
   token: string,
-  params?: { search?: string; city?: string; state?: string; country?: string }
+  params?: { search?: string; city?: string; state?: string; country?: string; role?: "user" | "moderator" | "admin" }
 ) {
   const q = new URLSearchParams(
     Object.fromEntries(
       Object.entries(params || {}).filter(([, v]) => v)
     ) as Record<string, string>
   ).toString();
-  const res = await fetch(`${BASE}/admin/users${q ? `?${q}` : ""}`, {
+  const res = await cfetch(`${BASE}/admin/users${q ? `?${q}` : ""}`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
   return res.json();
 }
 
+export async function adminGetModeratorCount(token: string): Promise<{ current: number; max: number }> {
+  const res = await cfetch(`${BASE}/admin/users/moderators/count`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
 export async function adminGetUser(id: number, token: string) {
-  const res = await fetch(`${BASE}/admin/users/${id}`, {
+  const res = await cfetch(`${BASE}/admin/users/${id}`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -302,7 +323,7 @@ export async function adminGetUser(id: number, token: string) {
 }
 
 export async function adminGetUserAppointments(id: number, token: string) {
-  const res = await fetch(`${BASE}/admin/users/${id}/appointments`, {
+  const res = await cfetch(`${BASE}/admin/users/${id}/appointments`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -312,7 +333,7 @@ export async function adminGetUserAppointments(id: number, token: string) {
 // ── Documents ─────────────────────────────────────────────────────────────────
 
 export async function getMyDocuments(token: string) {
-  const res = await fetch(`${BASE}/documents/my`, {
+  const res = await cfetch(`${BASE}/documents/my`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -320,7 +341,7 @@ export async function getMyDocuments(token: string) {
 }
 
 export async function adminUploadDocument(formData: FormData, token: string) {
-  const res = await fetch(`${BASE}/admin/documents`, {
+  const res = await cfetch(`${BASE}/admin/documents`, {
     method: "POST",
     headers: authHeaders(token),
     body: formData,
@@ -330,7 +351,7 @@ export async function adminUploadDocument(formData: FormData, token: string) {
 }
 
 export async function adminGetDocuments(token: string) {
-  const res = await fetch(`${BASE}/admin/documents`, {
+  const res = await cfetch(`${BASE}/admin/documents`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -340,7 +361,7 @@ export async function adminGetDocuments(token: string) {
 // ── Admin Documents: Gallery (reusable templates) ────────────────────────────
 
 export async function adminUploadGalleryDocument(formData: FormData, token: string) {
-  const res = await fetch(`${BASE}/admin/documents/gallery`, {
+  const res = await cfetch(`${BASE}/admin/documents/gallery`, {
     method: "POST",
     headers: authHeaders(token),
     body: formData,
@@ -350,7 +371,7 @@ export async function adminUploadGalleryDocument(formData: FormData, token: stri
 }
 
 export async function adminGetGallery(token: string) {
-  const res = await fetch(`${BASE}/admin/documents/gallery`, {
+  const res = await cfetch(`${BASE}/admin/documents/gallery`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -358,7 +379,7 @@ export async function adminGetGallery(token: string) {
 }
 
 export async function adminDeleteGalleryDocument(id: number, token: string) {
-  const res = await fetch(`${BASE}/admin/documents/gallery/${id}`, {
+  const res = await cfetch(`${BASE}/admin/documents/gallery/${id}`, {
     method: "DELETE",
     headers: authHeaders(token),
   });
@@ -370,7 +391,7 @@ export async function adminAssignFromGallery(
   data: { gallery_doc_id: number; user_id: number },
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/documents/assign-from-gallery`, {
+  const res = await cfetch(`${BASE}/admin/documents/assign-from-gallery`, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -380,7 +401,7 @@ export async function adminAssignFromGallery(
 }
 
 export async function adminDeleteAssignedDocument(id: number, token: string) {
-  const res = await fetch(`${BASE}/admin/documents/${id}`, {
+  const res = await cfetch(`${BASE}/admin/documents/${id}`, {
     method: "DELETE",
     headers: authHeaders(token),
   });
@@ -389,7 +410,7 @@ export async function adminDeleteAssignedDocument(id: number, token: string) {
 }
 
 export async function adminGetUserDocuments(userId: number, token: string) {
-  const res = await fetch(`${BASE}/admin/users/${userId}/documents`, {
+  const res = await cfetch(`${BASE}/admin/users/${userId}/documents`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -400,7 +421,7 @@ export async function adminBulkAssignFromGallery(
   data: { gallery_doc_id: number; user_ids: number[]; batch_label?: string },
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/documents/bulk-assign-gallery`, {
+  const res = await cfetch(`${BASE}/admin/documents/bulk-assign-gallery`, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -411,7 +432,7 @@ export async function adminBulkAssignFromGallery(
 
 export async function adminBulkUploadDocument(formData: FormData, token: string) {
   // formData: user_ids (JSON array string), title, description, file
-  const res = await fetch(`${BASE}/admin/documents/bulk-upload`, {
+  const res = await cfetch(`${BASE}/admin/documents/bulk-upload`, {
     method: "POST",
     headers: authHeaders(token),
     body: formData,
@@ -423,7 +444,7 @@ export async function adminBulkUploadDocument(formData: FormData, token: string)
 // ── Admin: User Lists ────────────────────────────────────────────────────────
 
 export async function adminGetUserLists(token: string) {
-  const res = await fetch(`${BASE}/admin/user-lists`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/user-lists`, { headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.json();
 }
@@ -432,7 +453,7 @@ export async function adminCreateUserList(
   data: { name: string; description?: string; user_ids: number[] },
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/user-lists`, {
+  const res = await cfetch(`${BASE}/admin/user-lists`, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -446,7 +467,7 @@ export async function adminUpdateUserList(
   data: { name?: string; description?: string },
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/user-lists/${id}`, {
+  const res = await cfetch(`${BASE}/admin/user-lists/${id}`, {
     method: "PATCH",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -460,7 +481,7 @@ export async function adminUpdateUserListMembers(
   user_ids: number[],
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/user-lists/${id}/members`, {
+  const res = await cfetch(`${BASE}/admin/user-lists/${id}/members`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify({ user_ids }),
@@ -470,7 +491,7 @@ export async function adminUpdateUserListMembers(
 }
 
 export async function adminDeleteUserList(id: number, token: string) {
-  const res = await fetch(`${BASE}/admin/user-lists/${id}`, {
+  const res = await cfetch(`${BASE}/admin/user-lists/${id}`, {
     method: "DELETE",
     headers: authHeaders(token),
   });
@@ -484,7 +505,7 @@ export async function submitQuery(
   data: { subject: string; message: string },
   token: string
 ) {
-  const res = await fetch(`${BASE}/queries`, {
+  const res = await cfetch(`${BASE}/queries`, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -494,7 +515,7 @@ export async function submitQuery(
 }
 
 export async function getMyQueries(token: string) {
-  const res = await fetch(`${BASE}/queries/my`, {
+  const res = await cfetch(`${BASE}/queries/my`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -502,7 +523,7 @@ export async function getMyQueries(token: string) {
 }
 
 export async function adminGetQueries(token: string) {
-  const res = await fetch(`${BASE}/admin/queries`, {
+  const res = await cfetch(`${BASE}/admin/queries`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -514,7 +535,7 @@ export async function adminReplyQuery(
   reply: string,
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/queries/${id}/reply`, {
+  const res = await cfetch(`${BASE}/admin/queries/${id}/reply`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify({ reply }),
@@ -526,7 +547,7 @@ export async function adminReplyQuery(
 // ── Recordings ────────────────────────────────────────────────────────────────
 
 export async function getMyRecordings(token: string) {
-  const res = await fetch(`${BASE}/recordings/my`, {
+  const res = await cfetch(`${BASE}/recordings/my`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -534,7 +555,7 @@ export async function getMyRecordings(token: string) {
 }
 
 export async function adminAddRecording(formData: FormData, token: string) {
-  const res = await fetch(`${BASE}/admin/recordings`, {
+  const res = await cfetch(`${BASE}/admin/recordings`, {
     method: "POST",
     headers: authHeaders(token),
     body: formData,
@@ -544,7 +565,7 @@ export async function adminAddRecording(formData: FormData, token: string) {
 }
 
 export async function adminGetRecordings(token: string) {
-  const res = await fetch(`${BASE}/admin/recordings`, {
+  const res = await cfetch(`${BASE}/admin/recordings`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -555,7 +576,7 @@ export async function adminBulkAssignRecording(
   data: { title: string; recording_url: string; user_ids?: number[]; list_ids?: number[] },
   token: string
 ) {
-  const res = await fetch(`${BASE}/admin/recordings/bulk-assign`, {
+  const res = await cfetch(`${BASE}/admin/recordings/bulk-assign`, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -565,7 +586,7 @@ export async function adminBulkAssignRecording(
 }
 
 export async function adminDeleteRecording(id: number, token: string) {
-  const res = await fetch(`${BASE}/admin/recordings/${id}`, {
+  const res = await cfetch(`${BASE}/admin/recordings/${id}`, {
     method: "DELETE",
     headers: authHeaders(token),
   });
@@ -576,7 +597,7 @@ export async function adminDeleteRecording(id: number, token: string) {
 // ── Profile ──────────────────────────────────────────────────────────────────
 
 export async function updateProfile(data: Record<string, string>, token: string) {
-  const res = await fetch(`${BASE}/auth/profile`, {
+  const res = await cfetch(`${BASE}/auth/profile`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -588,19 +609,19 @@ export async function updateProfile(data: Record<string, string>, token: string)
 // ── Settings ─────────────────────────────────────────────────────────────────
 
 export async function getPublicSettings() {
-  const res = await fetch(`${BASE}/settings/public`);
+  const res = await cfetch(`${BASE}/settings/public`);
   if (!res.ok) throw await res.json();
   return res.json();
 }
 
 export async function adminGetSettings(token: string) {
-  const res = await fetch(`${BASE}/admin/settings`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/settings`, { headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.json();
 }
 
 export async function adminUpdateSettings(data: Record<string, any>, token: string) {
-  const res = await fetch(`${BASE}/admin/settings`, {
+  const res = await cfetch(`${BASE}/admin/settings`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -612,7 +633,7 @@ export async function adminUpdateSettings(data: Record<string, any>, token: stri
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
 export async function adminGetAnalytics(token: string) {
-  const res = await fetch(`${BASE}/admin/analytics`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/analytics`, { headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.json();
 }
@@ -620,7 +641,7 @@ export async function adminGetAnalytics(token: string) {
 // ── Role Management ──────────────────────────────────────────────────────────
 
 export async function adminChangeUserRole(userId: number, role: string, token: string) {
-  const res = await fetch(`${BASE}/admin/users/${userId}/role`, {
+  const res = await cfetch(`${BASE}/admin/users/${userId}/role`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify({ role }),
@@ -630,13 +651,13 @@ export async function adminChangeUserRole(userId: number, role: string, token: s
 }
 
 export async function adminGetPendingSettings(token: string) {
-  const res = await fetch(`${BASE}/admin/settings/pending`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/settings/pending`, { headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.json();
 }
 
 export async function adminApproveSettingChange(changeId: number, token: string) {
-  const res = await fetch(`${BASE}/admin/settings/pending/${changeId}/approve`, {
+  const res = await cfetch(`${BASE}/admin/settings/pending/${changeId}/approve`, {
     method: "POST", headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -644,7 +665,7 @@ export async function adminApproveSettingChange(changeId: number, token: string)
 }
 
 export async function adminRejectSettingChange(changeId: number, token: string) {
-  const res = await fetch(`${BASE}/admin/settings/pending/${changeId}/reject`, {
+  const res = await cfetch(`${BASE}/admin/settings/pending/${changeId}/reject`, {
     method: "POST", headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
@@ -669,19 +690,19 @@ export async function adminGetAuditLog(
   if (params.date_from) p.set("date_from", params.date_from);
   if (params.date_to) p.set("date_to", params.date_to);
   if (params.sort) p.set("sort", params.sort);
-  const res = await fetch(`${BASE}/admin/audit-log?${p}`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/audit-log?${p}`, { headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.json();
 }
 
 export async function adminGlobalSearch(query: string, token: string) {
-  const res = await fetch(`${BASE}/admin/search?q=${encodeURIComponent(query)}`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/search?q=${encodeURIComponent(query)}`, { headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.json();
 }
 
 export async function adminExportUsers(token: string) {
-  const res = await fetch(`${BASE}/admin/export/users`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/export/users`, { headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.blob();
 }
@@ -690,7 +711,7 @@ export async function adminExportAppointments(token: string, dateFrom?: string, 
   const params = new URLSearchParams();
   if (dateFrom) params.set("date_from", dateFrom);
   if (dateTo) params.set("date_to", dateTo);
-  const res = await fetch(`${BASE}/admin/export/appointments?${params}`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/export/appointments?${params}`, { headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.blob();
 }
@@ -699,13 +720,13 @@ export async function adminExportPayments(token: string, dateFrom?: string, date
   const params = new URLSearchParams();
   if (dateFrom) params.set("date_from", dateFrom);
   if (dateTo) params.set("date_to", dateTo);
-  const res = await fetch(`${BASE}/admin/export/payments?${params}`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/export/payments?${params}`, { headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.blob();
 }
 
 export async function adminSendReminders(token: string) {
-  const res = await fetch(`${BASE}/admin/send-reminders`, { method: "POST", headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/send-reminders`, { method: "POST", headers: authHeaders(token) });
   if (!res.ok) throw await res.json();
   return res.json();
 }
@@ -720,7 +741,7 @@ export async function initiatePhonePePayment(
   data: { appointment_id: number; amount: number },
   token: string
 ) {
-  const res = await fetch(`${BASE}/payments/phonepe/initiate`, {
+  const res = await cfetch(`${BASE}/payments/phonepe/initiate`, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -730,12 +751,247 @@ export async function initiatePhonePePayment(
 }
 
 export async function checkPhonePeStatus(transactionId: string, token: string) {
-  const res = await fetch(`${BASE}/payments/phonepe/status/${transactionId}`, {
+  const res = await cfetch(`${BASE}/payments/phonepe/status/${transactionId}`, {
     headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
   return res.json(); // { success, state, transaction_id }
 }
+
+// ── Events (public + admin) ──────────────────────────────────────────────────
+
+export interface EventItem {
+  id: number;
+  title: string;
+  description?: string | null;
+  event_date: string;
+  event_time?: string | null;
+  location?: string | null;
+  image_url?: string | null;
+  is_featured?: boolean;
+  created_at: string;
+}
+
+export interface EventInput {
+  title: string;
+  description?: string;
+  event_date: string;
+  event_time?: string;
+  location?: string;
+  image_url?: string;
+  is_featured?: boolean;
+  image?: File | null;
+}
+
+function _eventForm(data: Partial<EventInput>): FormData {
+  const fd = new FormData();
+  if (data.title !== undefined) fd.append("title", data.title);
+  if (data.description !== undefined) fd.append("description", data.description);
+  if (data.event_date !== undefined) fd.append("event_date", data.event_date);
+  if (data.event_time !== undefined) fd.append("event_time", data.event_time);
+  if (data.location !== undefined) fd.append("location", data.location);
+  if (data.image_url !== undefined) fd.append("image_url", data.image_url);
+  if (data.is_featured !== undefined) fd.append("is_featured", String(data.is_featured));
+  if (data.image) fd.append("image", data.image);
+  return fd;
+}
+
+export async function getPublicEvents(scope: "upcoming" | "past" | "all" = "upcoming", limit?: number): Promise<EventItem[]> {
+  const params = new URLSearchParams({ scope });
+  if (limit) params.set("limit", String(limit));
+  const res = await cfetch(`${BASE}/events?${params}`);
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminGetEvents(token: string): Promise<EventItem[]> {
+  const res = await cfetch(`${BASE}/admin/events`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminCreateEvent(data: EventInput, token: string): Promise<EventItem> {
+  const res = await cfetch(`${BASE}/admin/events`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: _eventForm(data),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminUpdateEvent(id: number, data: Partial<EventInput>, token: string): Promise<EventItem> {
+  const res = await cfetch(`${BASE}/admin/events/${id}`, {
+    method: "PUT",
+    headers: authHeaders(token),
+    body: _eventForm(data),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminDeleteEvent(id: number, token: string) {
+  const res = await cfetch(`${BASE}/admin/events/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+
+// ── Pitham CMS (banners / videos / instagram + testimonials) ─────────────────
+
+export type PithamMediaKind = "banner" | "video" | "instagram" | "gallery";
+
+export interface PithamMediaItem {
+  id: number;
+  kind: PithamMediaKind;
+  title?: string | null;
+  url?: string | null;
+  image_path?: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface TestimonialItem {
+  id: number;
+  name: string;
+  location?: string | null;
+  quote: string;
+  photo_path?: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface PithamCmsBundle {
+  banners: PithamMediaItem[];
+  videos: PithamMediaItem[];
+  instagram: PithamMediaItem[];
+  gallery: PithamMediaItem[];
+  testimonials: TestimonialItem[];
+  featured_events: EventItem[];
+}
+
+export async function getPithamCms(): Promise<PithamCmsBundle> {
+  const res = await cfetch(`${BASE}/pitham/cms`);
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function getPublicEvent(id: number | string): Promise<EventItem> {
+  const res = await cfetch(`${BASE}/events/${id}`);
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+// ── Admin: Pitham media ─────────────────────────────────────────────────────
+
+export async function adminListPithamMedia(kind: PithamMediaKind, token: string): Promise<PithamMediaItem[]> {
+  const res = await cfetch(`${BASE}/admin/pitham/media?kind=${kind}`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminCreatePithamMedia(
+  data: { kind: PithamMediaKind; title?: string; url?: string; sort_order?: number; is_active?: boolean; image?: File | null },
+  token: string,
+): Promise<PithamMediaItem> {
+  const fd = new FormData();
+  fd.append("kind", data.kind);
+  if (data.title !== undefined) fd.append("title", data.title);
+  if (data.url !== undefined) fd.append("url", data.url);
+  if (data.sort_order !== undefined) fd.append("sort_order", String(data.sort_order));
+  if (data.is_active !== undefined) fd.append("is_active", String(data.is_active));
+  if (data.image) fd.append("image", data.image);
+  const res = await cfetch(`${BASE}/admin/pitham/media`, {
+    method: "POST", headers: authHeaders(token), body: fd,
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminUpdatePithamMedia(
+  id: number,
+  data: Partial<{ title: string; url: string; sort_order: number; is_active: boolean; image: File | null }>,
+  token: string,
+): Promise<PithamMediaItem> {
+  const fd = new FormData();
+  if (data.title !== undefined) fd.append("title", data.title);
+  if (data.url !== undefined) fd.append("url", data.url);
+  if (data.sort_order !== undefined) fd.append("sort_order", String(data.sort_order));
+  if (data.is_active !== undefined) fd.append("is_active", String(data.is_active));
+  if (data.image) fd.append("image", data.image);
+  const res = await cfetch(`${BASE}/admin/pitham/media/${id}`, {
+    method: "PUT", headers: authHeaders(token), body: fd,
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminDeletePithamMedia(id: number, token: string) {
+  const res = await cfetch(`${BASE}/admin/pitham/media/${id}`, {
+    method: "DELETE", headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+// ── Admin: Testimonials ─────────────────────────────────────────────────────
+
+export async function adminListTestimonials(token: string): Promise<TestimonialItem[]> {
+  const res = await cfetch(`${BASE}/admin/pitham/testimonials`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminCreateTestimonial(
+  data: { name: string; quote: string; location?: string; sort_order?: number; is_active?: boolean; photo?: File | null },
+  token: string,
+): Promise<TestimonialItem> {
+  const fd = new FormData();
+  fd.append("name", data.name);
+  fd.append("quote", data.quote);
+  if (data.location !== undefined) fd.append("location", data.location);
+  if (data.sort_order !== undefined) fd.append("sort_order", String(data.sort_order));
+  if (data.is_active !== undefined) fd.append("is_active", String(data.is_active));
+  if (data.photo) fd.append("photo", data.photo);
+  const res = await cfetch(`${BASE}/admin/pitham/testimonials`, {
+    method: "POST", headers: authHeaders(token), body: fd,
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminUpdateTestimonial(
+  id: number,
+  data: Partial<{ name: string; quote: string; location: string; sort_order: number; is_active: boolean; photo: File | null }>,
+  token: string,
+): Promise<TestimonialItem> {
+  const fd = new FormData();
+  if (data.name !== undefined) fd.append("name", data.name);
+  if (data.quote !== undefined) fd.append("quote", data.quote);
+  if (data.location !== undefined) fd.append("location", data.location);
+  if (data.sort_order !== undefined) fd.append("sort_order", String(data.sort_order));
+  if (data.is_active !== undefined) fd.append("is_active", String(data.is_active));
+  if (data.photo) fd.append("photo", data.photo);
+  const res = await cfetch(`${BASE}/admin/pitham/testimonials/${id}`, {
+    method: "PUT", headers: authHeaders(token), body: fd,
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminDeleteTestimonial(id: number, token: string) {
+  const res = await cfetch(`${BASE}/admin/pitham/testimonials/${id}`, {
+    method: "DELETE", headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
@@ -750,7 +1006,8 @@ export function clearToken() {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("name");
-  document.cookie = "token=; path=/; max-age=0";
+  // Tell the backend to clear the httpOnly session cookie (fire-and-forget).
+  cfetch(`${BASE}/auth/logout`, { method: "POST" }).catch(() => {});
 }
 
 export function getToken(): string {

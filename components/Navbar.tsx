@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   AppBar, Toolbar, Box, Button, IconButton, Drawer,
   List, ListItem, ListItemButton, ListItemText, ListItemIcon,
@@ -18,6 +19,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import DescriptionIcon from "@mui/icons-material/Description";
 import ChatBubbleIcon from "@mui/icons-material/ChatBubble";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import PeopleIcon from "@mui/icons-material/People";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -61,7 +63,7 @@ export default function Navbar() {
   }
 
   const isAdmin = role === "admin" || role === "moderator";
-  const isPublic = !role && ["/", "/login", "/register", "/terms", "/privacy", "/forgot-password"].includes(pathname);
+  const isPublic = !role && ["/", "/login", "/register", "/terms", "/privacy", "/forgot-password", "/pitham", "/about", "/contact"].includes(pathname);
 
   const userLinks: NavLink[] = [
     { href: "/dashboard",                  labelKey: "nav.dashboard",  icon: <DashboardIcon fontSize="small" /> },
@@ -80,12 +82,13 @@ export default function Navbar() {
     { href: "/admin/documents",    labelKey: "nav.sadhna",       icon: <AutoStoriesIcon fontSize="small" /> },
     { href: "/admin/recordings",   labelKey: "nav.recordings",   icon: <VideocamIcon fontSize="small" /> },
     { href: "/admin/queries",      labelKey: "nav.queries",      icon: <ChatBubbleIcon fontSize="small" /> },
+    { href: "/admin/pitham",       labelKey: "adm.tile.pcms",    icon: <EventAvailableIcon fontSize="small" /> },
     { href: "/admin/settings",     labelKey: "nav.settings",     icon: <SettingsIcon fontSize="small" /> },
   ];
 
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
 
-  const LangSwitcher = () => (
+  const langSwitcher = (
     <>
       <IconButton
         size="small"
@@ -104,6 +107,7 @@ export default function Navbar() {
         onClose={() => setLangMenuAnchor(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
+        keepMounted
       >
         {LANGUAGES.map(l => (
           <MenuItem key={l.code} onClick={() => changeLang(l.code)} selected={l.code === lang}>
@@ -119,12 +123,20 @@ export default function Navbar() {
     return (
       <AppBar position="sticky" sx={styles.publicAppBar} elevation={0} component="nav" aria-label="Main navigation">
         <Toolbar>
-          <Typography component={Link} href="/" sx={{ ...styles.brandLogo, color: "inherit" }}>
-            ॐ PITHAM
-          </Typography>
+          <Box component={Link} href="/" sx={{ display: "flex", alignItems: "center", gap: 1, color: "inherit", textDecoration: "none", flexShrink: 0 }}>
+            <Image src="/spbsp-logo.png" alt={t("brand.name")} width={36} height={36} priority />
+            <Typography sx={{ ...styles.brandLogo, color: "inherit" }}>
+              {t("brand.short")}
+            </Typography>
+          </Box>
           <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5, mr: 1 }}>
+            <Button component={Link} href="/pitham" sx={styles.publicNavLink}>{t("nav.pitham")}</Button>
+            <Button component={Link} href="/about" sx={styles.publicNavLink}>{t("nav.about")}</Button>
+            <Button component={Link} href="/contact" sx={styles.publicNavLink}>{t("nav.contact")}</Button>
+          </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <LangSwitcher />
+            {langSwitcher}
             <Button component={Link} href="/login" sx={styles.publicNavLink}>{t("common.login")}</Button>
             <Button component={Link} href="/register" variant="contained" color="primary">
               {t("common.register")}
@@ -144,14 +156,17 @@ export default function Navbar() {
     <>
       <AppBar position="sticky" sx={isAdmin ? styles.adminAppBar : styles.userAppBar} elevation={0} component="nav" aria-label="Main navigation">
         <Toolbar>
-          <Typography
+          <Box
             component={Link}
             href={isAdmin ? "/admin" : "/dashboard"}
-            sx={{ ...styles.brandLogo, color: "inherit" }}
+            sx={{ display: "flex", alignItems: "center", gap: 1, color: "inherit", textDecoration: "none", flexShrink: 0 }}
           >
-            ॐ PITHAM {role === "admin" && <span style={{ fontSize: "0.7em", opacity: 0.8 }}>· ADMIN</span>}
-            {role === "moderator" && <span style={{ fontSize: "0.7em", opacity: 0.8 }}>· MODERATOR</span>}
-          </Typography>
+            <Image src="/spbsp-logo.png" alt={t("brand.name")} width={36} height={36} priority />
+            <Typography sx={{ ...styles.brandLogo, color: "inherit" }}>
+              {t("brand.short")} {role === "admin" && <span style={{ fontSize: "0.7em", opacity: 0.8 }}>· ADMIN</span>}
+              {role === "moderator" && <span style={{ fontSize: "0.7em", opacity: 0.8 }}>· MODERATOR</span>}
+            </Typography>
+          </Box>
 
           <Box sx={styles.navLinksWrap}>
             {links.map(l => (
@@ -171,7 +186,7 @@ export default function Navbar() {
             <IconButton onClick={toggleMode} sx={{ color: "#fff" }} aria-label="Toggle dark mode">
               {mode === "dark" ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
             </IconButton>
-            <LangSwitcher />
+            {langSwitcher}
             <Button
               component={Link}
               href={profileHref}

@@ -41,6 +41,13 @@ backend/.env
 # uploads (user data)
 backend/uploads/
 
+# local databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
 # python
 backend/.venv/
 backend/__pycache__/

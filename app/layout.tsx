@@ -10,23 +10,32 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: {
-    default: "Pitham — Spiritual Consultation",
-    template: "%s | Pitham",
+    default: "Shri Pitambara Baglamukhi Shakti Pitham, Ahilyanagar — Spiritual Consultation",
+    template: "%s | SPBSP, Ahilyanagar",
   },
   description:
-    "Book a personal astrology & spiritual consultation with Shri Mayuresh Vispute Guruji. Kundali, Vastu, Meditation & more.",
+    "Shri Pitambara Baglamukhi Shakti Pitham, Ahilyanagar — book a personal astrology & spiritual consultation with Shri Mayuresh Guruji Vispute. Kundali, Vastu, Meditation & more.",
   keywords: [
     "astrology", "spiritual consultation", "kundali", "vastu",
-    "pitham", "guruji", "mayuresh vispute",
+    "pitham", "baglamukhi", "pitambara", "shakti pitham", "ahilyanagar",
+    "guruji", "mayuresh vispute",
   ],
-  authors: [{ name: "Pitham Consultation" }],
+  authors: [{ name: "Shri Pitambara Baglamukhi Shakti Pitham, Ahilyanagar" }],
   robots: { index: true, follow: true },
+  icons: {
+    icon: [
+      { url: "/spbsp-logo.png", type: "image/png" },
+    ],
+    shortcut: "/spbsp-logo.png",
+    apple: "/spbsp-logo.png",
+  },
   openGraph: {
-    title: "Pitham — Spiritual Consultation",
-    description: "Seek guidance from Shri Mayuresh Vispute Guruji",
+    title: "Shri Pitambara Baglamukhi Shakti Pitham, Ahilyanagar",
+    description: "Seek guidance from Shri Mayuresh Guruji Vispute",
     type: "website",
     locale: "en_IN",
-    siteName: "Pitham Consultation",
+    siteName: "Shri Pitambara Baglamukhi Shakti Pitham, Ahilyanagar",
+    images: [{ url: "/spbsp-logo.png" }],
   },
 };
 

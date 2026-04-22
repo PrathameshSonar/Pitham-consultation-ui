@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Box, Typography, IconButton } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
@@ -32,11 +33,14 @@ export default function Footer() {
       <Box sx={{ maxWidth: 1100, mx: "auto", display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4, alignItems: { md: "flex-start" } }}>
         {/* Brand */}
         <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: "1.3rem", color: "#fff", mb: 1 }}>
-            ॐ Pitham Consultation
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.7, maxWidth: 300 }}>
-            Spiritual guidance by Shri Mayuresh Vispute Guruji
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+            <Image src="/spbsp-logo.png" alt={t("brand.name")} width={48} height={48} />
+            <Typography sx={{ fontFamily: "'Cinzel', serif", fontWeight: 700, fontSize: "1.1rem", color: "#fff", lineHeight: 1.2 }}>
+              {t("brand.name")}
+            </Typography>
+          </Box>
+          <Typography variant="body2" sx={{ opacity: 0.7, maxWidth: 320 }}>
+            Spiritual guidance by Shri Mayuresh Guruji Vispute
           </Typography>
         </Box>
 
@@ -46,9 +50,10 @@ export default function Footer() {
             <Typography variant="caption" sx={{ opacity: 0.5, display: "block", mb: 1 }}>Quick Links</Typography>
             {[
               { href: "/", label: "Home" },
-              { href: "/about", label: "About" },
-              { href: "/contact", label: "Contact" },
-              { href: "/register", label: "Register" },
+              { href: "/pitham", label: t("nav.pitham") },
+              { href: "/about", label: t("nav.about") },
+              { href: "/contact", label: t("nav.contact") },
+              { href: "/register", label: t("common.register") },
             ].map(l => (
               <Box key={l.href} component={Link} href={l.href}
                 sx={{ display: "block", color: "rgba(255,255,255,0.8)", mb: 0.5, fontSize: "0.85rem", "&:hover": { color: "#fff" } }}>
@@ -92,7 +97,7 @@ export default function Footer() {
       </Box>
 
       <Typography variant="caption" sx={{ display: "block", textAlign: "center", mt: 3, opacity: 0.4 }}>
-        &copy; {new Date().getFullYear()} Pitham Consultation. All rights reserved.
+        &copy; {new Date().getFullYear()} {t("brand.name")}. All rights reserved.
       </Typography>
     </Box>
   );

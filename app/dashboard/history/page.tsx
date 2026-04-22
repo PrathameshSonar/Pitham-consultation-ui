@@ -235,11 +235,11 @@ export default function History() {
                               const ics = [
                                 "BEGIN:VCALENDAR",
                                 "VERSION:2.0",
-                                "PRODID:-//Pitham//Consultation//EN",
+                                "PRODID:-//SPBSP//Consultation//EN",
                                 "BEGIN:VEVENT",
                                 `DTSTART:${dtStart}`,
                                 "DURATION:PT45M",
-                                `SUMMARY:Pitham Consultation`,
+                                `SUMMARY:SPBSP, Ahilyanagar — Consultation`,
                                 `DESCRIPTION:${(a.problem || "").slice(0, 200).replace(/\n/g, "\\n")}`,
                                 `LOCATION:${a.zoom_link || "Zoom"}`,
                                 a.zoom_link ? `URL:${a.zoom_link}` : "",

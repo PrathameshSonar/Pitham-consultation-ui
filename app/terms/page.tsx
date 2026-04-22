@@ -9,11 +9,11 @@ import * as s from "./styles";
 const SECTIONS = [
   {
     title: "1. Acceptance of Terms",
-    body: "By registering or booking a consultation on the Pitham platform, you agree to be bound by these Terms & Conditions. If you do not agree, please do not use our services.",
+    body: "By registering or booking a consultation on the SPBSP, Ahilyanagar platform, you agree to be bound by these Terms & Conditions. If you do not agree, please do not use our services.",
   },
   {
     title: "2. About Our Services",
-    body: "Pitham provides astrology and spiritual consultation services by Shri Mayuresh Vispute Guruji. Services include Kundali reading, Vastu consultation, astrology guidance, meditation & sadhna guidance, puja & rituals advice, and spiritual counseling. All sessions are conducted via Zoom video call.",
+    body: "Shri Pitambara Baglamukhi Shakti Pitham, Ahilyanagar (SPBSP) provides astrology and spiritual consultation services by Shri Mayuresh Guruji Vispute. Services include Kundali reading, Vastu consultation, astrology guidance, meditation & sadhna guidance, puja & rituals advice, and spiritual counseling. All sessions are conducted via Zoom video call.",
   },
   {
     title: "3. Registration & Account",
@@ -41,23 +41,23 @@ const SECTIONS = [
   },
   {
     title: "9. User Conduct",
-    body: "Users are expected to be respectful during consultations and in all communications. Pitham reserves the right to cancel a session or ban an account without refund in the event of abusive, threatening, or inappropriate behaviour.",
+    body: "Users are expected to be respectful during consultations and in all communications. SPBSP, Ahilyanagar reserves the right to cancel a session or ban an account without refund in the event of abusive, threatening, or inappropriate behaviour.",
   },
   {
     title: "10. Intellectual Property",
-    body: "All content on the Pitham platform, including sadhna documents, analysis reports, and consultation recordings, is the intellectual property of Pitham and Shri Mayuresh Vispute Guruji. Reproduction, distribution, or public sharing without written permission is prohibited.",
+    body: "All content on the SPBSP, Ahilyanagar platform, including sadhna documents, analysis reports, and consultation recordings, is the intellectual property of Shri Pitambara Baglamukhi Shakti Pitham, Ahilyanagar and Shri Mayuresh Guruji Vispute. Reproduction, distribution, or public sharing without written permission is prohibited.",
   },
   {
     title: "11. Disclaimer",
-    body: "Astrological and spiritual guidance is provided for informational, educational, and spiritual purposes only. It does not constitute medical, legal, financial, or psychological advice. Always consult qualified professionals for such matters. Pitham and Guruji shall not be held liable for any decisions made based on consultation advice.",
+    body: "Astrological and spiritual guidance is provided for informational, educational, and spiritual purposes only. It does not constitute medical, legal, financial, or psychological advice. Always consult qualified professionals for such matters. SPBSP, Ahilyanagar and Guruji shall not be held liable for any decisions made based on consultation advice.",
   },
   {
     title: "12. Limitation of Liability",
-    body: "Pitham's total liability for any claim arising from use of our services is limited to the consultation fee paid. We are not liable for any indirect, incidental, or consequential damages.",
+    body: "SPBSP, Ahilyanagar's total liability for any claim arising from use of our services is limited to the consultation fee paid. We are not liable for any indirect, incidental, or consequential damages.",
   },
   {
     title: "13. Modifications",
-    body: "Pitham reserves the right to modify these Terms & Conditions at any time. Changes will be effective upon posting on this page. Continued use of services after modifications constitutes acceptance.",
+    body: "SPBSP, Ahilyanagar reserves the right to modify these Terms & Conditions at any time. Changes will be effective upon posting on this page. Continued use of services after modifications constitutes acceptance.",
   },
   {
     title: "14. Governing Law",

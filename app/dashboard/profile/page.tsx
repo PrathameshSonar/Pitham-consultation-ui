@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box, Paper, Typography, TextField, Button, Alert, MenuItem, Stack,
-  CircularProgress,
+  CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs, { Dayjs } from "dayjs";
 import SaveIcon from "@mui/icons-material/Save";
-import { getProfile, updateProfile, getToken } from "@/services/api";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { getProfile, updateProfile, deleteAccount, clearToken, getToken } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
 
@@ -30,6 +31,26 @@ export default function ProfilePage() {
   });
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [tob, setTob] = useState<Dayjs | null>(null);
+
+  // Delete-account flow
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  async function handleDeleteAccount() {
+    const token = getToken();
+    if (!token) return;
+    setDeleteError(""); setDeleting(true);
+    try {
+      await deleteAccount(token);
+      clearToken();
+      router.push("/");
+    } catch (err: any) {
+      setDeleteError(err?.detail || t("profile.delete.failed"));
+      setDeleting(false);
+    }
+  }
 
   useEffect(() => {
     const token = getToken();
@@ -149,7 +170,7 @@ export default function ProfilePage() {
               onChange={setDob}
               format="DD/MM/YYYY"
               maxDate={dayjs()}
-              slotProps={{ textField: { fullWidth: true, inputProps: { "aria-label": t("auth.register.dob") } } }}
+              slotProps={{ textField: { fullWidth: true } }}
             />
             <TimePicker
               label={t("auth.register.tob")}
@@ -159,7 +180,7 @@ export default function ProfilePage() {
               views={["hours", "minutes", "seconds"]}
               format="hh:mm:ss A"
               timeSteps={{ minutes: 1, seconds: 1 }}
-              slotProps={{ textField: { fullWidth: true, inputProps: { "aria-label": t("auth.register.tob") } } }}
+              slotProps={{ textField: { fullWidth: true } }}
             />
             <TextField
               label={t("auth.register.city")}
@@ -195,6 +216,63 @@ export default function ProfilePage() {
           </Button>
         </Box>
       </Paper>
+
+      {/* ── Danger zone ─────────────────────────────────────────────────── */}
+      <Paper elevation={0} sx={{
+        maxWidth: 700, mx: "auto", mt: 4, p: { xs: 3, md: 4 }, borderRadius: 4,
+        border: "1px solid", borderColor: "error.light",
+        bgcolor: "rgba(211, 47, 47, 0.04)",
+      }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: "error.main", mb: 1 }}>
+          {t("profile.delete.title")}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, lineHeight: 1.7 }}>
+          {t("profile.delete.desc")}
+        </Typography>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<DeleteForeverIcon />}
+          onClick={() => { setDeleteConfirmText(""); setDeleteError(""); setDeleteOpen(true); }}
+        >
+          {t("profile.delete.button")}
+        </Button>
+      </Paper>
+
+      <Dialog open={deleteOpen} onClose={() => !deleting && setDeleteOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: "error.main" }}>
+          {t("profile.delete.title")}
+        </DialogTitle>
+        <DialogContent>
+          {deleteError && <Alert severity="error" sx={{ mb: 2 }}>{deleteError}</Alert>}
+          <Typography sx={{ mb: 2, lineHeight: 1.7 }}>
+            {t("profile.delete.confirm")}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {t("profile.delete.typePrompt")}
+          </Typography>
+          <TextField
+            fullWidth
+            value={deleteConfirmText}
+            onChange={e => setDeleteConfirmText(e.target.value)}
+            placeholder="DELETE"
+            autoFocus
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeleteOpen(false)} disabled={deleting}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteAccount}
+            disabled={deleting || deleteConfirmText.trim().toUpperCase() !== "DELETE"}
+          >
+            {deleting ? t("common.saving") : t("profile.delete.button")}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

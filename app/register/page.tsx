@@ -100,7 +100,6 @@ export default function Register() {
   return (
     <Box sx={s.wrapper}>
       <Paper elevation={0} sx={s.card}>
-        <Typography sx={s.omIcon}>ॐ</Typography>
         <Typography variant="h4" sx={s.title}>{t("auth.register.title")}</Typography>
         <Typography sx={s.subtitle}>{t("auth.register.subtitle")}</Typography>
 

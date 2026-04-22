@@ -67,8 +67,6 @@ export default function Home() {
         }}>
           {/* Text side */}
           <Box sx={{ flex: 1, textAlign: { xs: "center", md: "left" } }}>
-            <Typography sx={s.omSymbol}>ॐ</Typography>
-            <Typography sx={s.tagline}>{t("brand.tagline")}</Typography>
             <Typography variant="h1" sx={s.heroTitle}>
               {t("landing.hero.line1")}
               <Box component="span" sx={{ display: "block", color: "primary.main" }}>
@@ -113,7 +111,7 @@ export default function Home() {
             }} />
             <Image
               src="/guruji.png"
-              alt="Shri Mayuresh Vispute Guruji"
+              alt="Shri Mayuresh Guruji Vispute"
               fill
               style={{ objectFit: "contain", objectPosition: "bottom" }}
               priority

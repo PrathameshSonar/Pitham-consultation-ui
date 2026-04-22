@@ -125,7 +125,7 @@ export default function AdminAppointments() {
     setError(""); setGeneratingZoom(true);
     try {
       const meeting = await adminCreateZoomMeeting({
-        topic: `Pitham Consultation — ${selected.name}`,
+        topic: `SPBSP, Ahilyanagar — ${selected.name}`,
         scheduled_date: form.scheduled_date.format("YYYY-MM-DD"),
         scheduled_time: form.scheduled_time,
         duration: 45,

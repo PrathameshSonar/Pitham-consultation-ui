@@ -123,7 +123,7 @@ export default function Contact() {
               p: 4, borderRadius: 4, border: `1px solid ${brandColors.sand}`,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <Typography color="text.secondary" textAlign="center">
+              <Typography color="text.secondary" sx={{ textAlign: "center" }}>
                 <LocationOnIcon sx={{ fontSize: 48, opacity: 0.3, display: "block", mx: "auto", mb: 1 }} />
                 {t("contact.mapPlaceholder")}
               </Typography>

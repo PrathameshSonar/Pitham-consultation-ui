@@ -43,7 +43,7 @@ export function StatusPieChart({ data, title }: { data: { status: string; count:
             outerRadius={95}
             innerRadius={40}
             paddingAngle={2}
-            label={({ status, count }) => `${status} (${count})`}
+            label={(props: any) => `${props.status} (${props.count})`}
           >
             {data.map((entry, i) => (
               <Cell key={entry.status} fill={getColor(entry.status, i)} />

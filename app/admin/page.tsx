@@ -7,6 +7,7 @@ import {
   Box, Paper, Typography, CircularProgress,
 } from "@mui/material";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import GroupIcon from "@mui/icons-material/Group";
 import PeopleIcon from "@mui/icons-material/People";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -40,6 +41,7 @@ const TILES: { href: string; icon: React.ReactNode; labelKey: MessageKey; descKe
   { href: "/admin/documents",    icon: <DescriptionIcon sx={s.tileIcon} />,   labelKey: "adm.tile.docs",    descKey: "adm.tile.docs.desc" },
   { href: "/admin/recordings",   icon: <VideocamIcon sx={s.tileIcon} />,      labelKey: "adm.tile.rec",     descKey: "adm.tile.rec.desc" },
   { href: "/admin/queries",      icon: <ChatBubbleIcon sx={s.tileIcon} />,    labelKey: "adm.tile.queries", descKey: "adm.tile.queries.desc" },
+  { href: "/admin/pitham",       icon: <EventAvailableIcon sx={s.tileIcon} />, labelKey: "adm.tile.pcms",    descKey: "adm.tile.pcms.desc" },
   { href: "/admin/settings",     icon: <SettingsIcon sx={s.tileIcon} />,      labelKey: "nav.settings",     descKey: "adm.tile.appts.desc" },
 ];
 

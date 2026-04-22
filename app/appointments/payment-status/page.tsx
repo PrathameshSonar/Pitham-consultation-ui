@@ -30,7 +30,7 @@ export default function PaymentStatus() {
     const token = getToken();
     if (!token) { router.push("/login"); return; }
 
-    // Extract appointment ID from txn format: PITHAM_{id}_{hex}
+    // Extract appointment ID from txn format: SPBSP_{id}_{hex}
     const parts = txn.split("_");
     if (parts.length >= 2) setAppointmentId(parseInt(parts[1], 10) || null);
 

@@ -85,7 +85,6 @@ export default function Login() {
         />
       )}
       <Paper elevation={0} sx={s.card}>
-        <Typography sx={s.omIcon}>ॐ</Typography>
         <Typography variant="h4" sx={s.title}>{t("auth.login.title")}</Typography>
         <Typography sx={s.subtitle}>{t("auth.login.subtitle")}</Typography>
 

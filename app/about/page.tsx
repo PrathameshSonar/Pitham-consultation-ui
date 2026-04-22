@@ -15,7 +15,7 @@ export default function About() {
           alignItems: "center", gap: 4, mb: 6,
         }}>
           <Box sx={{ position: "relative", width: { xs: 200, md: 280 }, height: { xs: 240, md: 340 }, flexShrink: 0 }}>
-            <Image src="/guruji.png" alt="Shri Mayuresh Vispute Guruji" fill style={{ objectFit: "contain" }} />
+            <Image src="/guruji.png" alt="Shri Mayuresh Guruji Vispute" fill style={{ objectFit: "contain" }} />
           </Box>
           <Box>
             <Typography variant="h3" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
