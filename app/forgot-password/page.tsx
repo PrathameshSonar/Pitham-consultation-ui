@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  Box, Paper, TextField, Button, Typography, Alert, Stack,
-} from "@mui/material";
+import { Box, Paper, TextField, Button, Typography, Alert, Stack } from "@mui/material";
 import { forgotPassword, resetPassword } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
@@ -21,13 +19,15 @@ export default function ForgotPassword() {
 
   async function handleRequest(e: React.BaseSyntheticEvent) {
     e.preventDefault();
-    if (!identifier.trim()) { setError(t("common.required")); return; }
-    setError(""); setLoading(true);
+    if (!identifier.trim()) {
+      setError(t("common.required"));
+      return;
+    }
+    setError("");
+    setLoading(true);
     try {
       const isEmail = identifier.includes("@");
-      const res = await forgotPassword(
-        isEmail ? { email: identifier } : { mobile: identifier }
-      );
+      const res = await forgotPassword(isEmail ? { email: identifier } : { mobile: identifier });
       // In dev mode, the token is returned; in prod it would be emailed
       if (res.reset_token) {
         setResetToken(res.reset_token);
@@ -43,10 +43,20 @@ export default function ForgotPassword() {
   async function handleReset(e: React.BaseSyntheticEvent) {
     e.preventDefault();
     const otp = resetToken.trim();
-    if (!/^\d{6}$/.test(otp)) { setError(t("auth.forgot.enterToken")); return; }
-    if (newPassword.length < 6) { setError(t("auth.forgot.minPassword")); return; }
-    if (newPassword !== confirmPassword) { setError(t("auth.forgot.mismatch")); return; }
-    setError(""); setLoading(true);
+    if (!/^\d{6}$/.test(otp)) {
+      setError(t("auth.forgot.enterToken"));
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError(t("auth.forgot.minPassword"));
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError(t("auth.forgot.mismatch"));
+      return;
+    }
+    setError("");
+    setLoading(true);
     try {
       await resetPassword({ token: otp, new_password: newPassword });
       setStep("done");
@@ -58,21 +68,39 @@ export default function ForgotPassword() {
   }
 
   return (
-    <Box sx={{
-      minHeight: "calc(100vh - 64px)",
-      bgcolor: "background.default",
-      display: "flex", alignItems: "center", justifyContent: "center", p: 3,
-    }}>
-      <Paper elevation={0} sx={{
-        width: "100%", maxWidth: 440, p: { xs: 4, md: 5 }, borderRadius: 5,
-        border: `1px solid ${brandColors.sand}`,
-        boxShadow: "0 20px 60px rgba(123, 30, 30, 0.12)",
-      }}>
-        <Typography variant="h4" sx={{ textAlign: "center", color: brandColors.maroon, fontWeight: 700, mb: 0.5 }}>
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 64px)",
+        bgcolor: "background.default",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 3,
+      }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          width: "100%",
+          maxWidth: 440,
+          p: { xs: 4, md: 5 },
+          borderRadius: 5,
+          border: `1px solid ${brandColors.sand}`,
+          boxShadow: "0 20px 60px rgba(123, 30, 30, 0.12)",
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{ textAlign: "center", color: brandColors.maroon, fontWeight: 700, mb: 0.5 }}
+        >
           {t("auth.forgot.title")}
         </Typography>
 
-        {error && <Alert severity="error" sx={{ mb: 2, mt: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2, mt: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         {step === "request" && (
           <>
@@ -83,9 +111,10 @@ export default function ForgotPassword() {
               <Stack spacing={2.5}>
                 <TextField
                   label={t("auth.login.identifier")}
-                  fullWidth required
+                  fullWidth
+                  required
                   value={identifier}
-                  onChange={e => setIdentifier(e.target.value)}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   placeholder={t("auth.login.identifierHint")}
                   slotProps={{ htmlInput: { "aria-label": t("auth.login.identifier") } }}
                 />
@@ -106,9 +135,10 @@ export default function ForgotPassword() {
               <Stack spacing={2.5}>
                 <TextField
                   label={t("auth.forgot.resetToken")}
-                  fullWidth required
+                  fullWidth
+                  required
                   value={resetToken}
-                  onChange={e => setResetToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) => setResetToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   helperText={t("auth.forgot.tokenHelp")}
                   slotProps={{
                     htmlInput: {
@@ -117,24 +147,31 @@ export default function ForgotPassword() {
                       pattern: "\\d{6}",
                       maxLength: 6,
                       autoComplete: "one-time-code",
-                      style: { letterSpacing: "0.4em", fontSize: "1.3rem", textAlign: "center", fontWeight: 700 },
+                      style: {
+                        letterSpacing: "0.4em",
+                        fontSize: "1.3rem",
+                        textAlign: "center",
+                        fontWeight: 700,
+                      },
                     },
                   }}
                 />
                 <TextField
                   label={t("auth.forgot.newPassword")}
                   type="password"
-                  fullWidth required
+                  fullWidth
+                  required
                   value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   slotProps={{ htmlInput: { minLength: 6, "aria-label": t("auth.forgot.newPassword") } }}
                 />
                 <TextField
                   label={t("auth.forgot.confirmPassword")}
                   type="password"
-                  fullWidth required
+                  fullWidth
+                  required
                   value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   slotProps={{ htmlInput: { "aria-label": t("auth.forgot.confirmPassword") } }}
                 />
                 <Button type="submit" variant="contained" size="large" fullWidth disabled={loading}>
@@ -152,8 +189,11 @@ export default function ForgotPassword() {
         )}
 
         <Typography sx={{ mt: 3, textAlign: "center", color: brandColors.textMedium }}>
-          <Box component={Link} href="/login"
-            sx={{ color: brandColors.saffron, fontWeight: 600, "&:hover": { textDecoration: "underline" } }}>
+          <Box
+            component={Link}
+            href="/login"
+            sx={{ color: brandColors.saffron, fontWeight: 600, "&:hover": { textDecoration: "underline" } }}
+          >
             {t("auth.forgot.backToLogin")}
           </Box>
         </Typography>

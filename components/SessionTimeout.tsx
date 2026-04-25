@@ -23,10 +23,10 @@ export default function SessionTimeout() {
 
   useEffect(() => {
     const events = ["mousedown", "keydown", "scroll", "touchstart"];
-    events.forEach(e => window.addEventListener(e, resetTimer));
+    events.forEach((e) => window.addEventListener(e, resetTimer));
     resetTimer();
     return () => {
-      events.forEach(e => window.removeEventListener(e, resetTimer));
+      events.forEach((e) => window.removeEventListener(e, resetTimer));
       if (timer.current) clearTimeout(timer.current);
     };
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps

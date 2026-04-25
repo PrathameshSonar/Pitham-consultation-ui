@@ -22,7 +22,10 @@ const shared = {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 999, padding: "8px 22px", boxShadow: "none", whiteSpace: "nowrap" as const,
+          borderRadius: 999,
+          padding: "8px 22px",
+          boxShadow: "none",
+          whiteSpace: "nowrap" as const,
           "&:hover": { boxShadow: "0 4px 14px rgba(230, 81, 0, 0.25)" },
           "@media (max-width: 600px)": { padding: "6px 16px", fontSize: "0.82rem" },
         },
@@ -39,10 +42,49 @@ const shared = {
     MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 10 } } },
     MuiAppBar: { styleOverrides: { root: { boxShadow: "0 2px 10px rgba(123, 30, 30, 0.1)" } } },
     MuiChip: { styleOverrides: { root: { fontWeight: 500 } } },
-    MuiTableContainer: { styleOverrides: { root: { overflowX: "auto" as const, WebkitOverflowScrolling: "touch" as const } } },
-    MuiTableCell: { styleOverrides: { root: { "@media (max-width: 600px)": { padding: "6px 8px", fontSize: "0.8rem" } } } },
-    MuiDialog: { styleOverrides: { paper: { "@media (max-width: 600px)": { margin: 8, maxHeight: "calc(100vh - 16px)", width: "calc(100% - 16px)" } } } },
-    MuiTab: { styleOverrides: { root: { "@media (max-width: 600px)": { minWidth: "auto", padding: "8px 12px", fontSize: "0.8rem" } } } },
+    MuiTableContainer: {
+      styleOverrides: { root: { overflowX: "auto" as const, WebkitOverflowScrolling: "touch" as const } },
+    },
+    MuiTableCell: {
+      styleOverrides: { root: { "@media (max-width: 600px)": { padding: "6px 8px", fontSize: "0.8rem" } } },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          "@media (max-width: 600px)": {
+            margin: 8,
+            maxHeight: "calc(100vh - 16px)",
+            width: "calc(100% - 16px)",
+          },
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: { "@media (max-width: 600px)": { minWidth: "auto", padding: "8px 12px", fontSize: "0.8rem" } },
+      },
+    },
+    // Default Tabs to scrollable so they never overflow horizontally on mobile.
+    // Pages can still opt out with variant="standard" if needed.
+    MuiTabs: {
+      defaultProps: {
+        variant: "scrollable" as const,
+        scrollButtons: "auto" as const,
+        allowScrollButtonsMobile: true,
+      },
+      styleOverrides: {
+        root: { minHeight: 42 },
+      },
+    },
+    // Inputs allowed to shrink below their natural minWidth on small screens.
+    // Combined with flex containers using `flexWrap: "wrap"` (the standard pattern
+    // on this codebase) this lets filter rows wrap naturally on phones instead
+    // of forcing horizontal scroll.
+    MuiFormControl: {
+      styleOverrides: {
+        root: { "@media (max-width: 600px)": { minWidth: "0 !important" } },
+      },
+    },
   },
 };
 
@@ -50,12 +92,28 @@ export const lightTheme = createTheme({
   ...shared,
   palette: {
     mode: "light",
-    primary: { main: brandColors.saffron, light: brandColors.saffronLight, dark: brandColors.saffronDark, contrastText: "#ffffff" },
-    secondary: { main: brandColors.gold, light: brandColors.goldLight, dark: brandColors.goldDark, contrastText: "#ffffff" },
-    error: { main: brandColors.error }, warning: { main: brandColors.warning },
-    info: { main: brandColors.info }, success: { main: brandColors.success },
+    primary: {
+      main: brandColors.saffron,
+      light: brandColors.saffronLight,
+      dark: brandColors.saffronDark,
+      contrastText: "#ffffff",
+    },
+    secondary: {
+      main: brandColors.gold,
+      light: brandColors.goldLight,
+      dark: brandColors.goldDark,
+      contrastText: "#ffffff",
+    },
+    error: { main: brandColors.error },
+    warning: { main: brandColors.warning },
+    info: { main: brandColors.info },
+    success: { main: brandColors.success },
     background: { default: brandColors.cream, paper: brandColors.ivory },
-    text: { primary: brandColors.textDark, secondary: brandColors.textMedium, disabled: brandColors.textLight },
+    text: {
+      primary: brandColors.textDark,
+      secondary: brandColors.textMedium,
+      disabled: brandColors.textLight,
+    },
     divider: "#E8D9BF",
   },
 });
@@ -64,10 +122,22 @@ export const darkTheme = createTheme({
   ...shared,
   palette: {
     mode: "dark",
-    primary: { main: brandColors.saffronLight, light: "#FFB74D", dark: brandColors.saffron, contrastText: "#000" },
-    secondary: { main: brandColors.goldLight, light: "#FFD54F", dark: brandColors.gold, contrastText: "#000" },
-    error: { main: "#EF5350" }, warning: { main: "#FFA726" },
-    info: { main: "#42A5F5" }, success: { main: "#66BB6A" },
+    primary: {
+      main: brandColors.saffronLight,
+      light: "#FFB74D",
+      dark: brandColors.saffron,
+      contrastText: "#000",
+    },
+    secondary: {
+      main: brandColors.goldLight,
+      light: "#FFD54F",
+      dark: brandColors.gold,
+      contrastText: "#000",
+    },
+    error: { main: "#EF5350" },
+    warning: { main: "#FFA726" },
+    info: { main: "#42A5F5" },
+    success: { main: "#66BB6A" },
     background: { default: "#1A1210", paper: "#2C211A" },
     text: { primary: "#F5E6D0", secondary: "#C4A882", disabled: "#8A7560" },
     divider: "#3D2E22",

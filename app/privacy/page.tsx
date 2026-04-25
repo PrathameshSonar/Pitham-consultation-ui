@@ -59,14 +59,18 @@ export default function Privacy() {
     <Box sx={s.wrapper}>
       <Paper elevation={0} sx={s.card}>
         <Typography sx={s.subtitle}>{t("privacy.subtitle")}</Typography>
-        <Typography variant="h3" sx={s.title}>{t("privacy.title")}</Typography>
+        <Typography variant="h3" sx={s.title}>
+          {t("privacy.title")}
+        </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {t("privacy.lastUpdated")}: April 2026
         </Typography>
 
-        {SECTIONS.map(sec => (
+        {SECTIONS.map((sec) => (
           <Box key={sec.title}>
-            <Typography variant="h6" sx={s.sectionHeading}>{sec.title}</Typography>
+            <Typography variant="h6" sx={s.sectionHeading}>
+              {sec.title}
+            </Typography>
             <Typography sx={s.sectionText}>{sec.body}</Typography>
           </Box>
         ))}

@@ -90,11 +90,7 @@ export const daysGrid: SxProps<Theme> = {
   gap: 0.5,
 };
 
-export const dayCell = (
-  isSelected: boolean,
-  isToday: boolean,
-  hasCount: boolean,
-): SxProps<Theme> => ({
+export const dayCell = (isSelected: boolean, isToday: boolean, hasCount: boolean): SxProps<Theme> => ({
   aspectRatio: "1",
   borderRadius: 2,
   display: "flex",
@@ -105,7 +101,7 @@ export const dayCell = (
   fontSize: { xs: "0.8rem", md: "0.9rem" },
   fontWeight: isSelected || isToday ? 700 : 500,
   bgcolor: isSelected ? brandColors.saffron : isToday ? "background.paper" : "transparent",
-  color:   isSelected ? "#fff" : isToday ? brandColors.saffronDark : "text.primary",
+  color: isSelected ? "#fff" : isToday ? brandColors.saffronDark : "text.primary",
   border: isSelected ? "none" : `1px solid ${hasCount ? brandColors.goldLight : "transparent"}`,
   transition: "all 0.15s",
   "&:hover": {
@@ -124,7 +120,7 @@ export const badge = (selected: boolean): SxProps<Theme> => ({
   fontWeight: 700,
   borderRadius: 999,
   bgcolor: selected ? "#fff" : brandColors.goldLight,
-  color:   selected ? brandColors.saffronDark : brandColors.maroon,
+  color: selected ? brandColors.saffronDark : brandColors.maroon,
 });
 
 export const apptItem: SxProps<Theme> = {

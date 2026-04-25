@@ -29,10 +29,17 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <Box sx={{
-          minHeight: "60vh", display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", p: 4, textAlign: "center",
-        }}>
+        <Box
+          sx={{
+            minHeight: "60vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            p: 4,
+            textAlign: "center",
+          }}
+        >
           <WarningIcon sx={{ fontSize: 64, color: "error.main", mb: 2 }} />
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
             Something went wrong

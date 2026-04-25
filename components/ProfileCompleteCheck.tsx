@@ -2,10 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Typography, Button,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button } from "@mui/material";
 import { getProfile, getToken } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 
@@ -51,13 +48,9 @@ export default function ProfileCompleteCheck() {
 
   return (
     <Dialog open={open} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>
-        {t("profile.completeTitle")}
-      </DialogTitle>
+      <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>{t("profile.completeTitle")}</DialogTitle>
       <DialogContent>
-        <Typography>
-          {t("profile.completeDesc")}
-        </Typography>
+        <Typography>{t("profile.completeDesc")}</Typography>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button

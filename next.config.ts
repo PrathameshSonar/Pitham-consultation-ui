@@ -42,6 +42,20 @@ const nextConfig: NextConfig = {
 
   // Powered by header disabled
   poweredByHeader: false,
+
+  // Tree-shake heavy libraries — emits per-icon imports automatically.
+  // Without this, importing one MUI icon pulls the whole library into the bundle.
+  experimental: {
+    optimizePackageImports: ["@mui/material", "@mui/icons-material", "@mui/x-date-pickers", "recharts"],
+  },
 };
 
-export default nextConfig;
+// Wrap with @next/bundle-analyzer when ANALYZE=true. Run `npm run analyze`
+// to open an interactive treemap of every chunk in the build.
+const withAnalyzer =
+  process.env.ANALYZE === "true"
+    ? // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require("@next/bundle-analyzer")({ enabled: true })
+    : (cfg: NextConfig) => cfg;
+
+export default withAnalyzer(nextConfig);

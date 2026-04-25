@@ -5,8 +5,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import DOMPurify from "dompurify";
 import {
-  Box, Paper, TextField, Button, Typography, Alert,
-  FormControlLabel, Checkbox, Stack, CircularProgress,
+  Box,
+  Paper,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  FormControlLabel,
+  Checkbox,
+  Stack,
+  CircularProgress,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
@@ -29,7 +37,11 @@ export default function BookAppointment() {
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const [form, setForm] = useState({
-    name: "", email: "", mobile: "", birth_place: "", problem: "",
+    name: "",
+    email: "",
+    mobile: "",
+    birth_place: "",
+    problem: "",
   });
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [tob, setTob] = useState<Dayjs | null>(null);
@@ -59,18 +71,31 @@ export default function BookAppointment() {
   }, []);
 
   function set(field: string, value: string) {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   }
 
   async function handleSubmit(e: React.BaseSyntheticEvent) {
     e.preventDefault();
-    if (!dob || !tob) { setError(t("auth.dobError")); return; }
-    if (form.name.trim().length < 2) { setError(t("common.required")); return; }
-    if (form.problem.trim().length < 5) { setError(t("book.problem.help")); return; }
+    if (!dob || !tob) {
+      setError(t("auth.dobError"));
+      return;
+    }
+    if (form.name.trim().length < 2) {
+      setError(t("common.required"));
+      return;
+    }
+    if (form.problem.trim().length < 5) {
+      setError(t("book.problem.help"));
+      return;
+    }
     const token = getToken();
-    if (!token) { router.push("/login"); return; }
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
-    setError(""); setLoading(true);
+    setError("");
+    setLoading(true);
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v.trim()));
@@ -80,10 +105,7 @@ export default function BookAppointment() {
       const appt = await bookAppointment(fd, token);
 
       try {
-        const payment = await initiatePhonePePayment(
-          { appointment_id: appt.id, amount: fee },
-          token
-        );
+        const payment = await initiatePhonePePayment({ appointment_id: appt.id, amount: fee }, token);
         if (payment.redirect_url) {
           window.location.href = payment.redirect_url;
           return;
@@ -149,14 +171,21 @@ export default function BookAppointment() {
           </Typography>
 
           {/* Render the admin-editable HTML T&C */}
-          <Paper variant="outlined" sx={{
-            p: 3, mb: 3, maxHeight: 400, overflow: "auto",
-            bgcolor: "background.paper", borderRadius: 3,
-            "& h1, & h2, & h3": { color: brandColors.maroon, mt: 2, mb: 1 },
-            "& ol, & ul": { pl: 3 },
-            "& li": { mb: 0.5 },
-            "& strong": { color: brandColors.textDark },
-          }}>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 3,
+              mb: 3,
+              maxHeight: 400,
+              overflow: "auto",
+              bgcolor: "background.paper",
+              borderRadius: 3,
+              "& h1, & h2, & h3": { color: brandColors.maroon, mt: 2, mb: 1 },
+              "& ol, & ul": { pl: 3 },
+              "& li": { mb: 0.5 },
+              "& strong": { color: brandColors.textDark },
+            }}
+          >
             {consultationTerms ? (
               <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(consultationTerms) }} />
             ) : (
@@ -174,7 +203,7 @@ export default function BookAppointment() {
             control={
               <Checkbox
                 checked={termsAccepted}
-                onChange={e => setTermsAccepted(e.target.checked)}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
                 color="primary"
               />
             }
@@ -195,12 +224,7 @@ export default function BookAppointment() {
             >
               {t("book.proceedToBook")}
             </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              component={Link}
-              href="/dashboard"
-            >
+            <Button variant="outlined" size="large" component={Link} href="/dashboard">
               {t("common.back")}
             </Button>
           </Box>
@@ -213,26 +237,52 @@ export default function BookAppointment() {
   return (
     <Box sx={s.wrapper}>
       <Paper elevation={0} sx={s.card}>
-        <Typography variant="h4" sx={s.title}>{t("book.title")}</Typography>
+        <Typography variant="h4" sx={s.title}>
+          {t("book.title")}
+        </Typography>
         <Typography sx={s.subtitle}>{t("book.subtitle")}</Typography>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Stack spacing={3}>
             <Box sx={s.gridTwo}>
-              <TextField label={t("auth.register.fullName")} required fullWidth value={form.name}
-                onChange={e => set("name", e.target.value)}
-                slotProps={{ htmlInput: { maxLength: 150, "aria-label": t("auth.register.fullName") } }} />
-              <TextField label={t("common.email")} type="email" fullWidth value={form.email}
-                onChange={e => set("email", e.target.value)}
-                slotProps={{ htmlInput: { maxLength: 150, "aria-label": t("common.email") } }} />
-              <TextField label={t("common.mobile")} required fullWidth value={form.mobile}
-                onChange={e => set("mobile", e.target.value)}
-                slotProps={{ htmlInput: { maxLength: 20, "aria-label": t("common.mobile") } }} />
-              <TextField label={t("auth.register.birthPlace")} required fullWidth value={form.birth_place}
-                onChange={e => set("birth_place", e.target.value)}
-                slotProps={{ htmlInput: { maxLength: 150, "aria-label": t("auth.register.birthPlace") } }} />
+              <TextField
+                label={t("auth.register.fullName")}
+                required
+                fullWidth
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                slotProps={{ htmlInput: { maxLength: 150, "aria-label": t("auth.register.fullName") } }}
+              />
+              <TextField
+                label={t("common.email")}
+                type="email"
+                fullWidth
+                value={form.email}
+                onChange={(e) => set("email", e.target.value)}
+                slotProps={{ htmlInput: { maxLength: 150, "aria-label": t("common.email") } }}
+              />
+              <TextField
+                label={t("common.mobile")}
+                required
+                fullWidth
+                value={form.mobile}
+                onChange={(e) => set("mobile", e.target.value)}
+                slotProps={{ htmlInput: { maxLength: 20, "aria-label": t("common.mobile") } }}
+              />
+              <TextField
+                label={t("auth.register.birthPlace")}
+                required
+                fullWidth
+                value={form.birth_place}
+                onChange={(e) => set("birth_place", e.target.value)}
+                slotProps={{ htmlInput: { maxLength: 150, "aria-label": t("auth.register.birthPlace") } }}
+              />
               <DatePicker
                 label={t("auth.register.dob")}
                 value={dob}
@@ -255,9 +305,12 @@ export default function BookAppointment() {
 
             <TextField
               label={t("book.problem")}
-              required fullWidth multiline rows={4}
+              required
+              fullWidth
+              multiline
+              rows={4}
               value={form.problem}
-              onChange={e => set("problem", e.target.value)}
+              onChange={(e) => set("problem", e.target.value)}
               placeholder={t("book.problem.help")}
               slotProps={{ htmlInput: { maxLength: 2000, "aria-label": t("book.problem") } }}
             />
@@ -265,9 +318,13 @@ export default function BookAppointment() {
             <Box sx={s.fileWrap}>
               <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />}>
                 {selfie ? t("book.changeFile") : t("book.uploadSelfie")}
-                <input type="file" hidden accept="image/*"
-                  onChange={e => setSelfie(e.target.files?.[0] || null)}
-                  aria-label={t("book.uploadSelfie")} />
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={(e) => setSelfie(e.target.files?.[0] || null)}
+                  aria-label={t("book.uploadSelfie")}
+                />
               </Button>
               <Typography variant="body2" color="text.secondary">
                 {selfie ? selfie.name : t("book.selfie.help")}
@@ -275,7 +332,9 @@ export default function BookAppointment() {
             </Box>
 
             <Box sx={s.paymentNote}>
-              <Typography sx={s.paymentNoteTitle}>{t("book.payment")}: &#8377;{fee}</Typography>
+              <Typography sx={s.paymentNoteTitle}>
+                {t("book.payment")}: &#8377;{fee}
+              </Typography>
               <Typography variant="body2" color="text.secondary">
                 {t("book.payment.desc")}
               </Typography>

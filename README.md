@@ -5,17 +5,17 @@ Built with **Next.js 16** + **FastAPI** + **MySQL**.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | Next.js 16, React 19, TypeScript, MUI v9 |
-| **Backend** | FastAPI, SQLAlchemy 2.0, Python 3.12+ |
-| **Database** | MySQL (pymysql) / SQLite (dev) |
-| **Payment** | PhonePe Standard Checkout SDK |
-| **Auth** | JWT + Google OAuth + reCAPTCHA |
-| **Email** | Gmail SMTP |
-| **Video** | Zoom Server-to-Server OAuth |
-| **Charts** | Recharts |
-| **i18n** | Custom React Context (English, Hindi, Marathi) |
+| Layer        | Technology                                     |
+| ------------ | ---------------------------------------------- |
+| **Frontend** | Next.js 16, React 19, TypeScript, MUI v9       |
+| **Backend**  | FastAPI, SQLAlchemy 2.0, Python 3.12+          |
+| **Database** | MySQL (pymysql) / SQLite (dev)                 |
+| **Payment**  | PhonePe Standard Checkout SDK                  |
+| **Auth**     | JWT + Google OAuth + reCAPTCHA                 |
+| **Email**    | Gmail SMTP                                     |
+| **Video**    | Zoom Server-to-Server OAuth                    |
+| **Charts**   | Recharts                                       |
+| **i18n**     | Custom React Context (English, Hindi, Marathi) |
 
 ## Project Structure
 
@@ -114,15 +114,16 @@ pitham-consultation/
 
 ## Roles
 
-| Role | DB Value | Access |
-|------|----------|--------|
-| **Super Admin** | `admin` | Full access to everything |
-| **Moderator** | `moderator` | All except: audit log, export, invoices. Fee/T&C need approval |
-| **User** | `user` | Dashboard, book, history, documents, queries, profile |
+| Role            | DB Value    | Access                                                         |
+| --------------- | ----------- | -------------------------------------------------------------- |
+| **Super Admin** | `admin`     | Full access to everything                                      |
+| **Moderator**   | `moderator` | All except: audit log, export, invoices. Fee/T&C need approval |
+| **User**        | `user`      | Dashboard, book, history, documents, queries, profile          |
 
 ## Setup
 
 ### Backend
+
 ```bash
 cd backend
 python -m venv .venv
@@ -133,6 +134,7 @@ uvicorn main:app --reload
 ```
 
 ### Frontend
+
 ```bash
 npm install
 cp .env.local.example .env.local
@@ -140,6 +142,7 @@ npm run dev
 ```
 
 ### Database
+
 Tables auto-create on first start. For schema changes in production, run ALTER TABLE statements.
 
 ## Environment Variables
@@ -148,10 +151,10 @@ See `backend/.env.example` and `.env.local.example`.
 
 ## Key Integrations
 
-| Service | Setup |
-|---------|-------|
-| **PhonePe** | Get client_id + client_secret from PhonePe dashboard |
-| **Google OAuth** | Create OAuth Client at Google Cloud Console |
-| **Zoom** | Create Server-to-Server app at Zoom Marketplace |
-| **Gmail SMTP** | Enable 2FA → generate App Password |
-| **reCAPTCHA** | Register at google.com/recaptcha (v2 checkbox) |
+| Service          | Setup                                                |
+| ---------------- | ---------------------------------------------------- |
+| **PhonePe**      | Get client_id + client_secret from PhonePe dashboard |
+| **Google OAuth** | Create OAuth Client at Google Cloud Console          |
+| **Zoom**         | Create Server-to-Server app at Zoom Marketplace      |
+| **Gmail SMTP**   | Enable 2FA → generate App Password                   |
+| **reCAPTCHA**    | Register at google.com/recaptcha (v2 checkbox)       |

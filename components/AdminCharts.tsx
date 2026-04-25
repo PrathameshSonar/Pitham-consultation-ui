@@ -2,10 +2,18 @@
 
 import {
   ResponsiveContainer,
-  PieChart, Pie, Cell,
-  BarChart, Bar,
-  LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
 } from "recharts";
 import { Box, Paper, Typography } from "@mui/material";
 import { brandColors } from "@/theme/colors";
@@ -20,13 +28,30 @@ const STATUS_COLORS: Record<string, string> = {
   rescheduled: "#26C6DA",
   paid: "#66BB6A",
 };
-const FALLBACK = ["#E65100", "#C99A2E", "#7B1E1E", "#2E7D32", "#0277BD", "#C62828", "#8884d8", "#FF8A65", "#4DB6AC", "#BA68C8"];
+const FALLBACK = [
+  "#E65100",
+  "#C99A2E",
+  "#7B1E1E",
+  "#2E7D32",
+  "#0277BD",
+  "#C62828",
+  "#8884d8",
+  "#FF8A65",
+  "#4DB6AC",
+  "#BA68C8",
+];
 
 function getColor(status: string, index: number) {
   return STATUS_COLORS[status] || FALLBACK[index % FALLBACK.length];
 }
 
-export function StatusPieChart({ data, title }: { data: { status: string; count: number }[]; title: string }) {
+export function StatusPieChart({
+  data,
+  title,
+}: {
+  data: { status: string; count: number }[];
+  title: string;
+}) {
   return (
     <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
       <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
@@ -57,7 +82,13 @@ export function StatusPieChart({ data, title }: { data: { status: string; count:
   );
 }
 
-export function MonthlyBarChart({ data, title }: { data: { month: string; count: number }[]; title: string }) {
+export function MonthlyBarChart({
+  data,
+  title,
+}: {
+  data: { month: string; count: number }[];
+  title: string;
+}) {
   return (
     <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
       <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
@@ -76,7 +107,13 @@ export function MonthlyBarChart({ data, title }: { data: { month: string; count:
   );
 }
 
-export function MonthlyLineChart({ data, title }: { data: { month: string; count: number }[]; title: string }) {
+export function MonthlyLineChart({
+  data,
+  title,
+}: {
+  data: { month: string; count: number }[];
+  title: string;
+}) {
   return (
     <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
       <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>

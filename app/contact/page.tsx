@@ -16,26 +16,46 @@ export default function Contact() {
   const [s, setS] = useState<any>({});
 
   useEffect(() => {
-    getPublicSettings().then(setS).catch(() => {});
+    getPublicSettings()
+      .then(setS)
+      .catch(() => {});
   }, []);
 
   const contactItems = [
     { icon: <EmailIcon />, label: t("common.email"), value: s.contact_email },
     { icon: <PhoneIcon />, label: t("common.mobile"), value: s.contact_phone },
     { icon: <LocationOnIcon />, label: t("contact.address"), value: s.contact_address },
-  ].filter(i => i.value);
+  ].filter((i) => i.value);
 
   const socials = [
     { icon: <FacebookIcon />, label: "Facebook", url: s.social_facebook },
-    { icon: <span style={{ fontWeight: 700, fontSize: "1.2rem" }}>IG</span>, label: "Instagram", url: s.social_instagram },
+    {
+      icon: <span style={{ fontWeight: 700, fontSize: "1.2rem" }}>IG</span>,
+      label: "Instagram",
+      url: s.social_instagram,
+    },
     { icon: <YouTubeIcon />, label: "YouTube", url: s.social_youtube },
-    { icon: <span style={{ fontWeight: 700, fontSize: "1.2rem" }}>X</span>, label: "Twitter / X", url: s.social_twitter },
-  ].filter(x => x.url);
+    {
+      icon: <span style={{ fontWeight: 700, fontSize: "1.2rem" }}>X</span>,
+      label: "Twitter / X",
+      url: s.social_twitter,
+    },
+  ].filter((x) => x.url);
 
   return (
-    <Box sx={{ minHeight: "calc(100vh - 64px)", bgcolor: "background.default", py: { xs: 4, md: 8 }, px: { xs: 2, md: 4 } }}>
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 64px)",
+        bgcolor: "background.default",
+        py: { xs: 4, md: 8 },
+        px: { xs: 2, md: 4 },
+      }}
+    >
       <Box sx={{ maxWidth: 800, mx: "auto" }}>
-        <Typography variant="h3" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1, textAlign: "center" }}>
+        <Typography
+          variant="h3"
+          sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1, textAlign: "center" }}
+        >
           {t("contact.title")}
         </Typography>
         <Typography sx={{ textAlign: "center", color: "text.secondary", mb: 4 }}>
@@ -44,18 +64,30 @@ export default function Contact() {
 
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
           {/* Contact Info */}
-          <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
+          <Paper
+            elevation={0}
+            sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+          >
             {contactItems.length === 0 ? (
               <Typography color="text.secondary">{t("contact.noInfo")}</Typography>
             ) : (
               <Stack spacing={3}>
                 {contactItems.map((item, i) => (
                   <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Box sx={{ color: brandColors.saffron, p: 1.5, borderRadius: 3, bgcolor: `${brandColors.saffron}15` }}>
+                    <Box
+                      sx={{
+                        color: brandColors.saffron,
+                        p: 1.5,
+                        borderRadius: 3,
+                        bgcolor: `${brandColors.saffron}15`,
+                      }}
+                    >
                       {item.icon}
                     </Box>
                     <Box>
-                      <Typography variant="caption" color="text.secondary">{item.label}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {item.label}
+                      </Typography>
                       <Typography sx={{ fontWeight: 600 }}>{item.value}</Typography>
                     </Box>
                   </Box>
@@ -106,7 +138,15 @@ export default function Contact() {
 
           {/* Google Map */}
           {s.contact_map_url ? (
-            <Paper elevation={0} sx={{ borderRadius: 4, overflow: "hidden", border: `1px solid ${brandColors.sand}`, minHeight: 300 }}>
+            <Paper
+              elevation={0}
+              sx={{
+                borderRadius: 4,
+                overflow: "hidden",
+                border: `1px solid ${brandColors.sand}`,
+                minHeight: 300,
+              }}
+            >
               <iframe
                 src={s.contact_map_url}
                 width="100%"
@@ -119,10 +159,17 @@ export default function Contact() {
               />
             </Paper>
           ) : (
-            <Paper elevation={0} sx={{
-              p: 4, borderRadius: 4, border: `1px solid ${brandColors.sand}`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 4,
+                borderRadius: 4,
+                border: `1px solid ${brandColors.sand}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Typography color="text.secondary" sx={{ textAlign: "center" }}>
                 <LocationOnIcon sx={{ fontSize: 48, opacity: 0.3, display: "block", mx: "auto", mb: 1 }} />
                 {t("contact.mapPlaceholder")}

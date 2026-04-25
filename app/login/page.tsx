@@ -40,7 +40,8 @@ export default function Login() {
   }
 
   async function handleGoogleResponse(response: any) {
-    setError(""); setLoading(true);
+    setError("");
+    setLoading(true);
     try {
       const res = await googleLogin(response.credential);
       saveToken(res.token, res.role, res.name);
@@ -60,9 +61,11 @@ export default function Login() {
   async function handleLogin(e: React.BaseSyntheticEvent) {
     e.preventDefault();
     if (captchaRef.current && !captchaRef.current.getToken()) {
-      setError(t("auth.captchaRequired")); return;
+      setError(t("auth.captchaRequired"));
+      return;
     }
-    setError(""); setLoading(true);
+    setError("");
+    setLoading(true);
     try {
       const res = await loginUser({ email: identifier, password });
       saveToken(res.token, res.role, res.name);
@@ -85,17 +88,25 @@ export default function Login() {
         />
       )}
       <Paper elevation={0} sx={s.card}>
-        <Typography variant="h4" sx={s.title}>{t("auth.login.title")}</Typography>
+        <Typography variant="h4" sx={s.title}>
+          {t("auth.login.title")}
+        </Typography>
         <Typography sx={s.subtitle}>{t("auth.login.subtitle")}</Typography>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         {/* Google Sign-In button */}
         {GOOGLE_CLIENT_ID && (
           <>
             <Box ref={googleBtnRef} sx={{ mb: 2, display: "flex", justifyContent: "center" }} />
             <Divider sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">{t("auth.orContinueWith")}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {t("auth.orContinueWith")}
+              </Typography>
             </Divider>
           </>
         )}
@@ -106,7 +117,7 @@ export default function Login() {
             fullWidth
             required
             value={identifier}
-            onChange={e => setIdentifier(e.target.value)}
+            onChange={(e) => setIdentifier(e.target.value)}
             placeholder={t("auth.login.identifierHint")}
           />
           <TextField
@@ -115,7 +126,7 @@ export default function Login() {
             fullWidth
             required
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
           />
           <Captcha ref={captchaRef} />
           <Button type="submit" variant="contained" size="large" fullWidth disabled={loading}>
@@ -131,7 +142,9 @@ export default function Login() {
 
         <Typography sx={s.footerRow}>
           {t("auth.login.noAccount")}{" "}
-          <Box component={Link} href="/register" sx={s.link}>{t("common.register")}</Box>
+          <Box component={Link} href="/register" sx={s.link}>
+            {t("common.register")}
+          </Box>
         </Typography>
       </Paper>
     </Box>

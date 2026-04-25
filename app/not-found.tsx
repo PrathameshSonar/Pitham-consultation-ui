@@ -5,12 +5,17 @@ import { Box, Typography, Button } from "@mui/material";
 
 export default function NotFound() {
   return (
-    <Box sx={{
-      minHeight: "calc(100vh - 64px)",
-      display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      textAlign: "center", p: 4,
-    }}>
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 64px)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        p: 4,
+      }}
+    >
       <Typography sx={{ fontSize: "5rem", mb: 1 }}>404</Typography>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
         Page Not Found

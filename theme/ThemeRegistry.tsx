@@ -26,9 +26,7 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
       <ThemeModeProvider>
         <I18nProvider>
           <ThemeInner>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              {children}
-            </LocalizationProvider>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>{children}</LocalizationProvider>
           </ThemeInner>
         </I18nProvider>
       </ThemeModeProvider>

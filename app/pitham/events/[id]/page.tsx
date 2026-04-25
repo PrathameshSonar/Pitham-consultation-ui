@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Box, Paper, Typography, Button, Stack, Chip, CircularProgress, Alert, Snackbar,
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Stack,
+  Chip,
+  CircularProgress,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -20,9 +28,14 @@ function formatEventDate(iso: string, lang: string): string {
   try {
     const d = new Date(iso);
     return d.toLocaleDateString(lang === "hi" ? "hi-IN" : lang === "mr" ? "mr-IN" : "en-IN", {
-      weekday: "long", day: "numeric", month: "long", year: "numeric",
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
-  } catch { return iso; }
+  } catch {
+    return iso;
+  }
 }
 
 export default function EventDetailPage() {
@@ -45,7 +58,14 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: "calc(100vh - 64px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box
+        sx={{
+          minHeight: "calc(100vh - 64px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -53,8 +73,26 @@ export default function EventDetailPage() {
 
   if (error || !event) {
     return (
-      <Box sx={{ minHeight: "calc(100vh - 64px)", py: 8, px: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Paper elevation={0} sx={{ p: 4, borderRadius: 4, maxWidth: 480, textAlign: "center", border: `1px solid ${brandColors.sand}` }}>
+      <Box
+        sx={{
+          minHeight: "calc(100vh - 64px)",
+          py: 8,
+          px: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            borderRadius: 4,
+            maxWidth: 480,
+            textAlign: "center",
+            border: `1px solid ${brandColors.sand}`,
+          }}
+        >
           <Alert severity="warning" sx={{ mb: 3 }}>
             {error || t("pitham.event.notFound")}
           </Alert>
@@ -67,7 +105,9 @@ export default function EventDetailPage() {
   }
 
   const img = event.image_url
-    ? (event.image_url.startsWith("http") ? event.image_url : fileUrl(event.image_url))
+    ? event.image_url.startsWith("http")
+      ? event.image_url
+      : fileUrl(event.image_url)
     : null;
 
   return (
@@ -87,22 +127,34 @@ export default function EventDetailPage() {
       {/* Hero image */}
       {img && (
         <Box sx={{ maxWidth: 1100, mx: "auto", px: { xs: 2, md: 4 }, mt: { xs: 2, md: 3 } }}>
-          <Box sx={{
-            borderRadius: 4, overflow: "hidden",
-            aspectRatio: { xs: "16/10", md: "21/9" },
-            maxHeight: 460,
-            position: "relative",
-            border: `1px solid ${brandColors.sand}`,
-          }}>
+          <Box
+            sx={{
+              borderRadius: 4,
+              overflow: "hidden",
+              aspectRatio: { xs: "16/10", md: "21/9" },
+              maxHeight: 460,
+              position: "relative",
+              border: `1px solid ${brandColors.sand}`,
+            }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img} alt={event.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img
+              src={img}
+              alt={event.title}
+              decoding="async"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
             {event.is_featured && (
               <Chip
                 icon={<StarIcon />}
                 label={t("events.featuredBadge")}
                 sx={{
-                  position: "absolute", top: 16, left: 16,
-                  bgcolor: brandColors.gold, color: "#fff", fontWeight: 700,
+                  position: "absolute",
+                  top: 16,
+                  left: 16,
+                  bgcolor: brandColors.gold,
+                  color: "#fff",
+                  fontWeight: 700,
                 }}
               />
             )}
@@ -112,7 +164,10 @@ export default function EventDetailPage() {
 
       {/* Content */}
       <Box sx={{ maxWidth: 900, mx: "auto", py: { xs: 4, md: 6 }, px: { xs: 2, md: 4 } }}>
-        <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
+        <Paper
+          elevation={0}
+          sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+        >
           <Typography
             variant="h3"
             sx={{
@@ -143,21 +198,29 @@ export default function EventDetailPage() {
           </Stack>
 
           {event.description && (
-            <Typography sx={{
-              color: "text.secondary",
-              lineHeight: 1.9,
-              fontSize: "1.05rem",
-              whiteSpace: "pre-wrap",
-              mb: 4,
-            }}>
+            <Typography
+              sx={{
+                color: "text.secondary",
+                lineHeight: 1.9,
+                fontSize: "1.05rem",
+                whiteSpace: "pre-wrap",
+                mb: 4,
+              }}
+            >
               {event.description}
             </Typography>
           )}
 
-          <Box sx={{
-            mt: 4, pt: 3, borderTop: `1px solid ${brandColors.sand}`,
-            display: "flex", flexWrap: "wrap", gap: 2,
-          }}>
+          <Box
+            sx={{
+              mt: 4,
+              pt: 3,
+              borderTop: `1px solid ${brandColors.sand}`,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 2,
+            }}
+          >
             <Button
               variant="contained"
               size="large"

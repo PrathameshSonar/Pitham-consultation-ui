@@ -3,9 +3,28 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Box, Paper, Typography, Button, Chip, CircularProgress,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert, Stack, MenuItem,
-  Tabs, Tab, TablePagination, InputAdornment, Snackbar, IconButton, Checkbox, FormControlLabel,
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Alert,
+  Stack,
+  MenuItem,
+  Tabs,
+  Tab,
+  TablePagination,
+  InputAdornment,
+  Snackbar,
+  IconButton,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
@@ -22,11 +41,20 @@ import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import {
-  adminGetAppointments, adminVerifyPayment,
-  adminAssignSlot, adminReschedule, adminCreateZoomMeeting,
-  adminMarkCompleted, adminGetGallery, adminGetUsers,
-  adminGetUserDocuments, adminGenerateReceipt, adminGenerateInvoice, adminCancelAppointment,
-  getToken, fileUrl,
+  adminGetAppointments,
+  adminVerifyPayment,
+  adminAssignSlot,
+  adminReschedule,
+  adminCreateZoomMeeting,
+  adminMarkCompleted,
+  adminGetGallery,
+  adminGetUsers,
+  adminGetUserDocuments,
+  adminGenerateReceipt,
+  adminGenerateInvoice,
+  adminCancelAppointment,
+  getToken,
+  fileUrl,
 } from "@/services/api";
 import { statusChipColors } from "@/theme/sharedStyles";
 import { TIME_SLOTS, formatTime12h } from "@/lib/timeSlots";
@@ -46,8 +74,12 @@ interface SlotForm {
 }
 
 const EMPTY_FORM: SlotForm = {
-  payment_reference: "", scheduled_date: null, scheduled_time: "",
-  zoom_link: "", notes: "", reason: "",
+  payment_reference: "",
+  scheduled_date: null,
+  scheduled_time: "",
+  zoom_link: "",
+  notes: "",
+  reason: "",
 };
 
 export default function AdminAppointments() {
@@ -55,11 +87,11 @@ export default function AdminAppointments() {
   const { t } = useT();
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab]   = useState(0);     // 0=upcoming, 1=completed
+  const [tab, setTab] = useState(0); // 0=upcoming, 1=completed
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
   const [page, setPage] = useState(0);
-  const [rpp, setRpp]   = useState(10);
+  const [rpp, setRpp] = useState(10);
 
   const [selected, setSelected] = useState<any>(null);
   const [mode, setMode] = useState<ModalMode>(null);
@@ -89,12 +121,15 @@ export default function AdminAppointments() {
   const [filterDate, setFilterDate] = useState<Dayjs | null>(null);
 
   function set<K extends keyof SlotForm>(k: K, v: SlotForm[K]) {
-    setForm(p => ({ ...p, [k]: v }));
+    setForm((p) => ({ ...p, [k]: v }));
   }
 
   async function reload() {
     const token = getToken();
-    if (!token) { router.push("/login"); return; }
+    if (!token) {
+      router.push("/login");
+      return;
+    }
     const data = await adminGetAppointments(token);
     setAppointments(data);
   }
@@ -105,31 +140,44 @@ export default function AdminAppointments() {
     Promise.all([reload(), adminGetUsers(token)])
       .then(([, users]) => {
         const map: Record<number, any> = {};
-        users.forEach((u: any) => { map[u.id] = u; });
+        users.forEach((u: any) => {
+          map[u.id] = u;
+        });
         setUsersMap(map);
       })
       .finally(() => setLoading(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function openModal(appt: any, m: ModalMode) {
-    setSelected(appt); setMode(m); setForm(EMPTY_FORM); setError("");
+    setSelected(appt);
+    setMode(m);
+    setForm(EMPTY_FORM);
+    setError("");
   }
-  function closeModal() { setSelected(null); setMode(null); }
+  function closeModal() {
+    setSelected(null);
+    setMode(null);
+  }
 
   async function handleGenerateZoom() {
     if (!selected || !form.scheduled_date || !form.scheduled_time) {
-      setError("Please pick date & time first"); return;
+      setError("Please pick date & time first");
+      return;
     }
     const token = getToken();
     if (!token) return;
-    setError(""); setGeneratingZoom(true);
+    setError("");
+    setGeneratingZoom(true);
     try {
-      const meeting = await adminCreateZoomMeeting({
-        topic: `SPBSP, Ahilyanagar — ${selected.name}`,
-        scheduled_date: form.scheduled_date.format("YYYY-MM-DD"),
-        scheduled_time: form.scheduled_time,
-        duration: 45,
-      }, token);
+      const meeting = await adminCreateZoomMeeting(
+        {
+          topic: `SPBSP, Ahilyanagar — ${selected.name}`,
+          scheduled_date: form.scheduled_date.format("YYYY-MM-DD"),
+          scheduled_time: form.scheduled_time,
+          duration: 45,
+        },
+        token,
+      );
       set("zoom_link", meeting.join_url);
     } catch (err: any) {
       setError(err?.detail || "Failed to generate Zoom meeting");
@@ -141,13 +189,16 @@ export default function AdminAppointments() {
   async function handleSave() {
     const token = getToken();
     if (!token || !selected) return;
-    setError(""); setSaving(true);
+    setError("");
+    setSaving(true);
     try {
       if (mode === "verify") {
         await adminVerifyPayment(selected.id, form.payment_reference, token);
       } else if (mode === "slot" || mode === "reschedule") {
         if (!form.scheduled_date || !form.scheduled_time) {
-          setError("Please pick date & time"); setSaving(false); return;
+          setError("Please pick date & time");
+          setSaving(false);
+          return;
         }
         const base = {
           scheduled_date: form.scheduled_date.format("YYYY-MM-DD"),
@@ -181,12 +232,16 @@ export default function AdminAppointments() {
     const token = getToken();
     if (!token) return;
     // Load gallery docs for sadhna picker
-    adminGetGallery(token).then(setGalleryDocs).catch(() => {});
+    adminGetGallery(token)
+      .then(setGalleryDocs)
+      .catch(() => {});
     // Load docs assigned to this user for this consultation
     if (appt.status === "completed") {
-      adminGetUserDocuments(appt.user_id, token).then((docs: any[]) => {
-        setAssignedDocs(docs.filter((d: any) => d.batch_label === `Consultation #${appt.id}`));
-      }).catch(() => {});
+      adminGetUserDocuments(appt.user_id, token)
+        .then((docs: any[]) => {
+          setAssignedDocs(docs.filter((d: any) => d.batch_label === `Consultation #${appt.id}`));
+        })
+        .catch(() => {});
     }
   }
 
@@ -211,7 +266,7 @@ export default function AdminAppointments() {
           recording_link: recordingLink,
           gallery_doc_ids: selectedDocIds,
         },
-        token
+        token,
       );
       await reload();
       closeDetails();
@@ -227,22 +282,20 @@ export default function AdminAppointments() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const isCompleted = tab === 1;
-    let list = appointments.filter(a =>
-      isCompleted ? a.status === "completed" : a.status !== "completed"
+    let list = appointments.filter((a) =>
+      isCompleted ? a.status === "completed" : a.status !== "completed",
     );
     if (q) {
-      list = list.filter(a =>
-        a.name.toLowerCase().includes(q) ||
-        a.email.toLowerCase().includes(q) ||
-        (a.mobile || "").includes(q)
+      list = list.filter(
+        (a) =>
+          a.name.toLowerCase().includes(q) ||
+          a.email.toLowerCase().includes(q) ||
+          (a.mobile || "").includes(q),
       );
     }
     if (filterDate) {
       const fd = filterDate.format("YYYY-MM-DD");
-      list = list.filter(a =>
-        a.scheduled_date === fd ||
-        a.created_at?.startsWith(fd)
-      );
+      list = list.filter((a) => a.scheduled_date === fd || a.created_at?.startsWith(fd));
     }
     list = [...list].sort((a, b) => {
       if (sort === "name") return a.name.localeCompare(b.name);
@@ -255,7 +308,9 @@ export default function AdminAppointments() {
 
   const paged = filtered.slice(page * rpp, page * rpp + rpp);
 
-  useEffect(() => { setPage(0); }, [tab, search, sort, filterDate]);
+  useEffect(() => {
+    setPage(0);
+  }, [tab, search, sort, filterDate]);
 
   if (loading) {
     return (
@@ -265,16 +320,23 @@ export default function AdminAppointments() {
     );
   }
 
-  const modalTitle = mode === "verify" ? t("appts.modal.verify")
-    : mode === "slot" ? t("appts.modal.slot")
-    : mode === "reschedule" ? t("appts.modal.reschedule") : "";
+  const modalTitle =
+    mode === "verify"
+      ? t("appts.modal.verify")
+      : mode === "slot"
+        ? t("appts.modal.slot")
+        : mode === "reschedule"
+          ? t("appts.modal.reschedule")
+          : "";
 
   const showSlotFields = mode === "slot" || mode === "reschedule";
 
   return (
     <Box sx={s.wrapper}>
       <Box sx={s.container}>
-        <Typography variant="h4" sx={s.title}>{t("appts.title")}</Typography>
+        <Typography variant="h4" sx={s.title}>
+          {t("appts.title")}
+        </Typography>
 
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
           <Tab label={t("appts.tab.upcoming")} />
@@ -286,7 +348,7 @@ export default function AdminAppointments() {
             size="small"
             placeholder={t("common.search")}
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             slotProps={{
               input: {
                 startAdornment: (
@@ -301,7 +363,7 @@ export default function AdminAppointments() {
           <DatePicker
             label={t("appts.filterDate")}
             value={filterDate}
-            onChange={v => setFilterDate(v)}
+            onChange={(v) => setFilterDate(v)}
             format="DD/MM/YYYY"
             slotProps={{
               textField: { size: "small", sx: { minWidth: 170 } },
@@ -309,8 +371,11 @@ export default function AdminAppointments() {
             }}
           />
           <TextField
-            select size="small" label={t("table.sortBy")} value={sort}
-            onChange={e => setSort(e.target.value as SortKey)}
+            select
+            size="small"
+            label={t("table.sortBy")}
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
             sx={{ minWidth: 180 }}
           >
             <MenuItem value="newest">{t("sort.newest")}</MenuItem>
@@ -326,7 +391,7 @@ export default function AdminAppointments() {
         ) : (
           <>
             {paged.map((a: any) => {
-              const c  = statusChipColors[a.status]         || statusChipColors.pending;
+              const c = statusChipColors[a.status] || statusChipColors.pending;
               const pc = statusChipColors[a.payment_status] || statusChipColors.pending;
               return (
                 <Paper key={a.id} elevation={0} sx={s.apptCard}>
@@ -346,14 +411,21 @@ export default function AdminAppointments() {
                       </Typography>
                       <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, display: "block" }}>
                         {t("users.dob")}: {a.dob} · {t("users.tob")}: {formatTime12h(a.tob)} · {a.birth_place}
-                        {" · "}{t("appts.bookedOn")}: {new Date(a.created_at).toLocaleDateString()}
+                        {" · "}
+                        {t("appts.bookedOn")}: {new Date(a.created_at).toLocaleDateString()}
                       </Typography>
                     </Box>
                     <Box sx={s.chipCol}>
-                      <Chip label={a.status.replace("_", " ")} size="small"
-                        sx={{ bgcolor: c.bg, color: c.fg, fontWeight: 600, textTransform: "capitalize" }} />
-                      <Chip label={`${t("appts.payment")}: ${a.payment_status}`} size="small"
-                        sx={{ bgcolor: pc.bg, color: pc.fg, fontWeight: 500 }} />
+                      <Chip
+                        label={a.status.replace("_", " ")}
+                        size="small"
+                        sx={{ bgcolor: c.bg, color: c.fg, fontWeight: 600, textTransform: "capitalize" }}
+                      />
+                      <Chip
+                        label={`${t("appts.payment")}: ${a.payment_status}`}
+                        size="small"
+                        sx={{ bgcolor: pc.bg, color: pc.fg, fontWeight: 500 }}
+                      />
                     </Box>
                   </Box>
 
@@ -365,16 +437,28 @@ export default function AdminAppointments() {
                         </Typography>
                       )}
                       {a.status !== "completed" && a.zoom_link && (
-                        <Button component="a" href={a.zoom_link} target="_blank" rel="noreferrer"
-                          size="small" startIcon={<VideoCallIcon />}
-                          sx={{ p: 0, "&:hover": { bgcolor: "transparent" } }}>
+                        <Button
+                          component="a"
+                          href={a.zoom_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          size="small"
+                          startIcon={<VideoCallIcon />}
+                          sx={{ p: 0, "&:hover": { bgcolor: "transparent" } }}
+                        >
                           {t("appts.zoomLink")}
                         </Button>
                       )}
                       {a.status === "completed" && a.recording_link && (
-                        <Button component="a" href={a.recording_link} target="_blank" rel="noreferrer"
-                          size="small" startIcon={<PlayCircleIcon />}
-                          sx={{ p: 0, "&:hover": { bgcolor: "transparent" } }}>
+                        <Button
+                          component="a"
+                          href={a.recording_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          size="small"
+                          startIcon={<PlayCircleIcon />}
+                          sx={{ p: 0, "&:hover": { bgcolor: "transparent" } }}
+                        >
                           {t("appts.watchRecording")}
                         </Button>
                       )}
@@ -382,20 +466,33 @@ export default function AdminAppointments() {
                   )}
 
                   <Box sx={s.actions}>
-                    <Button size="small" variant="outlined" color="primary"
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="primary"
                       startIcon={<VisibilityIcon />}
-                      onClick={() => handleOpenDetails(a)}>
+                      onClick={() => handleOpenDetails(a)}
+                    >
                       {t("appts.viewDetails")}
                     </Button>
-                    {a.payment_status === "paid" && !["completed", "scheduled", "rescheduled", "cancelled"].includes(a.status) && (
-                      <Button size="small" variant="outlined" color="info"
-                        onClick={() => openModal(a, "slot")}>
-                        {t("appts.assignSlot")}
-                      </Button>
-                    )}
+                    {a.payment_status === "paid" &&
+                      !["completed", "scheduled", "rescheduled", "cancelled"].includes(a.status) && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="info"
+                          onClick={() => openModal(a, "slot")}
+                        >
+                          {t("appts.assignSlot")}
+                        </Button>
+                      )}
                     {(a.status === "scheduled" || a.status === "rescheduled") && (
-                      <Button size="small" variant="outlined" color="warning"
-                        onClick={() => openModal(a, "reschedule")}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => openModal(a, "reschedule")}
+                      >
                         {t("appts.reschedule")}
                       </Button>
                     )}
@@ -409,7 +506,10 @@ export default function AdminAppointments() {
               page={page}
               onPageChange={(_, p) => setPage(p)}
               rowsPerPage={rpp}
-              onRowsPerPageChange={e => { setRpp(parseInt(e.target.value, 10)); setPage(0); }}
+              onRowsPerPageChange={(e) => {
+                setRpp(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
               rowsPerPageOptions={[5, 10, 25, 50]}
               labelRowsPerPage={t("table.rowsPerPage")}
             />
@@ -420,13 +520,20 @@ export default function AdminAppointments() {
       <Dialog open={!!mode} onClose={closeModal} fullWidth maxWidth="sm">
         <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>{modalTitle}</DialogTitle>
         <DialogContent>
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             {mode === "verify" && (
-              <TextField label={t("appts.paymentRef")} fullWidth
+              <TextField
+                label={t("appts.paymentRef")}
+                fullWidth
                 placeholder="UTR / Transaction ID"
                 value={form.payment_reference}
-                onChange={e => set("payment_reference", e.target.value)} />
+                onChange={(e) => set("payment_reference", e.target.value)}
+              />
             )}
 
             {showSlotFields && (
@@ -434,29 +541,33 @@ export default function AdminAppointments() {
                 <DatePicker
                   label={t("common.date")}
                   value={form.scheduled_date}
-                  onChange={v => set("scheduled_date", v)}
+                  onChange={(v) => set("scheduled_date", v)}
                   format="DD/MM/YYYY"
                   minDate={dayjs()}
                   slotProps={{ textField: { fullWidth: true } }}
                 />
                 <TextField
-                  select label={t("appts.timeSlot")}
+                  select
+                  label={t("appts.timeSlot")}
                   value={form.scheduled_time}
-                  onChange={e => set("scheduled_time", e.target.value)}
+                  onChange={(e) => set("scheduled_time", e.target.value)}
                   fullWidth
                 >
                   <MenuItem value="">{t("appts.selectSlot")}</MenuItem>
-                  {TIME_SLOTS.map(slot => (
-                    <MenuItem key={slot.value} value={slot.value}>{slot.label}</MenuItem>
+                  {TIME_SLOTS.map((slot) => (
+                    <MenuItem key={slot.value} value={slot.value}>
+                      {slot.label}
+                    </MenuItem>
                   ))}
                 </TextField>
 
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                   <TextField
                     label={t("appts.zoomLink")}
-                    fullWidth placeholder="https://zoom.us/j/..."
+                    fullWidth
+                    placeholder="https://zoom.us/j/..."
                     value={form.zoom_link}
-                    onChange={e => set("zoom_link", e.target.value)}
+                    onChange={(e) => set("zoom_link", e.target.value)}
                     sx={{ flex: 1, minWidth: 200 }}
                   />
                   <Button
@@ -471,12 +582,22 @@ export default function AdminAppointments() {
                 </Box>
 
                 {mode === "slot" && (
-                  <TextField label={t("appts.notes")} fullWidth multiline rows={2}
-                    value={form.notes} onChange={e => set("notes", e.target.value)} />
+                  <TextField
+                    label={t("appts.notes")}
+                    fullWidth
+                    multiline
+                    rows={2}
+                    value={form.notes}
+                    onChange={(e) => set("notes", e.target.value)}
+                  />
                 )}
                 {mode === "reschedule" && (
-                  <TextField label={t("appts.reason")} fullWidth
-                    value={form.reason} onChange={e => set("reason", e.target.value)} />
+                  <TextField
+                    label={t("appts.reason")}
+                    fullWidth
+                    value={form.reason}
+                    onChange={(e) => set("reason", e.target.value)}
+                  />
                 )}
               </>
             )}
@@ -491,7 +612,15 @@ export default function AdminAppointments() {
       </Dialog>
 
       <Dialog open={!!detailAppt} onClose={closeDetails} fullWidth maxWidth="md">
-        <DialogTitle sx={{ fontWeight: 700, color: "primary.dark", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <DialogTitle
+          sx={{
+            fontWeight: 700,
+            color: "primary.dark",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           {t("appts.details")}
           <IconButton onClick={closeDetails} size="small">
             <CloseIcon />
@@ -502,27 +631,39 @@ export default function AdminAppointments() {
             <Stack spacing={2.5}>
               <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">{t("common.name")}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t("common.name")}
+                  </Typography>
                   <Typography sx={{ fontWeight: 600 }}>{detailAppt.name}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">{t("common.email")}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t("common.email")}
+                  </Typography>
                   <Typography sx={{ wordBreak: "break-word" }}>{detailAppt.email}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">{t("common.mobile")}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t("common.mobile")}
+                  </Typography>
                   <Typography>{detailAppt.mobile}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">{t("users.dob")}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t("users.dob")}
+                  </Typography>
                   <Typography>{detailAppt.dob}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">{t("users.tob")}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t("users.tob")}
+                  </Typography>
                   <Typography>{formatTime12h(detailAppt.tob)}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">{t("users.birthPlace")}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t("users.birthPlace")}
+                  </Typography>
                   <Typography>{detailAppt.birth_place}</Typography>
                 </Box>
               </Box>
@@ -530,12 +671,15 @@ export default function AdminAppointments() {
               {/* Show account owner if different from appointment name */}
               {usersMap[detailAppt.user_id] && usersMap[detailAppt.user_id].name !== detailAppt.name && (
                 <Alert severity="info" sx={{ py: 0.5 }}>
-                  {t("appts.bookedBy")}: <strong>{usersMap[detailAppt.user_id].name}</strong> ({usersMap[detailAppt.user_id].email})
+                  {t("appts.bookedBy")}: <strong>{usersMap[detailAppt.user_id].name}</strong> (
+                  {usersMap[detailAppt.user_id].email})
                 </Alert>
               )}
 
               <Box>
-                <Typography variant="caption" color="text.secondary">{t("appts.problem")}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {t("appts.problem")}
+                </Typography>
                 <Typography sx={{ whiteSpace: "pre-wrap" }}>{detailAppt.problem}</Typography>
               </Box>
 
@@ -548,14 +692,22 @@ export default function AdminAppointments() {
                     component="img"
                     src={fileUrl(detailAppt.selfie_path)}
                     alt="selfie"
-                    sx={{ maxWidth: 260, maxHeight: 260, borderRadius: 2, border: "1px solid", borderColor: "divider" }}
+                    sx={{
+                      maxWidth: 260,
+                      maxHeight: 260,
+                      borderRadius: 2,
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
                   />
                 </Box>
               )}
 
               {detailAppt.scheduled_date && (
                 <Box>
-                  <Typography variant="caption" color="text.secondary">{t("history.dateTime")}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t("history.dateTime")}
+                  </Typography>
                   <Typography sx={{ fontWeight: 600 }}>
                     {detailAppt.scheduled_date} · {formatTime12h(detailAppt.scheduled_time)}
                   </Typography>
@@ -675,7 +827,9 @@ export default function AdminAppointments() {
 
                 {detailAppt.status === "completed" && detailAppt.analysis_notes && (
                   <Box>
-                    <Typography variant="caption" color="text.secondary">{t("appts.analysisNotes")}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {t("appts.analysisNotes")}
+                    </Typography>
                     <Typography sx={{ whiteSpace: "pre-wrap" }}>{detailAppt.analysis_notes}</Typography>
                   </Box>
                 )}
@@ -710,7 +864,9 @@ export default function AdminAppointments() {
                     slotProps={{
                       input: {
                         startAdornment: (
-                          <InputAdornment position="start"><LinkIcon fontSize="small" /></InputAdornment>
+                          <InputAdornment position="start">
+                            <LinkIcon fontSize="small" />
+                          </InputAdornment>
                         ),
                       },
                     }}
@@ -731,7 +887,16 @@ export default function AdminAppointments() {
                       {t("docs.empty.gallery")}
                     </Typography>
                   ) : (
-                    <Box sx={{ maxHeight: 240, overflow: "auto", border: "1px solid", borderColor: "divider", borderRadius: 2, p: 1 }}>
+                    <Box
+                      sx={{
+                        maxHeight: 240,
+                        overflow: "auto",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        borderRadius: 2,
+                        p: 1,
+                      }}
+                    >
                       {galleryDocs.map((doc: any) => (
                         <FormControlLabel
                           key={doc.id}
@@ -742,18 +907,22 @@ export default function AdminAppointments() {
                               checked={selectedDocIds.includes(doc.id)}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setSelectedDocIds(prev => [...prev, doc.id]);
+                                  setSelectedDocIds((prev) => [...prev, doc.id]);
                                 } else {
-                                  setSelectedDocIds(prev => prev.filter(id => id !== doc.id));
+                                  setSelectedDocIds((prev) => prev.filter((id) => id !== doc.id));
                                 }
                               }}
                             />
                           }
                           label={
                             <Box sx={{ minWidth: 0 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>{doc.title}</Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {doc.title}
+                              </Typography>
                               {doc.description && (
-                                <Typography variant="caption" color="text.secondary">{doc.description}</Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {doc.description}
+                                </Typography>
                               )}
                             </Box>
                           }

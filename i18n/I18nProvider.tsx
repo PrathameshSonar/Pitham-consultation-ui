@@ -40,14 +40,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       }
       return str;
     },
-    [lang]
+    [lang],
   );
 
-  return (
-    <I18nContext.Provider value={{ lang, setLang, t }}>
-      {children}
-    </I18nContext.Provider>
-  );
+  return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>;
 }
 
 export function useT() {

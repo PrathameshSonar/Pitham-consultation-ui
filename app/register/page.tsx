@@ -5,8 +5,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
 import {
-  Box, Paper, TextField, Button, Typography, Alert, MenuItem,
-  FormControlLabel, Checkbox, Divider,
+  Box,
+  Paper,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  MenuItem,
+  FormControlLabel,
+  Checkbox,
+  Divider,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
@@ -24,8 +32,14 @@ export default function Register() {
   const router = useRouter();
   const { t } = useT();
   const [form, setForm] = useState({
-    name: "", email: "", mobile: "",
-    birth_place: "", city: "", state: "", country: "India", password: "",
+    name: "",
+    email: "",
+    mobile: "",
+    birth_place: "",
+    city: "",
+    state: "",
+    country: "India",
+    password: "",
   });
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [tob, setTob] = useState<Dayjs | null>(null);
@@ -52,7 +66,8 @@ export default function Register() {
   }
 
   async function handleGoogleResponse(response: any) {
-    setError(""); setLoading(true);
+    setError("");
+    setLoading(true);
     try {
       const res = await googleLogin(response.credential);
       saveToken(res.token, res.role, res.name);
@@ -69,17 +84,25 @@ export default function Register() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function set(field: string, value: string) {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   }
 
   async function handleSubmit(e: React.BaseSyntheticEvent) {
     e.preventDefault();
-    if (!dob || !tob) { setError(t("auth.dobError")); return; }
-    if (!termsAccepted) { setError(t("auth.terms.error")); return; }
-    if (captchaRef.current && !captchaRef.current.getToken()) {
-      setError(t("auth.captchaRequired")); return;
+    if (!dob || !tob) {
+      setError(t("auth.dobError"));
+      return;
     }
-    setError(""); setLoading(true);
+    if (!termsAccepted) {
+      setError(t("auth.terms.error"));
+      return;
+    }
+    if (captchaRef.current && !captchaRef.current.getToken()) {
+      setError(t("auth.captchaRequired"));
+      return;
+    }
+    setError("");
+    setLoading(true);
     try {
       const payload = {
         ...form,
@@ -100,10 +123,16 @@ export default function Register() {
   return (
     <Box sx={s.wrapper}>
       <Paper elevation={0} sx={s.card}>
-        <Typography variant="h4" sx={s.title}>{t("auth.register.title")}</Typography>
+        <Typography variant="h4" sx={s.title}>
+          {t("auth.register.title")}
+        </Typography>
         <Typography sx={s.subtitle}>{t("auth.register.subtitle")}</Typography>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         {/* Google Sign-Up button */}
         {GOOGLE_CLIENT_ID && (
@@ -115,21 +144,44 @@ export default function Register() {
             />
             <Box ref={googleBtnRef} sx={{ mb: 2, display: "flex", justifyContent: "center" }} />
             <Divider sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">{t("auth.orContinueWith")}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {t("auth.orContinueWith")}
+              </Typography>
             </Divider>
           </>
         )}
 
         <Box component="form" onSubmit={handleSubmit}>
           <Box sx={s.gridTwo}>
-            <TextField label={t("auth.register.fullName")} required fullWidth value={form.name}
-              onChange={e => set("name", e.target.value)} />
-            <TextField label={`${t("common.email")} (${t("common.optional")})`} type="email" fullWidth value={form.email}
-              onChange={e => set("email", e.target.value)} />
-            <TextField label={t("common.mobile")} required fullWidth value={form.mobile}
-              onChange={e => set("mobile", e.target.value)} placeholder="+91 XXXXXXXXXX" />
-            <TextField label={t("auth.register.birthPlace")} required fullWidth value={form.birth_place}
-              onChange={e => set("birth_place", e.target.value)} />
+            <TextField
+              label={t("auth.register.fullName")}
+              required
+              fullWidth
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
+            <TextField
+              label={`${t("common.email")} (${t("common.optional")})`}
+              type="email"
+              fullWidth
+              value={form.email}
+              onChange={(e) => set("email", e.target.value)}
+            />
+            <TextField
+              label={t("common.mobile")}
+              required
+              fullWidth
+              value={form.mobile}
+              onChange={(e) => set("mobile", e.target.value)}
+              placeholder="+91 XXXXXXXXXX"
+            />
+            <TextField
+              label={t("auth.register.birthPlace")}
+              required
+              fullWidth
+              value={form.birth_place}
+              onChange={(e) => set("birth_place", e.target.value)}
+            />
             <DatePicker
               label={t("auth.register.dob")}
               value={dob}
@@ -148,22 +200,51 @@ export default function Register() {
               timeSteps={{ minutes: 1, seconds: 1 }}
               slotProps={{ textField: { required: true, fullWidth: true } }}
             />
-            <TextField label={t("auth.register.city")} required fullWidth value={form.city}
-              onChange={e => set("city", e.target.value)} />
-            <TextField label={t("auth.register.state")} required fullWidth value={form.state}
-              onChange={e => set("state", e.target.value)} />
-            <TextField select label={t("auth.register.country")} required fullWidth value={form.country}
-              onChange={e => set("country", e.target.value)}>
-              {COUNTRIES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+            <TextField
+              label={t("auth.register.city")}
+              required
+              fullWidth
+              value={form.city}
+              onChange={(e) => set("city", e.target.value)}
+            />
+            <TextField
+              label={t("auth.register.state")}
+              required
+              fullWidth
+              value={form.state}
+              onChange={(e) => set("state", e.target.value)}
+            />
+            <TextField
+              select
+              label={t("auth.register.country")}
+              required
+              fullWidth
+              value={form.country}
+              onChange={(e) => set("country", e.target.value)}
+            >
+              {COUNTRIES.map((c) => (
+                <MenuItem key={c} value={c}>
+                  {c}
+                </MenuItem>
+              ))}
             </TextField>
-            <TextField label={t("common.password")} type="password" required fullWidth value={form.password}
-              onChange={e => set("password", e.target.value)} />
+            <TextField
+              label={t("common.password")}
+              type="password"
+              required
+              fullWidth
+              value={form.password}
+              onChange={(e) => set("password", e.target.value)}
+            />
           </Box>
 
           <FormControlLabel
             control={
-              <Checkbox checked={termsAccepted}
-                onChange={e => setTermsAccepted(e.target.checked)} color="primary" />
+              <Checkbox
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                color="primary"
+              />
             }
             label={
               <Typography variant="body2">
@@ -176,21 +257,16 @@ export default function Register() {
 
           <Captcha ref={captchaRef} />
 
-          <Button
-            type="submit"
-            variant="contained"
-            size="large"
-            fullWidth
-            disabled={loading}
-            sx={{ mt: 2 }}
-          >
+          <Button type="submit" variant="contained" size="large" fullWidth disabled={loading} sx={{ mt: 2 }}>
             {loading ? t("auth.register.creating") : t("auth.register.cta")}
           </Button>
         </Box>
 
         <Typography sx={s.footerRow}>
           {t("auth.register.have")}{" "}
-          <Box component={Link} href="/login" sx={s.link}>{t("common.login")}</Box>
+          <Box component={Link} href="/login" sx={s.link}>
+            {t("common.login")}
+          </Box>
         </Typography>
       </Paper>
     </Box>

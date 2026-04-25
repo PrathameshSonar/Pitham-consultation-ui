@@ -3,10 +3,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Box, Paper, Typography, TextField, Button, Alert, MenuItem, Stack,
-  CircularProgress, Chip, InputAdornment, IconButton, TablePagination,
-  Dialog, DialogTitle, DialogContent, DialogActions, Snackbar,
-  Accordion, AccordionSummary, AccordionDetails,
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  MenuItem,
+  Stack,
+  CircularProgress,
+  Chip,
+  InputAdornment,
+  IconButton,
+  TablePagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -16,8 +33,12 @@ import LinkIcon from "@mui/icons-material/Link";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PeopleIcon from "@mui/icons-material/People";
 import {
-  adminGetRecordings, adminBulkAssignRecording, adminDeleteRecording,
-  adminGetUsers, adminGetUserLists, getToken,
+  adminGetRecordings,
+  adminBulkAssignRecording,
+  adminDeleteRecording,
+  adminGetUsers,
+  adminGetUserLists,
+  getToken,
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import * as s from "./styles";
@@ -64,9 +85,16 @@ export default function AdminRecordings() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token) { router.push("/login"); return; }
+    if (!token) {
+      router.push("/login");
+      return;
+    }
     Promise.all([adminGetRecordings(token), adminGetUsers(token), adminGetUserLists(token)])
-      .then(([r, u, l]) => { setRecordings(r); setUsers(u); setLists(l); })
+      .then(([r, u, l]) => {
+        setRecordings(r);
+        setUsers(u);
+        setLists(l);
+      })
       .catch(() => router.push("/login"))
       .finally(() => setLoading(false));
   }, [router]);
@@ -95,10 +123,7 @@ export default function AdminRecordings() {
     const q = search.trim().toLowerCase();
     let list = grouped;
     if (q) {
-      list = list.filter(g =>
-        g.title.toLowerCase().includes(q) ||
-        g.url.toLowerCase().includes(q)
-      );
+      list = list.filter((g) => g.title.toLowerCase().includes(q) || g.url.toLowerCase().includes(q));
     }
     list = [...list].sort((a, b) => {
       if (sort === "title") return a.title.localeCompare(b.title);
@@ -112,32 +137,49 @@ export default function AdminRecordings() {
   const paged = filtered.slice(page * rpp, page * rpp + rpp);
 
   function toggleList(id: number) {
-    setSelectedListIds(prev => {
+    setSelectedListIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
 
   function openAssign() {
-    setAssignTitle(""); setAssignUrl(""); setSelectedListIds(new Set());
-    setAssignError(""); setAssignOpen(true);
+    setAssignTitle("");
+    setAssignUrl("");
+    setSelectedListIds(new Set());
+    setAssignError("");
+    setAssignOpen(true);
   }
 
   async function handleAssign() {
-    if (!assignTitle.trim()) { setAssignError(t("common.required")); return; }
-    if (!assignUrl.trim()) { setAssignError(t("common.required")); return; }
-    if (selectedListIds.size === 0) { setAssignError(t("rec.selectList")); return; }
+    if (!assignTitle.trim()) {
+      setAssignError(t("common.required"));
+      return;
+    }
+    if (!assignUrl.trim()) {
+      setAssignError(t("common.required"));
+      return;
+    }
+    if (selectedListIds.size === 0) {
+      setAssignError(t("rec.selectList"));
+      return;
+    }
 
     const token = getToken();
     if (!token) return;
-    setAssignError(""); setAssignSaving(true);
+    setAssignError("");
+    setAssignSaving(true);
     try {
-      const result = await adminBulkAssignRecording({
-        title: assignTitle.trim(),
-        recording_url: assignUrl.trim(),
-        list_ids: Array.from(selectedListIds),
-      }, token);
+      const result = await adminBulkAssignRecording(
+        {
+          title: assignTitle.trim(),
+          recording_url: assignUrl.trim(),
+          list_ids: Array.from(selectedListIds),
+        },
+        token,
+      );
       setAssignOpen(false);
       await reload();
       setSnack({
@@ -188,8 +230,19 @@ export default function AdminRecordings() {
   return (
     <Box sx={s.wrapper}>
       <Box sx={s.container}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, flexWrap: "wrap", gap: 2 }}>
-          <Typography variant="h4" sx={s.title}>{t("rec.admin.title")}</Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Typography variant="h4" sx={s.title}>
+            {t("rec.admin.title")}
+          </Typography>
           <Button variant="contained" startIcon={<GroupIcon />} onClick={openAssign}>
             {t("rec.assignToList")}
           </Button>
@@ -200,17 +253,27 @@ export default function AdminRecordings() {
             size="small"
             placeholder={t("common.search")}
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             slotProps={{
               input: {
-                startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
               },
             }}
             sx={{ flex: 1, minWidth: 200 }}
           />
           <TextField
-            select size="small" label={t("table.sortBy")} value={sort}
-            onChange={e => { setSort(e.target.value as SortKey); setPage(0); }}
+            select
+            size="small"
+            label={t("table.sortBy")}
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value as SortKey);
+              setPage(0);
+            }}
             sx={{ minWidth: 170 }}
           >
             <MenuItem value="newest">{t("sort.newest")}</MenuItem>
@@ -230,13 +293,17 @@ export default function AdminRecordings() {
                 key={group.key}
                 elevation={0}
                 sx={{
-                  mb: 1.5, borderRadius: "16px !important",
-                  border: "1px solid", borderColor: "divider",
+                  mb: 1.5,
+                  borderRadius: "16px !important",
+                  border: "1px solid",
+                  borderColor: "divider",
                   "&:before": { display: "none" },
                 }}
               >
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%", flexWrap: "wrap" }}>
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%", flexWrap: "wrap" }}
+                  >
                     <PlayCircleIcon color="primary" />
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography sx={{ fontWeight: 700 }}>{group.title}</Typography>
@@ -274,7 +341,10 @@ export default function AdminRecordings() {
                       color="error"
                       variant="outlined"
                       startIcon={<DeleteIcon />}
-                      onClick={() => { if (confirm(`${t("common.delete")}? (${group.records.length} ${t("rec.users")})`)) handleDeleteGroup(group); }}
+                      onClick={() => {
+                        if (confirm(`${t("common.delete")}? (${group.records.length} ${t("rec.users")})`))
+                          handleDeleteGroup(group);
+                      }}
                     >
                       {t("rec.deleteAll")}
                     </Button>
@@ -284,7 +354,7 @@ export default function AdminRecordings() {
                   </Typography>
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                     {group.records.map((r: any) => {
-                      const u = users.find(x => x.id === r.user_id);
+                      const u = users.find((x) => x.id === r.user_id);
                       return (
                         <Chip
                           key={r.id}
@@ -305,7 +375,10 @@ export default function AdminRecordings() {
               page={page}
               onPageChange={(_, p) => setPage(p)}
               rowsPerPage={rpp}
-              onRowsPerPageChange={e => { setRpp(parseInt(e.target.value, 10)); setPage(0); }}
+              onRowsPerPageChange={(e) => {
+                setRpp(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
               rowsPerPageOptions={[5, 10, 25, 50]}
               labelRowsPerPage={t("table.rowsPerPage")}
             />
@@ -315,30 +388,38 @@ export default function AdminRecordings() {
 
       {/* Bulk assign dialog */}
       <Dialog open={assignOpen} onClose={() => setAssignOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>
-          {t("rec.assignToList")}
-        </DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>{t("rec.assignToList")}</DialogTitle>
         <DialogContent>
-          {assignError && <Alert severity="error" sx={{ mb: 2 }}>{assignError}</Alert>}
+          {assignError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {assignError}
+            </Alert>
+          )}
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <TextField
               label={t("rec.recordingTitle")}
-              required fullWidth
+              required
+              fullWidth
               value={assignTitle}
-              onChange={e => setAssignTitle(e.target.value)}
+              onChange={(e) => setAssignTitle(e.target.value)}
               placeholder="e.g. Sadhna Video – April 2026"
               slotProps={{ htmlInput: { "aria-label": t("rec.recordingTitle") } }}
             />
             <TextField
               label={t("rec.recordingUrl")}
-              required fullWidth
+              required
+              fullWidth
               value={assignUrl}
-              onChange={e => setAssignUrl(e.target.value)}
+              onChange={(e) => setAssignUrl(e.target.value)}
               placeholder="https://zoom.us/rec/... or YouTube link"
               slotProps={{
                 htmlInput: { "aria-label": t("rec.recordingUrl") },
                 input: {
-                  startAdornment: <InputAdornment position="start"><LinkIcon fontSize="small" /></InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LinkIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
                 },
               }}
             />
@@ -347,7 +428,9 @@ export default function AdminRecordings() {
                 {t("rec.selectLists")}
               </Typography>
               {lists.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">{t("lists.empty")}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t("lists.empty")}
+                </Typography>
               ) : (
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                   {lists.map((l: any) => {

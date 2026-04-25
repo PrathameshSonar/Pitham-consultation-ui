@@ -3,12 +3,36 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Box, Paper, Typography, TextField, Button, Alert, MenuItem,
-  Stack, CircularProgress, Tabs, Tab, IconButton, Radio, RadioGroup,
-  FormControlLabel, Dialog, DialogTitle, DialogContent, DialogActions,
-  Chip, List, ListItemButton, ListItemText, Checkbox, InputAdornment,
-  Accordion, AccordionSummary, AccordionDetails,
-  TablePagination, Snackbar,
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  MenuItem,
+  Stack,
+  CircularProgress,
+  Tabs,
+  Tab,
+  IconButton,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip,
+  List,
+  ListItemButton,
+  ListItemText,
+  Checkbox,
+  InputAdornment,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  TablePagination,
+  Snackbar,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -20,10 +44,17 @@ import SearchIcon from "@mui/icons-material/Search";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import GroupIcon from "@mui/icons-material/Group";
 import {
-  adminGetDocuments, adminGetGallery, adminUploadGalleryDocument,
-  adminDeleteGalleryDocument, adminDeleteAssignedDocument,
-  adminBulkAssignFromGallery, adminBulkUploadDocument,
-  adminGetUsers, adminGetUserLists, getToken, fileUrl,
+  adminGetDocuments,
+  adminGetGallery,
+  adminUploadGalleryDocument,
+  adminDeleteGalleryDocument,
+  adminDeleteAssignedDocument,
+  adminBulkAssignFromGallery,
+  adminBulkUploadDocument,
+  adminGetUsers,
+  adminGetUserLists,
+  getToken,
+  fileUrl,
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import * as s from "./styles";
@@ -31,7 +62,7 @@ import * as s from "./styles";
 type SortKey = "newest" | "oldest" | "title";
 
 interface AssignedGroup {
-  key: string;                 // batch_id or `single-${id}`
+  key: string; // batch_id or `single-${id}`
   isBatch: boolean;
   label: string;
   created_at: string;
@@ -42,53 +73,56 @@ export default function AdminDocuments() {
   const router = useRouter();
   const { t } = useT();
 
-  const [tab, setTab]           = useState(0);
-  const [gallery, setGallery]   = useState<any[]>([]);
+  const [tab, setTab] = useState(0);
+  const [gallery, setGallery] = useState<any[]>([]);
   const [assigned, setAssigned] = useState<any[]>([]);
-  const [users, setUsers]       = useState<any[]>([]);
-  const [lists, setLists]       = useState<any[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState("");
-  const [snack, setSnack]       = useState<{ msg: string; severity: "success" | "error" } | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [lists, setLists] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [snack, setSnack] = useState<{ msg: string; severity: "success" | "error" } | null>(null);
 
   // Gallery upload form
   const [galleryTitle, setGalleryTitle] = useState("");
-  const [galleryDesc, setGalleryDesc]   = useState("");
-  const [galleryFile, setGalleryFile]   = useState<File | null>(null);
+  const [galleryDesc, setGalleryDesc] = useState("");
+  const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [gallerySearch, setGallerySearch] = useState("");
 
   // Assigned view: sort + pagination
-  const [sort, setSort]       = useState<SortKey>("newest");
-  const [page, setPage]       = useState(0);
+  const [sort, setSort] = useState<SortKey>("newest");
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRpp] = useState(10);
 
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
-  const [deleting, setDeleting]         = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Quick assign (event mode)
-  const [quickDoc, setQuickDoc]               = useState<any>(null);
+  const [quickDoc, setQuickDoc] = useState<any>(null);
   const [quickSelectedLists, setQuickSelectedLists] = useState<Set<number>>(new Set());
-  const [quickSaving, setQuickSaving]         = useState(false);
-  const [quickError, setQuickError]           = useState("");
+  const [quickSaving, setQuickSaving] = useState(false);
+  const [quickError, setQuickError] = useState("");
 
   // Assign dialog
-  const [assignOpen, setAssignOpen]         = useState(false);
-  const [assignSource, setAssignSource]     = useState<"gallery" | "upload">("gallery");
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignSource, setAssignSource] = useState<"gallery" | "upload">("gallery");
   const [assignGalleryId, setAssignGalleryId] = useState("");
-  const [assignTitle, setAssignTitle]       = useState("");
-  const [assignDesc, setAssignDesc]         = useState("");
-  const [assignFile, setAssignFile]         = useState<File | null>(null);
+  const [assignTitle, setAssignTitle] = useState("");
+  const [assignDesc, setAssignDesc] = useState("");
+  const [assignFile, setAssignFile] = useState<File | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(new Set());
-  const [userSearch, setUserSearch]         = useState("");
-  const [appliedLists, setAppliedLists]     = useState<any[]>([]);
-  const [assignSaving, setAssignSaving]     = useState(false);
-  const [assignError, setAssignError]       = useState("");
+  const [userSearch, setUserSearch] = useState("");
+  const [appliedLists, setAppliedLists] = useState<any[]>([]);
+  const [assignSaving, setAssignSaving] = useState(false);
+  const [assignError, setAssignError] = useState("");
 
   async function fetchAll() {
     const token = getToken();
-    if (!token) { router.push("/login"); return; }
+    if (!token) {
+      router.push("/login");
+      return;
+    }
     setLoading(true);
     try {
       const [g, d, u, l] = await Promise.all([
@@ -97,7 +131,10 @@ export default function AdminDocuments() {
         adminGetUsers(token),
         adminGetUserLists(token),
       ]);
-      setGallery(g); setAssigned(d); setUsers(u); setLists(l);
+      setGallery(g);
+      setAssigned(d);
+      setUsers(u);
+      setLists(l);
     } catch {
       router.push("/login");
     } finally {
@@ -105,23 +142,31 @@ export default function AdminDocuments() {
     }
   }
 
-  useEffect(() => { fetchAll(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchAll();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Gallery upload ───────────────────────────────────────────────────────
   async function handleGalleryUpload(e: React.BaseSyntheticEvent) {
     e.preventDefault();
-    if (!galleryFile) { setError("Select a file"); return; }
+    if (!galleryFile) {
+      setError("Select a file");
+      return;
+    }
     const token = getToken();
     if (!token) return;
-    setError(""); setGalleryUploading(true);
+    setError("");
+    setGalleryUploading(true);
     try {
       const fd = new FormData();
       fd.append("title", galleryTitle);
       fd.append("description", galleryDesc);
       fd.append("file", galleryFile);
       const newDoc = await adminUploadGalleryDocument(fd, token);
-      setGallery(prev => [newDoc, ...prev]);
-      setGalleryTitle(""); setGalleryDesc(""); setGalleryFile(null);
+      setGallery((prev) => [newDoc, ...prev]);
+      setGalleryTitle("");
+      setGalleryDesc("");
+      setGalleryFile(null);
       setSnack({ msg: "Gallery document uploaded.", severity: "success" });
     } catch (err: any) {
       setError(err?.detail || "Upload failed");
@@ -136,7 +181,7 @@ export default function AdminDocuments() {
     if (!token) return;
     try {
       await adminDeleteGalleryDocument(id, token);
-      setGallery(prev => prev.filter(g => g.id !== id));
+      setGallery((prev) => prev.filter((g) => g.id !== id));
       setSnack({ msg: "Gallery document deleted.", severity: "success" });
     } catch (err: any) {
       setError(err?.detail || "Delete failed");
@@ -151,7 +196,7 @@ export default function AdminDocuments() {
     setDeleting(true);
     try {
       await adminDeleteAssignedDocument(deleteTarget.id, token);
-      setAssigned(prev => prev.filter(d => d.id !== deleteTarget.id));
+      setAssigned((prev) => prev.filter((d) => d.id !== deleteTarget.id));
       setSnack({ msg: t("docs.delete.success"), severity: "success" });
       setDeleteTarget(null);
     } catch (err: any) {
@@ -163,33 +208,39 @@ export default function AdminDocuments() {
 
   // ── Assign dialog ────────────────────────────────────────────────────────
   function openAssignDialog() {
-    setAssignSource("gallery"); setAssignGalleryId("");
-    setAssignTitle(""); setAssignDesc(""); setAssignFile(null);
-    setSelectedUserIds(new Set()); setUserSearch("");
-    setAppliedLists([]); setAssignError("");
+    setAssignSource("gallery");
+    setAssignGalleryId("");
+    setAssignTitle("");
+    setAssignDesc("");
+    setAssignFile(null);
+    setSelectedUserIds(new Set());
+    setUserSearch("");
+    setAppliedLists([]);
+    setAssignError("");
     setAssignOpen(true);
   }
 
   function toggleUser(id: number) {
-    setSelectedUserIds(prev => {
+    setSelectedUserIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
 
   function toggleList(list: any) {
-    const alreadyApplied = appliedLists.some(l => l.id === list.id);
+    const alreadyApplied = appliedLists.some((l) => l.id === list.id);
     if (alreadyApplied) {
-      setAppliedLists(prev => prev.filter(l => l.id !== list.id));
-      setSelectedUserIds(prev => {
+      setAppliedLists((prev) => prev.filter((l) => l.id !== list.id));
+      setSelectedUserIds((prev) => {
         const next = new Set(prev);
         list.member_ids.forEach((id: number) => next.delete(id));
         return next;
       });
     } else {
-      setAppliedLists(prev => [...prev, list]);
-      setSelectedUserIds(prev => {
+      setAppliedLists((prev) => [...prev, list]);
+      setSelectedUserIds((prev) => {
         const next = new Set(prev);
         list.member_ids.forEach((id: number) => next.add(id));
         return next;
@@ -198,9 +249,9 @@ export default function AdminDocuments() {
   }
 
   function selectAllFiltered() {
-    setSelectedUserIds(prev => {
+    setSelectedUserIds((prev) => {
       const next = new Set(prev);
-      filteredUsers.forEach(u => next.add(u.id));
+      filteredUsers.forEach((u) => next.add(u.id));
       return next;
     });
   }
@@ -213,37 +264,54 @@ export default function AdminDocuments() {
   const filteredUsers = useMemo(() => {
     const q = userSearch.trim().toLowerCase();
     if (!q) return users;
-    return users.filter((u: any) =>
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      (u.city || "").toLowerCase().includes(q),
+    return users.filter(
+      (u: any) =>
+        u.name.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        (u.city || "").toLowerCase().includes(q),
     );
   }, [users, userSearch]);
 
   async function handleAssign() {
     const token = getToken();
     if (!token) return;
-    if (selectedUserIds.size === 0) { setAssignError("Select at least one user"); return; }
+    if (selectedUserIds.size === 0) {
+      setAssignError("Select at least one user");
+      return;
+    }
 
     // Compose batch label — list name(s) if any, else "Bulk: N users"
     const batchLabel =
       appliedLists.length > 0
-        ? `List: ${appliedLists.map(l => l.name).join(", ")}`
+        ? `List: ${appliedLists.map((l) => l.name).join(", ")}`
         : `Bulk: ${selectedUserIds.size} users`;
 
-    setAssignError(""); setAssignSaving(true);
+    setAssignError("");
+    setAssignSaving(true);
     const ids = Array.from(selectedUserIds);
     try {
       let result;
       if (assignSource === "gallery") {
-        if (!assignGalleryId) { setAssignError("Select a gallery document"); setAssignSaving(false); return; }
+        if (!assignGalleryId) {
+          setAssignError("Select a gallery document");
+          setAssignSaving(false);
+          return;
+        }
         result = await adminBulkAssignFromGallery(
           { gallery_doc_id: Number(assignGalleryId), user_ids: ids, batch_label: batchLabel },
-          token
+          token,
         );
       } else {
-        if (!assignFile)   { setAssignError("Select a file to upload"); setAssignSaving(false); return; }
-        if (!assignTitle)  { setAssignError("Title is required"); setAssignSaving(false); return; }
+        if (!assignFile) {
+          setAssignError("Select a file to upload");
+          setAssignSaving(false);
+          return;
+        }
+        if (!assignTitle) {
+          setAssignError("Title is required");
+          setAssignSaving(false);
+          return;
+        }
         const fd = new FormData();
         fd.append("user_ids", JSON.stringify(ids));
         fd.append("title", assignTitle);
@@ -256,8 +324,9 @@ export default function AdminDocuments() {
       setAssigned(fresh);
       setAssignOpen(false);
       setSnack({
-        msg: `Assigned to ${result.assigned_count} user(s).` +
-             (result.skipped?.length ? ` Skipped: ${result.skipped.length}` : ""),
+        msg:
+          `Assigned to ${result.assigned_count} user(s).` +
+          (result.skipped?.length ? ` Skipped: ${result.skipped.length}` : ""),
         severity: "success",
       });
     } catch (err: any) {
@@ -275,9 +344,10 @@ export default function AdminDocuments() {
   }
 
   function toggleQuickList(listId: number) {
-    setQuickSelectedLists(prev => {
+    setQuickSelectedLists((prev) => {
       const next = new Set(prev);
-      if (next.has(listId)) next.delete(listId); else next.add(listId);
+      if (next.has(listId)) next.delete(listId);
+      else next.add(listId);
       return next;
     });
   }
@@ -306,11 +376,12 @@ export default function AdminDocuments() {
     }
 
     const listNames = Array.from(quickSelectedLists)
-      .map(id => lists.find((l: any) => l.id === id)?.name || "")
+      .map((id) => lists.find((l: any) => l.id === id)?.name || "")
       .filter(Boolean)
       .join(", ");
 
-    setQuickError(""); setQuickSaving(true);
+    setQuickError("");
+    setQuickSaving(true);
     try {
       const result = await adminBulkAssignFromGallery(
         {
@@ -318,14 +389,15 @@ export default function AdminDocuments() {
           user_ids: Array.from(userIdSet),
           batch_label: `List: ${listNames}`,
         },
-        token
+        token,
       );
       const fresh = await adminGetDocuments(token);
       setAssigned(fresh);
       setQuickDoc(null);
       setSnack({
-        msg: `Assigned to ${result.assigned_count} user(s).` +
-             (result.skipped?.length ? ` Skipped: ${result.skipped.length}` : ""),
+        msg:
+          `Assigned to ${result.assigned_count} user(s).` +
+          (result.skipped?.length ? ` Skipped: ${result.skipped.length}` : ""),
         severity: "success",
       });
     } catch (err: any) {
@@ -354,14 +426,17 @@ export default function AdminDocuments() {
       } else {
         const key = `single-${d.id}`;
         groups.set(key, {
-          key, isBatch: false,
-          label: d.title, created_at: d.created_at, docs: [d],
+          key,
+          isBatch: false,
+          label: d.title,
+          created_at: d.created_at,
+          docs: [d],
         });
       }
     }
     const arr = Array.from(groups.values());
     arr.sort((a, b) => {
-      if (sort === "title")  return a.label.localeCompare(b.label);
+      if (sort === "title") return a.label.localeCompare(b.label);
       const ad = new Date(a.created_at).getTime();
       const bd = new Date(b.created_at).getTime();
       return sort === "oldest" ? ad - bd : bd - ad;
@@ -382,10 +457,16 @@ export default function AdminDocuments() {
   return (
     <Box sx={s.wrapper}>
       <Box sx={s.container}>
-        <Typography variant="h4" sx={s.title}>{t("docs.title")}</Typography>
+        <Typography variant="h4" sx={s.title}>
+          {t("docs.title")}
+        </Typography>
         <Typography sx={s.subtitle}>{t("docs.subtitle")}</Typography>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+            {error}
+          </Alert>
+        )}
 
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={s.tabs}>
           <Tab label={`${t("docs.tab.gallery")} (${gallery.length})`} />
@@ -396,38 +477,68 @@ export default function AdminDocuments() {
         {tab === 0 && (
           <>
             <Paper elevation={0} sx={s.sectionCard}>
-              <Typography variant="h6" sx={s.sectionTitle}>Upload to Gallery</Typography>
+              <Typography variant="h6" sx={s.sectionTitle}>
+                Upload to Gallery
+              </Typography>
               <Typography sx={s.sectionHint}>
                 Upload reusable documents here. Assign them to one or many users from the
                 &ldquo;Assigned&rdquo; tab without re-uploading.
               </Typography>
               <Box component="form" onSubmit={handleGalleryUpload}>
                 <Stack spacing={2.5}>
-                  <TextField label="Title" required value={galleryTitle}
-                    onChange={e => setGalleryTitle(e.target.value)} fullWidth
-                    placeholder="e.g. Morning Sadhna – Beginner" />
-                  <TextField label="Description" value={galleryDesc}
-                    onChange={e => setGalleryDesc(e.target.value)} fullWidth />
-                  <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />}
-                    sx={{ alignSelf: "flex-start" }}>
+                  <TextField
+                    label="Title"
+                    required
+                    value={galleryTitle}
+                    onChange={(e) => setGalleryTitle(e.target.value)}
+                    fullWidth
+                    placeholder="e.g. Morning Sadhna – Beginner"
+                  />
+                  <TextField
+                    label="Description"
+                    value={galleryDesc}
+                    onChange={(e) => setGalleryDesc(e.target.value)}
+                    fullWidth
+                  />
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<CloudUploadIcon />}
+                    sx={{ alignSelf: "flex-start" }}
+                  >
                     {galleryFile ? galleryFile.name : "Choose File"}
-                    <input hidden type="file" onChange={e => setGalleryFile(e.target.files?.[0] || null)} />
+                    <input hidden type="file" onChange={(e) => setGalleryFile(e.target.files?.[0] || null)} />
                   </Button>
-                  <Button type="submit" variant="contained" disabled={galleryUploading}
-                    sx={{ alignSelf: "flex-start" }}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={galleryUploading}
+                    sx={{ alignSelf: "flex-start" }}
+                  >
                     {galleryUploading ? "Uploading…" : "Add to Gallery"}
                   </Button>
                 </Stack>
               </Box>
             </Paper>
 
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 2, flexWrap: "wrap" }}>
-              <Typography variant="h6" sx={s.sectionTitle}>{t("docs.galleryDocs")}</Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 2,
+                mb: 2,
+                flexWrap: "wrap",
+              }}
+            >
+              <Typography variant="h6" sx={s.sectionTitle}>
+                {t("docs.galleryDocs")}
+              </Typography>
               <TextField
                 size="small"
                 placeholder={t("docs.searchGallery")}
                 value={gallerySearch}
-                onChange={e => setGallerySearch(e.target.value)}
+                onChange={(e) => setGallerySearch(e.target.value)}
                 sx={{ minWidth: 240, flex: { xs: 1, sm: "none" } }}
                 slotProps={{
                   input: {
@@ -443,9 +554,10 @@ export default function AdminDocuments() {
             {(() => {
               const q = gallerySearch.trim().toLowerCase();
               const filteredGallery = q
-                ? gallery.filter((g: any) =>
-                    g.title.toLowerCase().includes(q) ||
-                    (g.description || "").toLowerCase().includes(q))
+                ? gallery.filter(
+                    (g: any) =>
+                      g.title.toLowerCase().includes(q) || (g.description || "").toLowerCase().includes(q),
+                  )
                 : gallery;
 
               if (filteredGallery.length === 0) {
@@ -456,37 +568,50 @@ export default function AdminDocuments() {
                 );
               }
               return (
-              <Box sx={s.galleryGrid}>
-                {filteredGallery.map((doc: any) => (
-                  <Paper key={doc.id} elevation={0} sx={s.galleryCard}>
-                    <DescriptionIcon sx={s.galleryDocIcon} />
-                    <Typography sx={s.galleryDocTitle}>{doc.title}</Typography>
-                    {doc.description && (
-                      <Typography variant="caption" color="text.secondary">{doc.description}</Typography>
-                    )}
-                    <Typography variant="caption" color="text.disabled">
-                      {new Date(doc.created_at).toLocaleDateString()}
-                    </Typography>
-                    <Box sx={s.galleryActions}>
-                      <Button component="a"
-                        href={fileUrl(doc.file_path)}
-                        target="_blank" rel="noreferrer"
-                        size="small" startIcon={<DownloadIcon />}>
-                        {t("common.view")}
-                      </Button>
-                      <Button size="small" color="primary"
-                        startIcon={<FlashOnIcon />}
-                        onClick={() => openQuickAssign(doc)}>
-                        {t("docs.quickAssign")}
-                      </Button>
-                      <IconButton size="small" color="error"
-                        onClick={() => handleDeleteGallery(doc.id)} sx={{ ml: "auto" }}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </Paper>
-                ))}
-              </Box>
+                <Box sx={s.galleryGrid}>
+                  {filteredGallery.map((doc: any) => (
+                    <Paper key={doc.id} elevation={0} sx={s.galleryCard}>
+                      <DescriptionIcon sx={s.galleryDocIcon} />
+                      <Typography sx={s.galleryDocTitle}>{doc.title}</Typography>
+                      {doc.description && (
+                        <Typography variant="caption" color="text.secondary">
+                          {doc.description}
+                        </Typography>
+                      )}
+                      <Typography variant="caption" color="text.disabled">
+                        {new Date(doc.created_at).toLocaleDateString()}
+                      </Typography>
+                      <Box sx={s.galleryActions}>
+                        <Button
+                          component="a"
+                          href={fileUrl(doc.file_path)}
+                          target="_blank"
+                          rel="noreferrer"
+                          size="small"
+                          startIcon={<DownloadIcon />}
+                        >
+                          {t("common.view")}
+                        </Button>
+                        <Button
+                          size="small"
+                          color="primary"
+                          startIcon={<FlashOnIcon />}
+                          onClick={() => openQuickAssign(doc)}
+                        >
+                          {t("docs.quickAssign")}
+                        </Button>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDeleteGallery(doc.id)}
+                          sx={{ ml: "auto" }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Paper>
+                  ))}
+                </Box>
               );
             })()}
           </>
@@ -495,13 +620,25 @@ export default function AdminDocuments() {
         {/* ── TAB 1: Assigned ─────────────────────────────────────────── */}
         {tab === 1 && (
           <>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 2, flexWrap: "wrap" }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+                gap: 2,
+                flexWrap: "wrap",
+              }}
+            >
               <TextField
                 select
                 size="small"
                 label={t("table.sortBy")}
                 value={sort}
-                onChange={e => { setSort(e.target.value as SortKey); setPage(0); }}
+                onChange={(e) => {
+                  setSort(e.target.value as SortKey);
+                  setPage(0);
+                }}
                 sx={{ minWidth: 200 }}
               >
                 <MenuItem value="newest">{t("sort.newest")}</MenuItem>
@@ -525,7 +662,13 @@ export default function AdminDocuments() {
                       <Accordion
                         key={group.key}
                         elevation={0}
-                        sx={{ mb: 1.5, borderRadius: "16px !important", border: "1px solid", borderColor: "divider", "&:before": { display: "none" } }}
+                        sx={{
+                          mb: 1.5,
+                          borderRadius: "16px !important",
+                          border: "1px solid",
+                          borderColor: "divider",
+                          "&:before": { display: "none" },
+                        }}
                       >
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
@@ -546,12 +689,20 @@ export default function AdminDocuments() {
                         </AccordionSummary>
                         <AccordionDetails sx={{ pt: 0 }}>
                           {group.docs.map((doc: any) => {
-                            const u = users.find(x => x.id === doc.user_id);
+                            const u = users.find((x) => x.id === doc.user_id);
                             return (
-                              <Box key={doc.id} sx={{
-                                display: "flex", alignItems: "center", justifyContent: "space-between",
-                                py: 1, borderTop: "1px dashed", borderColor: "divider", gap: 2,
-                              }}>
+                              <Box
+                                key={doc.id}
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  py: 1,
+                                  borderTop: "1px dashed",
+                                  borderColor: "divider",
+                                  gap: 2,
+                                }}
+                              >
                                 <Box>
                                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                     {u ? u.name : `User #${doc.user_id}`}
@@ -561,10 +712,14 @@ export default function AdminDocuments() {
                                   </Typography>
                                 </Box>
                                 <Box sx={{ display: "flex", gap: 1 }}>
-                                  <Button component="a"
+                                  <Button
+                                    component="a"
                                     href={fileUrl(doc.file_path)}
-                                    target="_blank" rel="noreferrer"
-                                    size="small" startIcon={<DownloadIcon />}>
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    size="small"
+                                    startIcon={<DownloadIcon />}
+                                  >
                                     {t("common.view")}
                                   </Button>
                                   <IconButton size="small" color="error" onClick={() => setDeleteTarget(doc)}>
@@ -581,7 +736,7 @@ export default function AdminDocuments() {
 
                   // Individual assignment
                   const doc = group.docs[0];
-                  const u = users.find(x => x.id === doc.user_id);
+                  const u = users.find((x) => x.id === doc.user_id);
                   return (
                     <Paper key={group.key} elevation={0} sx={s.listItem}>
                       <Box>
@@ -591,10 +746,14 @@ export default function AdminDocuments() {
                         </Typography>
                       </Box>
                       <Box sx={{ display: "flex", gap: 1 }}>
-                        <Button component="a"
+                        <Button
+                          component="a"
                           href={fileUrl(doc.file_path)}
-                          target="_blank" rel="noreferrer"
-                          size="small" startIcon={<DownloadIcon />}>
+                          target="_blank"
+                          rel="noreferrer"
+                          size="small"
+                          startIcon={<DownloadIcon />}
+                        >
                           {t("common.download")}
                         </Button>
                         <IconButton size="small" color="error" onClick={() => setDeleteTarget(doc)}>
@@ -611,7 +770,10 @@ export default function AdminDocuments() {
                   page={page}
                   onPageChange={(_, p) => setPage(p)}
                   rowsPerPage={rowsPerPage}
-                  onRowsPerPageChange={e => { setRpp(parseInt(e.target.value, 10)); setPage(0); }}
+                  onRowsPerPageChange={(e) => {
+                    setRpp(parseInt(e.target.value, 10));
+                    setPage(0);
+                  }}
                   rowsPerPageOptions={[5, 10, 25, 50]}
                   labelRowsPerPage={t("table.rowsPerPage")}
                 />
@@ -623,16 +785,33 @@ export default function AdminDocuments() {
 
       {/* ── Delete confirmation dialog ───────────────────────────────── */}
       <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: "error.main" }}>
-          {t("common.delete")}
-        </DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, color: "error.main" }}>{t("common.delete")}</DialogTitle>
         <DialogContent>
           <Typography>{t("docs.delete.confirm")}</Typography>
           {deleteTarget && (
-            <Paper elevation={0} sx={{ mt: 2, p: 2, bgcolor: "background.paper", border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>{deleteTarget.title}</Typography>
+            <Paper
+              elevation={0}
+              sx={{
+                mt: 2,
+                p: 2,
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {deleteTarget.title}
+              </Typography>
               <Typography variant="caption" color="text.secondary">
-                {(users.find(u => u.id === deleteTarget.user_id) || { name: `User #${deleteTarget.user_id}`, email: "" }).name}
+                {
+                  (
+                    users.find((u) => u.id === deleteTarget.user_id) || {
+                      name: `User #${deleteTarget.user_id}`,
+                      email: "",
+                    }
+                  ).name
+                }
               </Typography>
             </Paper>
           )}
@@ -647,47 +826,77 @@ export default function AdminDocuments() {
 
       {/* ── Bulk-assign dialog ──────────────────────────────────────────── */}
       <Dialog open={assignOpen} onClose={() => setAssignOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>
-          {t("docs.assignBtn")}
-        </DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>{t("docs.assignBtn")}</DialogTitle>
         <DialogContent>
-          {assignError && <Alert severity="error" sx={{ mb: 2 }}>{assignError}</Alert>}
+          {assignError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {assignError}
+            </Alert>
+          )}
 
           <Stack spacing={3} sx={{ mt: 1 }}>
             {/* 1. Document source */}
             <Box>
-              <Typography variant="caption" color="text.secondary">Document Source</Typography>
-              <RadioGroup row value={assignSource}
-                onChange={e => setAssignSource(e.target.value as "gallery" | "upload")}
-                sx={{ mt: 0.5 }}>
+              <Typography variant="caption" color="text.secondary">
+                Document Source
+              </Typography>
+              <RadioGroup
+                row
+                value={assignSource}
+                onChange={(e) => setAssignSource(e.target.value as "gallery" | "upload")}
+                sx={{ mt: 0.5 }}
+              >
                 <FormControlLabel value="gallery" control={<Radio />} label="From Gallery" />
-                <FormControlLabel value="upload"  control={<Radio />} label="Upload New" />
+                <FormControlLabel value="upload" control={<Radio />} label="Upload New" />
               </RadioGroup>
 
               {assignSource === "gallery" ? (
                 gallery.length === 0 ? (
                   <Alert severity="info">
-                    Your gallery is empty. Switch to &ldquo;Upload New&rdquo; or add documents to the gallery first.
+                    Your gallery is empty. Switch to &ldquo;Upload New&rdquo; or add documents to the gallery
+                    first.
                   </Alert>
                 ) : (
-                  <TextField select label="Gallery Document" required value={assignGalleryId}
-                    onChange={e => setAssignGalleryId(e.target.value)} fullWidth sx={{ mt: 1 }}>
+                  <TextField
+                    select
+                    label="Gallery Document"
+                    required
+                    value={assignGalleryId}
+                    onChange={(e) => setAssignGalleryId(e.target.value)}
+                    fullWidth
+                    sx={{ mt: 1 }}
+                  >
                     <MenuItem value="">Select a document…</MenuItem>
                     {gallery.map((doc: any) => (
-                      <MenuItem key={doc.id} value={doc.id}>{doc.title}</MenuItem>
+                      <MenuItem key={doc.id} value={doc.id}>
+                        {doc.title}
+                      </MenuItem>
                     ))}
                   </TextField>
                 )
               ) : (
                 <Stack spacing={2} sx={{ mt: 1 }}>
-                  <TextField label="Title" required value={assignTitle}
-                    onChange={e => setAssignTitle(e.target.value)} fullWidth />
-                  <TextField label="Description" value={assignDesc}
-                    onChange={e => setAssignDesc(e.target.value)} fullWidth />
-                  <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />}
-                    sx={{ alignSelf: "flex-start" }}>
+                  <TextField
+                    label="Title"
+                    required
+                    value={assignTitle}
+                    onChange={(e) => setAssignTitle(e.target.value)}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Description"
+                    value={assignDesc}
+                    onChange={(e) => setAssignDesc(e.target.value)}
+                    fullWidth
+                  />
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<CloudUploadIcon />}
+                    sx={{ alignSelf: "flex-start" }}
+                  >
                     {assignFile ? assignFile.name : "Choose File"}
-                    <input hidden type="file" onChange={e => setAssignFile(e.target.files?.[0] || null)} />
+                    <input hidden type="file" onChange={(e) => setAssignFile(e.target.files?.[0] || null)} />
                   </Button>
                 </Stack>
               )}
@@ -696,10 +905,12 @@ export default function AdminDocuments() {
             {/* 2. Lists quick-pick */}
             {lists.length > 0 && (
               <Box>
-                <Typography variant="caption" color="text.secondary">Quick-pick from User Lists</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Quick-pick from User Lists
+                </Typography>
                 <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap" }}>
                   {lists.map((l: any) => {
-                    const applied = appliedLists.some(x => x.id === l.id);
+                    const applied = appliedLists.some((x) => x.id === l.id);
                     return (
                       <Chip
                         key={l.id}
@@ -721,9 +932,11 @@ export default function AdminDocuments() {
               </Typography>
               <TextField
                 placeholder="Search users…"
-                fullWidth size="small" sx={{ mt: 1, mb: 1 }}
+                fullWidth
+                size="small"
+                sx={{ mt: 1, mb: 1 }}
                 value={userSearch}
-                onChange={e => setUserSearch(e.target.value)}
+                onChange={(e) => setUserSearch(e.target.value)}
                 slotProps={{
                   input: {
                     startAdornment: (
@@ -735,18 +948,32 @@ export default function AdminDocuments() {
                 }}
               />
               <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
-                <Button size="small" onClick={selectAllFiltered}>Select all filtered</Button>
-                <Button size="small" onClick={clearAllUsers}>Clear all</Button>
+                <Button size="small" onClick={selectAllFiltered}>
+                  Select all filtered
+                </Button>
+                <Button size="small" onClick={clearAllUsers}>
+                  Clear all
+                </Button>
               </Box>
-              <Box sx={{
-                maxHeight: 280, overflow: "auto",
-                border: "1px solid", borderColor: "divider", borderRadius: 2, bgcolor: "background.paper",
-              }}>
+              <Box
+                sx={{
+                  maxHeight: 280,
+                  overflow: "auto",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 2,
+                  bgcolor: "background.paper",
+                }}
+              >
                 <List dense disablePadding>
                   {filteredUsers.map((u: any) => (
                     <ListItemButton key={u.id} onClick={() => toggleUser(u.id)}>
-                      <Checkbox edge="start" tabIndex={-1} disableRipple
-                        checked={selectedUserIds.has(u.id)} />
+                      <Checkbox
+                        edge="start"
+                        tabIndex={-1}
+                        disableRipple
+                        checked={selectedUserIds.has(u.id)}
+                      />
                       <ListItemText
                         primary={u.name}
                         secondary={`${u.email} · ${u.city || ""}${u.state ? ", " + u.state : ""}`}
@@ -755,7 +982,9 @@ export default function AdminDocuments() {
                   ))}
                   {filteredUsers.length === 0 && (
                     <Box sx={{ p: 2, textAlign: "center" }}>
-                      <Typography variant="caption" color="text.secondary">No users match.</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        No users match.
+                      </Typography>
                     </Box>
                   )}
                 </List>
@@ -778,13 +1007,28 @@ export default function AdminDocuments() {
           {t("docs.quickAssign")}
         </DialogTitle>
         <DialogContent>
-          {quickError && <Alert severity="error" sx={{ mb: 2 }}>{quickError}</Alert>}
+          {quickError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {quickError}
+            </Alert>
+          )}
           {quickDoc && (
             <Stack spacing={2.5} sx={{ mt: 1 }}>
-              <Paper elevation={0} sx={{ p: 2, bgcolor: "background.paper", border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  bgcolor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 2,
+                }}
+              >
                 <Typography sx={{ fontWeight: 700 }}>{quickDoc.title}</Typography>
                 {quickDoc.description && (
-                  <Typography variant="body2" color="text.secondary">{quickDoc.description}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {quickDoc.description}
+                  </Typography>
                 )}
               </Paper>
 

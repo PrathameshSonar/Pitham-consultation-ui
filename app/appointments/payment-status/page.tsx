@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  Box, Paper, Typography, Button, CircularProgress,
-} from "@mui/material";
+import { Box, Paper, Typography, Button, CircularProgress } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
@@ -26,9 +24,15 @@ export default function PaymentStatus() {
   const [fee, setFee] = useState(500);
 
   useEffect(() => {
-    if (!txn) { router.push("/dashboard/history"); return; }
+    if (!txn) {
+      router.push("/dashboard/history");
+      return;
+    }
     const token = getToken();
-    if (!token) { router.push("/login"); return; }
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
     // Extract appointment ID from txn format: SPBSP_{id}_{hex}
     const parts = txn.split("_");
@@ -52,13 +56,13 @@ export default function PaymentStatus() {
   async function handleRetryPayment() {
     if (!appointmentId) return;
     const token = getToken();
-    if (!token) { router.push("/login"); return; }
+    if (!token) {
+      router.push("/login");
+      return;
+    }
     setRetrying(true);
     try {
-      const payment = await initiatePhonePePayment(
-        { appointment_id: appointmentId, amount: fee },
-        token
-      );
+      const payment = await initiatePhonePePayment({ appointment_id: appointmentId, amount: fee }, token);
       if (payment.redirect_url) {
         window.location.href = payment.redirect_url;
         return;
@@ -118,7 +122,11 @@ export default function PaymentStatus() {
             {retrying ? t("common.loading") : t("payment.retry")}
           </Button>
         )}
-        <Button component={Link} href="/dashboard/history" variant={status === "failed" ? "outlined" : "contained"}>
+        <Button
+          component={Link}
+          href="/dashboard/history"
+          variant={status === "failed" ? "outlined" : "contained"}
+        >
           {t("payment.goToHistory")}
         </Button>
       </Paper>

@@ -3,10 +3,28 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Box, Paper, Typography, TextField, Button, Alert, Switch,
-  FormControlLabel, Stack, CircularProgress, Divider, Tabs, Tab,
-  Chip, Table, TableHead, TableBody, TableRow, TableCell, TablePagination,
-  MenuItem, InputAdornment,
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  Switch,
+  FormControlLabel,
+  Stack,
+  CircularProgress,
+  Divider,
+  Tabs,
+  Tab,
+  Chip,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TablePagination,
+  MenuItem,
+  InputAdornment,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
@@ -20,17 +38,40 @@ import SearchIcon from "@mui/icons-material/Search";
 import HistoryIcon from "@mui/icons-material/History";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import {
-  adminGetSettings, adminUpdateSettings, adminDownloadInvoicesZip,
-  adminGetPendingSettings, adminApproveSettingChange, adminRejectSettingChange,
-  adminGetAuditLog, adminExportUsers, adminExportAppointments, adminExportPayments,
-  adminGlobalSearch, adminSendReminders,
-  adminGetUsers, adminChangeUserRole, adminGetModeratorCount,
-  getToken, isSuperAdmin,
+  adminGetSettings,
+  adminUpdateSettings,
+  adminDownloadInvoicesZip,
+  adminGetPendingSettings,
+  adminApproveSettingChange,
+  adminRejectSettingChange,
+  adminGetAuditLog,
+  adminExportUsers,
+  adminExportAppointments,
+  adminExportPayments,
+  adminGlobalSearch,
+  adminSendReminders,
+  adminGetUsers,
+  adminChangeUserRole,
+  adminGetModeratorCount,
+  getToken,
+  isSuperAdmin,
 } from "@/services/api";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import GroupIcon from "@mui/icons-material/Group";
-import { Avatar, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemAvatar, ListItemText, Snackbar } from "@mui/material";
+import {
+  Avatar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Snackbar,
+} from "@mui/material";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
 
@@ -81,7 +122,10 @@ export default function AdminSettings() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token) { router.push("/login"); return; }
+    if (!token) {
+      router.push("/login");
+      return;
+    }
     adminGetSettings(token)
       .then((s: any) => {
         setFee(s.consultation_fee || "500");
@@ -105,24 +149,31 @@ export default function AdminSettings() {
       .finally(() => setLoading(false));
     // Load pending changes for super admin
     if (isSuperAdmin()) {
-      adminGetPendingSettings(token).then(setPendingChanges).catch(() => { });
+      adminGetPendingSettings(token)
+        .then(setPendingChanges)
+        .catch(() => {});
     }
   }, [router]);
 
   async function handleSave() {
     const token = getToken();
     if (!token) return;
-    setError(""); setSuccess(""); setSaving(true);
+    setError("");
+    setSuccess("");
+    setSaving(true);
     try {
-      const res = await adminUpdateSettings({
-        consultation_fee: parseInt(fee) || 500,
-        booking_enabled: enabled,
-        booking_resume_date: resumeDate ? resumeDate.format("YYYY-MM-DD") : "",
-        booking_hold_message: holdMessage,
-        booking_limit: parseInt(limit) || 0,
-        booking_limit_deadline: deadline ? deadline.toISOString() : "",
-        consultation_terms: terms,
-      }, token);
+      const res = await adminUpdateSettings(
+        {
+          consultation_fee: parseInt(fee) || 500,
+          booking_enabled: enabled,
+          booking_resume_date: resumeDate ? resumeDate.format("YYYY-MM-DD") : "",
+          booking_hold_message: holdMessage,
+          booking_limit: parseInt(limit) || 0,
+          booking_limit_deadline: deadline ? deadline.toISOString() : "",
+          consultation_terms: terms,
+        },
+        token,
+      );
       if (res.pending) {
         setSuccess(t("settings.sentForApproval"));
       } else {
@@ -144,17 +195,26 @@ export default function AdminSettings() {
   }
 
   return (
-    <Box sx={{
-      minHeight: "calc(100vh - 64px)",
-      bgcolor: "background.default",
-      py: { xs: 3, md: 6 }, px: { xs: 1, sm: 2 },
-    }}>
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 64px)",
+        bgcolor: "background.default",
+        py: { xs: 3, md: 6 },
+        px: { xs: 1, sm: 2 },
+      }}
+    >
       <Box sx={{ maxWidth: 900, mx: "auto" }}>
         <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
           {t("settings.title")}
         </Typography>
 
-        <Tabs value={settingsTab} onChange={(_, v) => setSettingsTab(v)} sx={{ mb: 3 }} variant="scrollable" scrollButtons="auto">
+        <Tabs
+          value={settingsTab}
+          onChange={(_, v) => setSettingsTab(v)}
+          sx={{ mb: 3 }}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
           <Tab value="search" label={t("tools.search")} />
           <Tab value="reminders" label={t("tools.reminders")} />
           <Tab value="consultation" label={t("settings.tabConsultation")} />
@@ -165,26 +225,36 @@ export default function AdminSettings() {
           {superAdmin && <Tab value="moderators" label={t("settings.tabModerators")} />}
         </Tabs>
 
-
         {settingsTab === "search" && <GlobalSearchTab />}
 
         {settingsTab === "reminders" && <RemindersTab />}
 
         {settingsTab === "consultation" && (
-          <Paper elevation={0} sx={{
-            p: { xs: 3, md: 5 }, borderRadius: 4,
-            border: `1px solid ${brandColors.sand}`,
-          }}>
-
-            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 3, md: 5 },
+              borderRadius: 4,
+              border: `1px solid ${brandColors.sand}`,
+            }}
+          >
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+            {success && (
+              <Alert severity="success" sx={{ mb: 2 }}>
+                {success}
+              </Alert>
+            )}
 
             <Stack spacing={3}>
               <TextField
                 label={t("settings.fee")}
                 type="number"
                 value={fee}
-                onChange={e => setFee(e.target.value)}
+                onChange={(e) => setFee(e.target.value)}
                 fullWidth
                 slotProps={{
                   input: { startAdornment: <Typography sx={{ mr: 1 }}>&#8377;</Typography> },
@@ -193,7 +263,9 @@ export default function AdminSettings() {
               />
 
               <FormControlLabel
-                control={<Switch checked={enabled} onChange={e => setEnabled(e.target.checked)} color="primary" />}
+                control={
+                  <Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} color="primary" />
+                }
                 label={t("settings.bookingEnabled")}
               />
 
@@ -202,16 +274,17 @@ export default function AdminSettings() {
                   <DatePicker
                     label={t("settings.resumeDate")}
                     value={resumeDate}
-                    onChange={v => setResumeDate(v)}
+                    onChange={(v) => setResumeDate(v)}
                     format="DD/MM/YYYY"
                     minDate={dayjs()}
                     slotProps={{ textField: { fullWidth: true } }}
                   />
                   <TextField
                     label={t("settings.holdMessage")}
-                    multiline rows={3}
+                    multiline
+                    rows={3}
                     value={holdMessage}
-                    onChange={e => setHoldMessage(e.target.value)}
+                    onChange={(e) => setHoldMessage(e.target.value)}
                     fullWidth
                     placeholder="e.g. Consultation is on hold. Will resume on..."
                   />
@@ -222,7 +295,7 @@ export default function AdminSettings() {
                 label={t("settings.bookingLimit")}
                 type="number"
                 value={limit}
-                onChange={e => setLimit(e.target.value)}
+                onChange={(e) => setLimit(e.target.value)}
                 fullWidth
                 helperText={t("settings.bookingLimitHelp")}
               />
@@ -230,7 +303,7 @@ export default function AdminSettings() {
               <DateTimePicker
                 label={t("settings.deadline")}
                 value={deadline}
-                onChange={v => setDeadline(v)}
+                onChange={(v) => setDeadline(v)}
                 format="DD/MM/YYYY hh:mm A"
                 ampm
                 minDateTime={dayjs()}
@@ -257,23 +330,49 @@ export default function AdminSettings() {
 
         {/* ── Terms & Conditions Tab ── */}
         {settingsTab === "terms" && (
-          <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
+          <Paper
+            elevation={0}
+            sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: brandColors.maroon,
+                mb: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
               <EditNoteIcon /> {t("settings.termsEditor")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               {t("settings.termsEditorHelp")}
             </Typography>
-            <Box sx={{
-              ".ql-container": { minHeight: 200, fontSize: "0.95rem", borderRadius: "0 0 10px 10px" },
-              ".ql-toolbar": { borderRadius: "10px 10px 0 0", bgcolor: "background.paper" },
-              ".ql-editor": { minHeight: 200 },
-              mb: 3,
-            }}>
-              <ReactQuill theme="snow" value={terms} onChange={setTerms} modules={QUILL_MODULES}
-                placeholder="Write consultation terms & conditions here..." />
+            <Box
+              sx={{
+                ".ql-container": { minHeight: 200, fontSize: "0.95rem", borderRadius: "0 0 10px 10px" },
+                ".ql-toolbar": { borderRadius: "10px 10px 0 0", bgcolor: "background.paper" },
+                ".ql-editor": { minHeight: 200 },
+                mb: 3,
+              }}
+            >
+              <ReactQuill
+                theme="snow"
+                value={terms}
+                onChange={setTerms}
+                modules={QUILL_MODULES}
+                placeholder="Write consultation terms & conditions here..."
+              />
             </Box>
-            <Button variant="contained" size="large" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving}>
+            <Button
+              variant="contained"
+              size="large"
+              startIcon={<SaveIcon />}
+              onClick={handleSave}
+              disabled={saving}
+            >
               {saving ? t("common.saving") : superAdmin ? t("common.save") : t("settings.submitForApproval")}
             </Button>
           </Paper>
@@ -283,58 +382,119 @@ export default function AdminSettings() {
         {/* ── Search Tab ── */}
         {/* ── Contact & Social Tab ── */}
         {settingsTab === "contact" && (
-          <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
+          <Paper
+            elevation={0}
+            sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+          >
             <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
               {t("settings.contactInfo")}
             </Typography>
             <Stack spacing={2.5}>
-              <TextField label={t("common.email")} fullWidth value={contactEmail}
-                onChange={e => setContactEmail(e.target.value)} placeholder="contact@pitham.com" />
-              <TextField label={t("common.mobile")} fullWidth value={contactPhone}
-                onChange={e => setContactPhone(e.target.value)} placeholder="+91 9876543210" />
-              <TextField label={t("contact.address")} fullWidth multiline rows={2} value={contactAddress}
-                onChange={e => setContactAddress(e.target.value)} />
-              <TextField label={t("settings.mapUrl")} fullWidth value={contactMapUrl}
-                onChange={e => setContactMapUrl(e.target.value)}
-                placeholder="https://www.google.com/maps/embed?pb=..." />
+              <TextField
+                label={t("common.email")}
+                fullWidth
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                placeholder="contact@pitham.com"
+              />
+              <TextField
+                label={t("common.mobile")}
+                fullWidth
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder="+91 9876543210"
+              />
+              <TextField
+                label={t("contact.address")}
+                fullWidth
+                multiline
+                rows={2}
+                value={contactAddress}
+                onChange={(e) => setContactAddress(e.target.value)}
+              />
+              <TextField
+                label={t("settings.mapUrl")}
+                fullWidth
+                value={contactMapUrl}
+                onChange={(e) => setContactMapUrl(e.target.value)}
+                placeholder="https://www.google.com/maps/embed?pb=..."
+              />
 
               <Divider />
               <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon }}>
                 {t("settings.socialLinks")}
               </Typography>
 
-              <TextField label="WhatsApp Number" fullWidth value={socialWhatsapp}
-                onChange={e => setSocialWhatsapp(e.target.value)} placeholder="+919876543210" />
-              <TextField label="Instagram" fullWidth value={socialInstagram}
-                onChange={e => setSocialInstagram(e.target.value)} placeholder="https://instagram.com/pitham" />
-              <TextField label="Facebook" fullWidth value={socialFacebook}
-                onChange={e => setSocialFacebook(e.target.value)} placeholder="https://facebook.com/pitham" />
-              <TextField label="YouTube" fullWidth value={socialYoutube}
-                onChange={e => setSocialYoutube(e.target.value)} placeholder="https://youtube.com/@pitham" />
-              <TextField label="Twitter / X" fullWidth value={socialTwitter}
-                onChange={e => setSocialTwitter(e.target.value)} placeholder="https://x.com/pitham" />
+              <TextField
+                label="WhatsApp Number"
+                fullWidth
+                value={socialWhatsapp}
+                onChange={(e) => setSocialWhatsapp(e.target.value)}
+                placeholder="+919876543210"
+              />
+              <TextField
+                label="Instagram"
+                fullWidth
+                value={socialInstagram}
+                onChange={(e) => setSocialInstagram(e.target.value)}
+                placeholder="https://instagram.com/pitham"
+              />
+              <TextField
+                label="Facebook"
+                fullWidth
+                value={socialFacebook}
+                onChange={(e) => setSocialFacebook(e.target.value)}
+                placeholder="https://facebook.com/pitham"
+              />
+              <TextField
+                label="YouTube"
+                fullWidth
+                value={socialYoutube}
+                onChange={(e) => setSocialYoutube(e.target.value)}
+                placeholder="https://youtube.com/@pitham"
+              />
+              <TextField
+                label="Twitter / X"
+                fullWidth
+                value={socialTwitter}
+                onChange={(e) => setSocialTwitter(e.target.value)}
+                placeholder="https://x.com/pitham"
+              />
 
-              <Button variant="contained" size="large" startIcon={<SaveIcon />} disabled={saving}
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<SaveIcon />}
+                disabled={saving}
                 onClick={async () => {
                   const token = getToken();
                   if (!token) return;
-                  setSaving(true); setError(""); setSuccess("");
+                  setSaving(true);
+                  setError("");
+                  setSuccess("");
                   try {
-                    await adminUpdateSettings({
-                      contact_email: contactEmail,
-                      contact_phone: contactPhone,
-                      contact_address: contactAddress,
-                      contact_map_url: contactMapUrl,
-                      social_facebook: socialFacebook,
-                      social_instagram: socialInstagram,
-                      social_youtube: socialYoutube,
-                      social_twitter: socialTwitter,
-                      social_whatsapp: socialWhatsapp,
-                    }, token);
+                    await adminUpdateSettings(
+                      {
+                        contact_email: contactEmail,
+                        contact_phone: contactPhone,
+                        contact_address: contactAddress,
+                        contact_map_url: contactMapUrl,
+                        social_facebook: socialFacebook,
+                        social_instagram: socialInstagram,
+                        social_youtube: socialYoutube,
+                        social_twitter: socialTwitter,
+                        social_whatsapp: socialWhatsapp,
+                      },
+                      token,
+                    );
                     setSuccess(t("settings.saved"));
-                  } catch (err: any) { setError(err?.detail || "Failed"); }
-                  finally { setSaving(false); }
-                }}>
+                  } catch (err: any) {
+                    setError(err?.detail || "Failed");
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+              >
                 {saving ? t("common.saving") : t("common.save")}
               </Button>
             </Stack>
@@ -356,10 +516,17 @@ export default function AdminSettings() {
 
         {/* ── Pending Approvals (super admin only) ── */}
         {superAdmin && pendingChanges.length > 0 && (
-          <Paper elevation={0} sx={{
-            maxWidth: 800, mx: "auto", mt: 4, p: { xs: 3, md: 5 }, borderRadius: 4,
-            border: `1px solid ${brandColors.sand}`,
-          }}>
+          <Paper
+            elevation={0}
+            sx={{
+              maxWidth: 800,
+              mx: "auto",
+              mt: 4,
+              p: { xs: 3, md: 5 },
+              borderRadius: 4,
+              border: `1px solid ${brandColors.sand}`,
+            }}
+          >
             <Typography variant="h5" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
               {t("settings.pendingApprovals")}
             </Typography>
@@ -370,14 +537,20 @@ export default function AdminSettings() {
                     {pc.submitted_by} wants to change <strong>{pc.key}</strong>
                   </Typography>
                   {pc.key === "consultation_terms" ? (
-                    <Paper variant="outlined" sx={{
-                      p: 3, my: 1.5, borderRadius: 3, bgcolor: "background.default",
-                      "& h1, & h2, & h3": { color: "primary.dark", mt: 2, mb: 1, fontSize: "1.1rem" },
-                      "& ol, & ul": { pl: 3 },
-                      "& li": { mb: 0.5 },
-                      "& p": { mb: 1 },
-                      "& strong": { fontWeight: 700 },
-                    }}>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 3,
+                        my: 1.5,
+                        borderRadius: 3,
+                        bgcolor: "background.default",
+                        "& h1, & h2, & h3": { color: "primary.dark", mt: 2, mb: 1, fontSize: "1.1rem" },
+                        "& ol, & ul": { pl: 3 },
+                        "& li": { mb: 0.5 },
+                        "& p": { mb: 1 },
+                        "& strong": { fontWeight: 700 },
+                      }}
+                    >
                       <div dangerouslySetInnerHTML={{ __html: pc.value }} />
                     </Paper>
                   ) : (
@@ -386,24 +559,32 @@ export default function AdminSettings() {
                     </Typography>
                   )}
                   <Box sx={{ display: "flex", gap: 1 }}>
-                    <Button size="small" variant="contained" color="success"
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
                       onClick={async () => {
                         const token = getToken();
                         await adminApproveSettingChange(pc.id, token);
-                        setPendingChanges(prev => prev.filter(x => x.id !== pc.id));
+                        setPendingChanges((prev) => prev.filter((x) => x.id !== pc.id));
                         // Reload settings
                         const s = await adminGetSettings(token);
                         setFee(s.consultation_fee || "500");
                         setTerms(s.consultation_terms || "");
-                      }}>
+                      }}
+                    >
                       {t("settings.approve")}
                     </Button>
-                    <Button size="small" variant="outlined" color="error"
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
                       onClick={async () => {
                         const token = getToken();
                         await adminRejectSettingChange(pc.id, token);
-                        setPendingChanges(prev => prev.filter(x => x.id !== pc.id));
-                      }}>
+                        setPendingChanges((prev) => prev.filter((x) => x.id !== pc.id));
+                      }}
+                    >
                       {t("settings.reject")}
                     </Button>
                   </Box>
@@ -416,7 +597,6 @@ export default function AdminSettings() {
     </Box>
   );
 }
-
 
 function GlobalSearchTab() {
   const { t } = useT();
@@ -432,17 +612,31 @@ function GlobalSearchTab() {
     try {
       const res = await adminGlobalSearch(query.trim(), token);
       setResults(res);
-    } catch { setResults(null); }
-    finally { setSearching(false); }
+    } catch {
+      setResults(null);
+    } finally {
+      setSearching(false);
+    }
   }
 
   return (
     <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
       <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-        <TextField fullWidth placeholder={t("tools.searchPlaceholder")}
-          value={query} onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && handleSearch()}
-          slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
+        <TextField
+          fullWidth
+          placeholder={t("tools.searchPlaceholder")}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
         />
         <Button variant="contained" onClick={handleSearch} disabled={searching}>
           {t("common.search")}
@@ -453,7 +647,9 @@ function GlobalSearchTab() {
         <Stack spacing={2.5}>
           {results.users.length > 0 && (
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t("tools.users")} ({results.users.length})</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                {t("tools.users")} ({results.users.length})
+              </Typography>
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                 {results.users.map((u: any) => (
                   <Chip key={u.id} label={`${u.name} — ${u.email || u.mobile}`} />
@@ -463,7 +659,9 @@ function GlobalSearchTab() {
           )}
           {results.appointments.length > 0 && (
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t("tools.appointments")} ({results.appointments.length})</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                {t("tools.appointments")} ({results.appointments.length})
+              </Typography>
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                 {results.appointments.map((a: any) => (
                   <Chip key={a.id} label={`${a.name} — ${a.status}`} variant="outlined" />
@@ -473,7 +671,9 @@ function GlobalSearchTab() {
           )}
           {results.documents.length > 0 && (
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t("tools.documents")} ({results.documents.length})</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                {t("tools.documents")} ({results.documents.length})
+              </Typography>
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                 {results.documents.map((d: any) => (
                   <Chip key={d.id} label={d.title} variant="outlined" />
@@ -481,9 +681,11 @@ function GlobalSearchTab() {
               </Box>
             </Box>
           )}
-          {results.users.length === 0 && results.appointments.length === 0 && results.documents.length === 0 && (
-            <Typography color="text.secondary">{t("tools.noResults")}</Typography>
-          )}
+          {results.users.length === 0 &&
+            results.appointments.length === 0 &&
+            results.documents.length === 0 && (
+              <Typography color="text.secondary">{t("tools.noResults")}</Typography>
+            )}
         </Stack>
       )}
     </Paper>
@@ -506,8 +708,13 @@ function RemindersTab() {
   }
 
   return (
-    <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{t("tools.sendReminders")}</Typography>
+    <Paper
+      elevation={0}
+      sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+    >
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+        {t("tools.sendReminders")}
+      </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         {t("tools.remindersDesc")}
       </Typography>
@@ -563,11 +770,13 @@ function AuditLogTab() {
           setAdminOptions(r.filters.admins || []);
         }
       })
-      .catch(() => { })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { load(0); }, []);
+  useEffect(() => {
+    load(0);
+  }, []);
 
   function applyFilters() {
     setPage(0);
@@ -575,79 +784,121 @@ function AuditLogTab() {
   }
 
   function clearFilters() {
-    setFilterAction(""); setFilterAdminId("");
-    setFilterDateFrom(null); setFilterDateTo(null);
-    setSortOrder("newest"); setPage(0);
+    setFilterAction("");
+    setFilterAdminId("");
+    setFilterDateFrom(null);
+    setFilterDateTo(null);
+    setSortOrder("newest");
+    setPage(0);
     // Reload with no filters
     const token = getToken();
     if (!token) return;
     setLoading(true);
     adminGetAuditLog(token, { page: 1, limit: rpp, sort: "newest" })
       .then((r: any) => {
-        setLogs(r.logs); setTotal(r.total);
-        if (r.filters) { setActionOptions(r.filters.actions || []); setAdminOptions(r.filters.admins || []); }
+        setLogs(r.logs);
+        setTotal(r.total);
+        if (r.filters) {
+          setActionOptions(r.filters.actions || []);
+          setAdminOptions(r.filters.admins || []);
+        }
       })
-      .catch(() => { })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }
 
   return (
     <Box>
       {/* Filters */}
-      <Paper elevation={0} sx={{
-        p: 2, mb: 2, borderRadius: 4, border: `1px solid ${brandColors.sand}`,
-        display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center"
-      }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          mb: 2,
+          borderRadius: 4,
+          border: `1px solid ${brandColors.sand}`,
+          display: "flex",
+          gap: 1.5,
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <TextField
-          select size="small" label={t("tools.admin")}
-          value={filterAdminId} onChange={e => setFilterAdminId(e.target.value)}
+          select
+          size="small"
+          label={t("tools.admin")}
+          value={filterAdminId}
+          onChange={(e) => setFilterAdminId(e.target.value)}
           sx={{ minWidth: 150 }}
         >
           <MenuItem value="">{t("common.all")}</MenuItem>
-          {adminOptions.map(a => (
-            <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>
+          {adminOptions.map((a) => (
+            <MenuItem key={a.id} value={a.id}>
+              {a.name}
+            </MenuItem>
           ))}
         </TextField>
         <TextField
-          select size="small" label={t("tools.action")}
-          value={filterAction} onChange={e => setFilterAction(e.target.value)}
+          select
+          size="small"
+          label={t("tools.action")}
+          value={filterAction}
+          onChange={(e) => setFilterAction(e.target.value)}
           sx={{ minWidth: 160 }}
         >
           <MenuItem value="">{t("common.all")}</MenuItem>
-          {actionOptions.map(a => (
-            <MenuItem key={a} value={a}>{a}</MenuItem>
+          {actionOptions.map((a) => (
+            <MenuItem key={a} value={a}>
+              {a}
+            </MenuItem>
           ))}
         </TextField>
         <DatePicker
           label={t("settings.invoiceFrom")}
-          value={filterDateFrom} onChange={v => setFilterDateFrom(v)}
+          value={filterDateFrom}
+          onChange={(v) => setFilterDateFrom(v)}
           format="DD/MM/YYYY"
           slotProps={{ textField: { size: "small", sx: { minWidth: 145 } } }}
         />
         <DatePicker
           label={t("settings.invoiceTo")}
-          value={filterDateTo} onChange={v => setFilterDateTo(v)}
+          value={filterDateTo}
+          onChange={(v) => setFilterDateTo(v)}
           format="DD/MM/YYYY"
           slotProps={{ textField: { size: "small", sx: { minWidth: 145 } } }}
         />
         <TextField
-          select size="small" label={t("table.sortBy")}
-          value={sortOrder} onChange={e => setSortOrder(e.target.value)}
+          select
+          size="small"
+          label={t("table.sortBy")}
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
           sx={{ minWidth: 130 }}
         >
           <MenuItem value="newest">{t("sort.newest")}</MenuItem>
           <MenuItem value="oldest">{t("sort.oldest")}</MenuItem>
         </TextField>
-        <Button variant="contained" size="small" onClick={applyFilters}>{t("common.filter")}</Button>
-        <Button variant="outlined" size="small" onClick={clearFilters}>{t("common.clear")}</Button>
+        <Button variant="contained" size="small" onClick={applyFilters}>
+          {t("common.filter")}
+        </Button>
+        <Button variant="outlined" size="small" onClick={clearFilters}>
+          {t("common.clear")}
+        </Button>
       </Paper>
 
       {/* Table */}
-      <Paper elevation={0} sx={{ borderRadius: 4, border: `1px solid ${brandColors.sand}`, overflow: "auto" }}>
+      <Paper
+        elevation={0}
+        sx={{ borderRadius: 4, border: `1px solid ${brandColors.sand}`, overflow: "auto" }}
+      >
         {loading ? (
-          <Box sx={{ p: 4, textAlign: "center" }}><CircularProgress /></Box>
+          <Box sx={{ p: 4, textAlign: "center" }}>
+            <CircularProgress />
+          </Box>
         ) : logs.length === 0 ? (
-          <Typography sx={{ p: 4, textAlign: "center" }} color="text.secondary">{t("tools.noLogs")}</Typography>
+          <Typography sx={{ p: 4, textAlign: "center" }} color="text.secondary">
+            {t("tools.noLogs")}
+          </Typography>
         ) : (
           <>
             <Table size="small">
@@ -667,8 +918,13 @@ function AuditLogTab() {
                       {l.created_at ? new Date(l.created_at).toLocaleString() : "—"}
                     </TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{l.admin_name}</TableCell>
-                    <TableCell><Chip label={l.action} size="small" /></TableCell>
-                    <TableCell>{l.entity_type}{l.entity_id ? ` #${l.entity_id}` : ""}</TableCell>
+                    <TableCell>
+                      <Chip label={l.action} size="small" />
+                    </TableCell>
+                    <TableCell>
+                      {l.entity_type}
+                      {l.entity_id ? ` #${l.entity_id}` : ""}
+                    </TableCell>
                     <TableCell sx={{ maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis" }}>
                       {l.details}
                     </TableCell>
@@ -676,12 +932,23 @@ function AuditLogTab() {
                 ))}
               </TableBody>
             </Table>
-            <TablePagination component="div" count={total} page={page}
-              onPageChange={(_, p) => { setPage(p); load(p); }}
+            <TablePagination
+              component="div"
+              count={total}
+              page={page}
+              onPageChange={(_, p) => {
+                setPage(p);
+                load(p);
+              }}
               rowsPerPage={rpp}
-              onRowsPerPageChange={e => { setRpp(parseInt(e.target.value, 10)); setPage(0); load(0); }}
+              onRowsPerPageChange={(e) => {
+                setRpp(parseInt(e.target.value, 10));
+                setPage(0);
+                load(0);
+              }}
               rowsPerPageOptions={[10, 20, 50, 100]}
-              labelRowsPerPage={t("table.rowsPerPage")} />
+              labelRowsPerPage={t("table.rowsPerPage")}
+            />
           </>
         )}
       </Paper>
@@ -698,8 +965,11 @@ function ExportTab() {
   function downloadBlob(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); a.remove();
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
     URL.revokeObjectURL(url);
   }
 
@@ -719,30 +989,60 @@ function ExportTab() {
         blob = await adminExportPayments(token, from, to);
       }
       downloadBlob(blob, `${type}.csv`);
-    } catch { alert("Export failed. Please try again."); }
-    finally { setExporting(""); }
+    } catch {
+      alert("Export failed. Please try again.");
+    } finally {
+      setExporting("");
+    }
   }
 
   return (
-    <Paper elevation={0} sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{t("tools.exportData")}</Typography>
+    <Paper
+      elevation={0}
+      sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+    >
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+        {t("tools.exportData")}
+      </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap", alignItems: "center" }}>
-        <DatePicker label={t("settings.invoiceFrom")} value={exportFrom} onChange={v => setExportFrom(v)} format="DD/MM/YYYY"
-          slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }} />
-        <DatePicker label={t("settings.invoiceTo")} value={exportTo} onChange={v => setExportTo(v)} format="DD/MM/YYYY"
-          slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }} />
+        <DatePicker
+          label={t("settings.invoiceFrom")}
+          value={exportFrom}
+          onChange={(v) => setExportFrom(v)}
+          format="DD/MM/YYYY"
+          slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
+        />
+        <DatePicker
+          label={t("settings.invoiceTo")}
+          value={exportTo}
+          onChange={(v) => setExportTo(v)}
+          format="DD/MM/YYYY"
+          slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
+        />
       </Box>
       <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
-        <Button variant="outlined" startIcon={<DownloadIcon />} onClick={() => handleExport("users")}
-          disabled={exporting === "users"}>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={() => handleExport("users")}
+          disabled={exporting === "users"}
+        >
           {exporting === "users" ? t("common.loading") : t("tools.exportUsers")}
         </Button>
-        <Button variant="outlined" startIcon={<DownloadIcon />} onClick={() => handleExport("appointments")}
-          disabled={exporting === "appointments"}>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={() => handleExport("appointments")}
+          disabled={exporting === "appointments"}
+        >
           {exporting === "appointments" ? t("common.loading") : t("tools.exportAppts")}
         </Button>
-        <Button variant="outlined" startIcon={<DownloadIcon />} onClick={() => handleExport("payments")}
-          disabled={exporting === "payments"}>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={() => handleExport("payments")}
+          disabled={exporting === "payments"}
+        >
           {exporting === "payments" ? t("common.loading") : t("tools.exportPayments")}
         </Button>
       </Stack>
@@ -758,15 +1058,19 @@ function InvoiceDownloadSection() {
   const [invoiceError, setInvoiceError] = useState("");
 
   async function handleDownload() {
-    if (!dateFrom || !dateTo) { setInvoiceError(t("settings.invoiceDateRequired")); return; }
+    if (!dateFrom || !dateTo) {
+      setInvoiceError(t("settings.invoiceDateRequired"));
+      return;
+    }
     const token = getToken();
     if (!token) return;
-    setInvoiceError(""); setDownloading(true);
+    setInvoiceError("");
+    setDownloading(true);
     try {
       const blob = await adminDownloadInvoicesZip(
         dateFrom.format("YYYY-MM-DD"),
         dateTo.format("YYYY-MM-DD"),
-        token
+        token,
       );
       // Trigger download
       const url = URL.createObjectURL(blob);
@@ -785,31 +1089,49 @@ function InvoiceDownloadSection() {
   }
 
   return (
-    <Paper elevation={0} sx={{
-      p: { xs: 3, md: 5 }, borderRadius: 4,
-      border: `1px solid ${brandColors.sand}`,
-    }}>
-      <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 3, md: 5 },
+        borderRadius: 4,
+        border: `1px solid ${brandColors.sand}`,
+      }}
+    >
+      <Typography
+        variant="h6"
+        sx={{
+          fontWeight: 700,
+          color: brandColors.maroon,
+          mb: 1,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
         <ReceiptLongIcon /> {t("settings.invoiceDownload")}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         {t("settings.invoiceDownloadHelp")}
       </Typography>
 
-      {invoiceError && <Alert severity="error" sx={{ mb: 2 }}>{invoiceError}</Alert>}
+      {invoiceError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {invoiceError}
+        </Alert>
+      )}
 
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
         <DatePicker
           label={t("settings.invoiceFrom")}
           value={dateFrom}
-          onChange={v => setDateFrom(v)}
+          onChange={(v) => setDateFrom(v)}
           format="DD/MM/YYYY"
           slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
         />
         <DatePicker
           label={t("settings.invoiceTo")}
           value={dateTo}
-          onChange={v => setDateTo(v)}
+          onChange={(v) => setDateTo(v)}
           format="DD/MM/YYYY"
           slotProps={{ textField: { size: "small", sx: { minWidth: 160 } } }}
         />
@@ -864,7 +1186,9 @@ function ModeratorsTab() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   async function runSearch() {
     const token = getToken();
@@ -893,7 +1217,8 @@ function ModeratorsTab() {
       await adminChangeUserRole(promoteTarget.id, "moderator", token);
       setSnack({ msg: t("mod.promoted"), severity: "success" });
       setPromoteTarget(null);
-      setSearch(""); setSearchResults([]);
+      setSearch("");
+      setSearchResults([]);
       await load();
     } catch (e: any) {
       setSnack({ msg: e?.detail || "Failed", severity: "error" });
@@ -920,7 +1245,11 @@ function ModeratorsTab() {
   }
 
   if (loading) {
-    return <Box sx={{ p: 4, textAlign: "center" }}><CircularProgress /></Box>;
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   const atLimit = cap.current >= cap.max;
@@ -928,9 +1257,24 @@ function ModeratorsTab() {
   return (
     <Stack spacing={3}>
       {/* Header card */}
-      <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, display: "flex", alignItems: "center", gap: 1 }}>
+      <Paper
+        elevation={0}
+        sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
+            mb: 1,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, color: brandColors.maroon, display: "flex", alignItems: "center", gap: 1 }}
+          >
             <GroupIcon /> {t("mod.title")}
           </Typography>
           <Chip
@@ -942,12 +1286,21 @@ function ModeratorsTab() {
         <Typography variant="body2" color="text.secondary">
           {t("mod.subtitle", { max: cap.max })}
         </Typography>
-        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
       </Paper>
 
       {/* Current moderators */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>{t("mod.current")}</Typography>
+      <Paper
+        elevation={0}
+        sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+      >
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
+          {t("mod.current")}
+        </Typography>
         {moderators.length === 0 ? (
           <Typography color="text.secondary">{t("mod.empty")}</Typography>
         ) : (
@@ -958,7 +1311,9 @@ function ModeratorsTab() {
                 divider={i < moderators.length - 1}
                 secondaryAction={
                   <Button
-                    size="small" color="error" variant="outlined"
+                    size="small"
+                    color="error"
+                    variant="outlined"
                     startIcon={<PersonRemoveIcon />}
                     onClick={() => setRevokeTarget(m)}
                   >
@@ -967,7 +1322,9 @@ function ModeratorsTab() {
                 }
               >
                 <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: brandColors.maroon }}>{m.name?.charAt(0).toUpperCase() || "?"}</Avatar>
+                  <Avatar sx={{ bgcolor: brandColors.maroon }}>
+                    {m.name?.charAt(0).toUpperCase() || "?"}
+                  </Avatar>
                 </ListItemAvatar>
                 <ListItemText
                   primary={<Typography sx={{ fontWeight: 600 }}>{m.name}</Typography>}
@@ -980,33 +1337,51 @@ function ModeratorsTab() {
       </Paper>
 
       {/* Promote new moderator */}
-      <Paper elevation={0} sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>{t("mod.add")}</Typography>
+      <Paper
+        elevation={0}
+        sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+      >
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
+          {t("mod.add")}
+        </Typography>
         {atLimit && (
-          <Alert severity="warning" sx={{ mb: 2 }}>{t("mod.atLimit")}</Alert>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {t("mod.atLimit")}
+          </Alert>
         )}
         <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
           <TextField
-            fullWidth size="small"
+            fullWidth
+            size="small"
             placeholder={t("mod.searchUsers")}
             value={search}
-            onChange={e => setSearch(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && runSearch()}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && runSearch()}
             disabled={atLimit}
             slotProps={{
               input: {
-                startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
               },
             }}
           />
-          <Button variant="contained" onClick={runSearch} disabled={atLimit || searching || search.trim().length < 2}>
+          <Button
+            variant="contained"
+            onClick={runSearch}
+            disabled={atLimit || searching || search.trim().length < 2}
+          >
             {t("common.search")}
           </Button>
         </Box>
 
         {searching && <CircularProgress size={24} />}
         {!searching && search.trim().length >= 2 && searchResults.length === 0 && (
-          <Typography color="text.secondary" variant="body2">{t("mod.noResults")}</Typography>
+          <Typography color="text.secondary" variant="body2">
+            {t("mod.noResults")}
+          </Typography>
         )}
         {searchResults.length > 0 && (
           <List disablePadding>
@@ -1016,7 +1391,8 @@ function ModeratorsTab() {
                 divider={i < searchResults.length - 1}
                 secondaryAction={
                   <Button
-                    size="small" variant="contained"
+                    size="small"
+                    variant="contained"
                     startIcon={<PersonAddIcon />}
                     onClick={() => setPromoteTarget(u)}
                     disabled={atLimit}
@@ -1045,7 +1421,9 @@ function ModeratorsTab() {
           <Typography>{t("mod.promoteConfirm", { name: promoteTarget?.name || "" })}</Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setPromoteTarget(null)} disabled={busy}>{t("common.cancel")}</Button>
+          <Button onClick={() => setPromoteTarget(null)} disabled={busy}>
+            {t("common.cancel")}
+          </Button>
           <Button variant="contained" onClick={confirmPromote} disabled={busy}>
             {busy ? t("common.saving") : t("common.confirm")}
           </Button>
@@ -1059,7 +1437,9 @@ function ModeratorsTab() {
           <Typography>{t("mod.revokeConfirm", { name: revokeTarget?.name || "" })}</Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setRevokeTarget(null)} disabled={busy}>{t("common.cancel")}</Button>
+          <Button onClick={() => setRevokeTarget(null)} disabled={busy}>
+            {t("common.cancel")}
+          </Button>
           <Button variant="contained" color="error" onClick={confirmRevoke} disabled={busy}>
             {busy ? t("common.saving") : t("mod.revoke")}
           </Button>

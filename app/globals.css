@@ -1,6 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap");
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -9,7 +11,8 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -23,7 +26,8 @@ body {
 }
 
 /* Responsive images */
-img, video {
+img,
+video {
   max-width: 100%;
   height: auto;
 }
@@ -61,7 +65,7 @@ a {
 
 /* WCAG: visible focus ring for keyboard navigation */
 *:focus-visible {
-  outline: 3px solid #E65100;
+  outline: 3px solid #e65100;
   outline-offset: 2px;
 }
 
@@ -74,7 +78,7 @@ a[href="#main-content"]:focus {
   height: auto !important;
   overflow: visible !important;
   z-index: 9999;
-  background: #E65100;
+  background: #e65100;
   color: #fff;
   padding: 8px 16px;
   border-radius: 4px;

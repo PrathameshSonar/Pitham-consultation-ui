@@ -1,0 +1,22 @@
+node_modules
+.next
+out
+build
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# generated / vendored
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# backend (formatted by Python tooling, not Prettier)
+backend
+i18n/messages.ts
+
+# user data / uploads
+backend/uploads
+
+# coverage
+coverage

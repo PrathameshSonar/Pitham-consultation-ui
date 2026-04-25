@@ -82,14 +82,14 @@ export const loadingWrapper: SxProps<Theme> = {
 };
 
 export const statusChipColors: Record<string, { bg: string; fg: string }> = {
-  pending:           { bg: "#EFEBE4", fg: brandColors.textMedium },
-  payment_pending:   { bg: "#FFF4D6", fg: "#8A6500" },
-  payment_verified:  { bg: "#DDEEFF", fg: "#0B558A" },
-  scheduled:         { bg: "#D7EEDF", fg: "#1F5E2B" },
-  completed:         { bg: "#E8DDF0", fg: "#5B3378" },
-  cancelled:         { bg: "#FADBDB", fg: "#8E2424" },
-  rescheduled:       { bg: "#FFE1C2", fg: "#8A4200" },
-  open:              { bg: "#FFF4D6", fg: "#8A6500" },
-  answered:          { bg: "#D7EEDF", fg: "#1F5E2B" },
-  paid:              { bg: "#D7EEDF", fg: "#1F5E2B" },
+  pending: { bg: "#EFEBE4", fg: brandColors.textMedium },
+  payment_pending: { bg: "#FFF4D6", fg: "#8A6500" },
+  payment_verified: { bg: "#DDEEFF", fg: "#0B558A" },
+  scheduled: { bg: "#D7EEDF", fg: "#1F5E2B" },
+  completed: { bg: "#E8DDF0", fg: "#5B3378" },
+  cancelled: { bg: "#FADBDB", fg: "#8E2424" },
+  rescheduled: { bg: "#FFE1C2", fg: "#8A4200" },
+  open: { bg: "#FFF4D6", fg: "#8A6500" },
+  answered: { bg: "#D7EEDF", fg: "#1F5E2B" },
+  paid: { bg: "#D7EEDF", fg: "#1F5E2B" },
 };

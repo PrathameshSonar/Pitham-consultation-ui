@@ -20,14 +20,26 @@ export default function CookieConsent() {
   if (!show) return null;
 
   return (
-    <Box sx={{
-      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999,
-      bgcolor: "background.paper", borderTop: "1px solid", borderColor: "divider",
-      px: { xs: 2, md: 4 }, py: 2,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      gap: 2, flexWrap: "wrap",
-      boxShadow: "0 -4px 20px rgba(0,0,0,0.1)",
-    }}>
+    <Box
+      sx={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+        bgcolor: "background.paper",
+        borderTop: "1px solid",
+        borderColor: "divider",
+        px: { xs: 2, md: 4 },
+        py: 2,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 2,
+        flexWrap: "wrap",
+        boxShadow: "0 -4px 20px rgba(0,0,0,0.1)",
+      }}
+    >
       <Typography variant="body2" sx={{ flex: 1, minWidth: 200 }}>
         {t("cookie.message")}
       </Typography>

@@ -125,11 +125,7 @@ export async function adminGetAppointments(token: string) {
   return res.json();
 }
 
-export async function adminVerifyPayment(
-  id: number,
-  payment_reference: string,
-  token: string
-) {
+export async function adminVerifyPayment(id: number, payment_reference: string, token: string) {
   const res = await cfetch(`${BASE}/admin/appointments/${id}/verify-payment`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
@@ -147,7 +143,7 @@ export async function adminAssignSlot(
     zoom_link: string;
     notes?: string;
   },
-  token: string
+  token: string,
 ) {
   const res = await cfetch(`${BASE}/admin/appointments/${id}/assign-slot`, {
     method: "PUT",
@@ -166,7 +162,7 @@ export async function adminReschedule(
     zoom_link?: string;
     reason?: string;
   },
-  token: string
+  token: string,
 ) {
   const res = await cfetch(`${BASE}/admin/appointments/${id}/reschedule`, {
     method: "PUT",
@@ -185,7 +181,7 @@ export async function adminMarkCompleted(
     recording_link?: string;
     gallery_doc_ids?: number[];
   },
-  token: string
+  token: string,
 ) {
   const fd = new FormData();
   fd.append("analysis_notes", data.analysis_notes || "");
@@ -211,10 +207,9 @@ export async function generateInvoice(id: number, token: string) {
 }
 
 export async function adminDownloadInvoicesZip(dateFrom: string, dateTo: string, token: string) {
-  const res = await cfetch(
-    `${BASE}/admin/invoices/download?date_from=${dateFrom}&date_to=${dateTo}`,
-    { headers: authHeaders(token) }
-  );
+  const res = await cfetch(`${BASE}/admin/invoices/download?date_from=${dateFrom}&date_to=${dateTo}`, {
+    headers: authHeaders(token),
+  });
   if (!res.ok) {
     const err = await res.json();
     throw err;
@@ -279,7 +274,7 @@ export async function adminGenerateReceipt(id: number, token: string) {
 
 export async function adminCreateZoomMeeting(
   data: { topic: string; scheduled_date: string; scheduled_time: string; duration?: number },
-  token: string
+  token: string,
 ) {
   const res = await cfetch(`${BASE}/admin/zoom/create-meeting`, {
     method: "POST",
@@ -294,12 +289,16 @@ export async function adminCreateZoomMeeting(
 
 export async function adminGetUsers(
   token: string,
-  params?: { search?: string; city?: string; state?: string; country?: string; role?: "user" | "moderator" | "admin" }
+  params?: {
+    search?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    role?: "user" | "moderator" | "admin";
+  },
 ) {
   const q = new URLSearchParams(
-    Object.fromEntries(
-      Object.entries(params || {}).filter(([, v]) => v)
-    ) as Record<string, string>
+    Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v)) as Record<string, string>,
   ).toString();
   const res = await cfetch(`${BASE}/admin/users${q ? `?${q}` : ""}`, {
     headers: authHeaders(token),
@@ -389,7 +388,7 @@ export async function adminDeleteGalleryDocument(id: number, token: string) {
 
 export async function adminAssignFromGallery(
   data: { gallery_doc_id: number; user_id: number },
-  token: string
+  token: string,
 ) {
   const res = await cfetch(`${BASE}/admin/documents/assign-from-gallery`, {
     method: "POST",
@@ -419,7 +418,7 @@ export async function adminGetUserDocuments(userId: number, token: string) {
 
 export async function adminBulkAssignFromGallery(
   data: { gallery_doc_id: number; user_ids: number[]; batch_label?: string },
-  token: string
+  token: string,
 ) {
   const res = await cfetch(`${BASE}/admin/documents/bulk-assign-gallery`, {
     method: "POST",
@@ -451,7 +450,7 @@ export async function adminGetUserLists(token: string) {
 
 export async function adminCreateUserList(
   data: { name: string; description?: string; user_ids: number[] },
-  token: string
+  token: string,
 ) {
   const res = await cfetch(`${BASE}/admin/user-lists`, {
     method: "POST",
@@ -465,7 +464,7 @@ export async function adminCreateUserList(
 export async function adminUpdateUserList(
   id: number,
   data: { name?: string; description?: string },
-  token: string
+  token: string,
 ) {
   const res = await cfetch(`${BASE}/admin/user-lists/${id}`, {
     method: "PATCH",
@@ -476,11 +475,7 @@ export async function adminUpdateUserList(
   return res.json();
 }
 
-export async function adminUpdateUserListMembers(
-  id: number,
-  user_ids: number[],
-  token: string
-) {
+export async function adminUpdateUserListMembers(id: number, user_ids: number[], token: string) {
   const res = await cfetch(`${BASE}/admin/user-lists/${id}/members`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
@@ -501,10 +496,7 @@ export async function adminDeleteUserList(id: number, token: string) {
 
 // ── Queries ───────────────────────────────────────────────────────────────────
 
-export async function submitQuery(
-  data: { subject: string; message: string },
-  token: string
-) {
+export async function submitQuery(data: { subject: string; message: string }, token: string) {
   const res = await cfetch(`${BASE}/queries`, {
     method: "POST",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
@@ -530,11 +522,7 @@ export async function adminGetQueries(token: string) {
   return res.json();
 }
 
-export async function adminReplyQuery(
-  id: number,
-  reply: string,
-  token: string
-) {
+export async function adminReplyQuery(id: number, reply: string, token: string) {
   const res = await cfetch(`${BASE}/admin/queries/${id}/reply`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
@@ -574,7 +562,7 @@ export async function adminGetRecordings(token: string) {
 
 export async function adminBulkAssignRecording(
   data: { title: string; recording_url: string; user_ids?: number[]; list_ids?: number[] },
-  token: string
+  token: string,
 ) {
   const res = await cfetch(`${BASE}/admin/recordings/bulk-assign`, {
     method: "POST",
@@ -658,7 +646,8 @@ export async function adminGetPendingSettings(token: string) {
 
 export async function adminApproveSettingChange(changeId: number, token: string) {
   const res = await cfetch(`${BASE}/admin/settings/pending/${changeId}/approve`, {
-    method: "POST", headers: authHeaders(token),
+    method: "POST",
+    headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
   return res.json();
@@ -666,7 +655,8 @@ export async function adminApproveSettingChange(changeId: number, token: string)
 
 export async function adminRejectSettingChange(changeId: number, token: string) {
   const res = await cfetch(`${BASE}/admin/settings/pending/${changeId}/reject`, {
-    method: "POST", headers: authHeaders(token),
+    method: "POST",
+    headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
   return res.json();
@@ -677,9 +667,15 @@ export async function adminRejectSettingChange(changeId: number, token: string) 
 export async function adminGetAuditLog(
   token: string,
   params: {
-    page?: number; limit?: number; action?: string; admin_id?: number;
-    entity_type?: string; date_from?: string; date_to?: string; sort?: string;
-  } = {}
+    page?: number;
+    limit?: number;
+    action?: string;
+    admin_id?: number;
+    entity_type?: string;
+    date_from?: string;
+    date_to?: string;
+    sort?: string;
+  } = {},
 ) {
   const p = new URLSearchParams();
   p.set("page", String(params.page || 1));
@@ -696,7 +692,9 @@ export async function adminGetAuditLog(
 }
 
 export async function adminGlobalSearch(query: string, token: string) {
-  const res = await cfetch(`${BASE}/admin/search?q=${encodeURIComponent(query)}`, { headers: authHeaders(token) });
+  const res = await cfetch(`${BASE}/admin/search?q=${encodeURIComponent(query)}`, {
+    headers: authHeaders(token),
+  });
   if (!res.ok) throw await res.json();
   return res.json();
 }
@@ -739,7 +737,7 @@ export function downloadCalendarIcs(apptId: number, token: string) {
 
 export async function initiatePhonePePayment(
   data: { appointment_id: number; amount: number },
-  token: string
+  token: string,
 ) {
   const res = await cfetch(`${BASE}/payments/phonepe/initiate`, {
     method: "POST",
@@ -796,7 +794,10 @@ function _eventForm(data: Partial<EventInput>): FormData {
   return fd;
 }
 
-export async function getPublicEvents(scope: "upcoming" | "past" | "all" = "upcoming", limit?: number): Promise<EventItem[]> {
+export async function getPublicEvents(
+  scope: "upcoming" | "past" | "all" = "upcoming",
+  limit?: number,
+): Promise<EventItem[]> {
   const params = new URLSearchParams({ scope });
   if (limit) params.set("limit", String(limit));
   const res = await cfetch(`${BASE}/events?${params}`);
@@ -820,7 +821,11 @@ export async function adminCreateEvent(data: EventInput, token: string): Promise
   return res.json();
 }
 
-export async function adminUpdateEvent(id: number, data: Partial<EventInput>, token: string): Promise<EventItem> {
+export async function adminUpdateEvent(
+  id: number,
+  data: Partial<EventInput>,
+  token: string,
+): Promise<EventItem> {
   const res = await cfetch(`${BASE}/admin/events/${id}`, {
     method: "PUT",
     headers: authHeaders(token),
@@ -838,7 +843,6 @@ export async function adminDeleteEvent(id: number, token: string) {
   if (!res.ok) throw await res.json();
   return res.json();
 }
-
 
 // ── Pitham CMS (banners / videos / instagram + testimonials) ─────────────────
 
@@ -896,7 +900,14 @@ export async function adminListPithamMedia(kind: PithamMediaKind, token: string)
 }
 
 export async function adminCreatePithamMedia(
-  data: { kind: PithamMediaKind; title?: string; url?: string; sort_order?: number; is_active?: boolean; image?: File | null },
+  data: {
+    kind: PithamMediaKind;
+    title?: string;
+    url?: string;
+    sort_order?: number;
+    is_active?: boolean;
+    image?: File | null;
+  },
   token: string,
 ): Promise<PithamMediaItem> {
   const fd = new FormData();
@@ -907,7 +918,9 @@ export async function adminCreatePithamMedia(
   if (data.is_active !== undefined) fd.append("is_active", String(data.is_active));
   if (data.image) fd.append("image", data.image);
   const res = await cfetch(`${BASE}/admin/pitham/media`, {
-    method: "POST", headers: authHeaders(token), body: fd,
+    method: "POST",
+    headers: authHeaders(token),
+    body: fd,
   });
   if (!res.ok) throw await res.json();
   return res.json();
@@ -925,7 +938,9 @@ export async function adminUpdatePithamMedia(
   if (data.is_active !== undefined) fd.append("is_active", String(data.is_active));
   if (data.image) fd.append("image", data.image);
   const res = await cfetch(`${BASE}/admin/pitham/media/${id}`, {
-    method: "PUT", headers: authHeaders(token), body: fd,
+    method: "PUT",
+    headers: authHeaders(token),
+    body: fd,
   });
   if (!res.ok) throw await res.json();
   return res.json();
@@ -933,7 +948,8 @@ export async function adminUpdatePithamMedia(
 
 export async function adminDeletePithamMedia(id: number, token: string) {
   const res = await cfetch(`${BASE}/admin/pitham/media/${id}`, {
-    method: "DELETE", headers: authHeaders(token),
+    method: "DELETE",
+    headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
   return res.json();
@@ -948,7 +964,14 @@ export async function adminListTestimonials(token: string): Promise<TestimonialI
 }
 
 export async function adminCreateTestimonial(
-  data: { name: string; quote: string; location?: string; sort_order?: number; is_active?: boolean; photo?: File | null },
+  data: {
+    name: string;
+    quote: string;
+    location?: string;
+    sort_order?: number;
+    is_active?: boolean;
+    photo?: File | null;
+  },
   token: string,
 ): Promise<TestimonialItem> {
   const fd = new FormData();
@@ -959,7 +982,9 @@ export async function adminCreateTestimonial(
   if (data.is_active !== undefined) fd.append("is_active", String(data.is_active));
   if (data.photo) fd.append("photo", data.photo);
   const res = await cfetch(`${BASE}/admin/pitham/testimonials`, {
-    method: "POST", headers: authHeaders(token), body: fd,
+    method: "POST",
+    headers: authHeaders(token),
+    body: fd,
   });
   if (!res.ok) throw await res.json();
   return res.json();
@@ -967,7 +992,14 @@ export async function adminCreateTestimonial(
 
 export async function adminUpdateTestimonial(
   id: number,
-  data: Partial<{ name: string; quote: string; location: string; sort_order: number; is_active: boolean; photo: File | null }>,
+  data: Partial<{
+    name: string;
+    quote: string;
+    location: string;
+    sort_order: number;
+    is_active: boolean;
+    photo: File | null;
+  }>,
   token: string,
 ): Promise<TestimonialItem> {
   const fd = new FormData();
@@ -978,7 +1010,9 @@ export async function adminUpdateTestimonial(
   if (data.is_active !== undefined) fd.append("is_active", String(data.is_active));
   if (data.photo) fd.append("photo", data.photo);
   const res = await cfetch(`${BASE}/admin/pitham/testimonials/${id}`, {
-    method: "PUT", headers: authHeaders(token), body: fd,
+    method: "PUT",
+    headers: authHeaders(token),
+    body: fd,
   });
   if (!res.ok) throw await res.json();
   return res.json();
@@ -986,12 +1020,96 @@ export async function adminUpdateTestimonial(
 
 export async function adminDeleteTestimonial(id: number, token: string) {
   const res = await cfetch(`${BASE}/admin/pitham/testimonials/${id}`, {
-    method: "DELETE", headers: authHeaders(token),
+    method: "DELETE",
+    headers: authHeaders(token),
   });
   if (!res.ok) throw await res.json();
   return res.json();
 }
 
+// ── Broadcasts ──────────────────────────────────────────────────────────────
+
+export interface Broadcast {
+  id: number;
+  title: string;
+  message: string;
+  image_path?: string | null;
+  target_type: "all" | "list";
+  target_list_id?: number | null;
+  sent_by_name?: string | null;
+  created_at: string;
+  is_read: boolean;
+}
+
+export async function adminListBroadcasts(token: string): Promise<Broadcast[]> {
+  const res = await cfetch(`${BASE}/admin/broadcasts`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminCreateBroadcast(
+  data: {
+    title: string;
+    message: string;
+    target_type: "all" | "list";
+    target_list_id?: number;
+    image?: File | null;
+  },
+  token: string,
+): Promise<Broadcast> {
+  const fd = new FormData();
+  fd.append("title", data.title);
+  fd.append("message", data.message);
+  fd.append("target_type", data.target_type);
+  if (data.target_list_id != null) fd.append("target_list_id", String(data.target_list_id));
+  if (data.image) fd.append("image", data.image);
+  const res = await cfetch(`${BASE}/admin/broadcasts`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: fd,
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminDeleteBroadcast(id: number, token: string) {
+  const res = await cfetch(`${BASE}/admin/broadcasts/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function getMyBroadcasts(token: string): Promise<Broadcast[]> {
+  const res = await cfetch(`${BASE}/broadcasts/my`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function getUnreadBroadcastCount(token: string): Promise<{ count: number }> {
+  const res = await cfetch(`${BASE}/broadcasts/unread-count`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function markBroadcastRead(id: number, token: string) {
+  const res = await cfetch(`${BASE}/broadcasts/${id}/read`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function markAllBroadcastsRead(token: string) {
+  const res = await cfetch(`${BASE}/broadcasts/read-all`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
 

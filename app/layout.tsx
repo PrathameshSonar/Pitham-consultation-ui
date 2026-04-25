@@ -7,6 +7,7 @@ import SessionTimeout from "@/components/SessionTimeout";
 import Footer from "@/components/Footer";
 import ThemeRegistry from "@/theme/ThemeRegistry";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { QueryProvider } from "@/components/QueryProvider";
 
 export const metadata: Metadata = {
   title: {
@@ -16,16 +17,22 @@ export const metadata: Metadata = {
   description:
     "Shri Pitambara Baglamukhi Shakti Pitham, Ahilyanagar — book a personal astrology & spiritual consultation with Shri Mayuresh Guruji Vispute. Kundali, Vastu, Meditation & more.",
   keywords: [
-    "astrology", "spiritual consultation", "kundali", "vastu",
-    "pitham", "baglamukhi", "pitambara", "shakti pitham", "ahilyanagar",
-    "guruji", "mayuresh vispute",
+    "astrology",
+    "spiritual consultation",
+    "kundali",
+    "vastu",
+    "pitham",
+    "baglamukhi",
+    "pitambara",
+    "shakti pitham",
+    "ahilyanagar",
+    "guruji",
+    "mayuresh vispute",
   ],
   authors: [{ name: "Shri Pitambara Baglamukhi Shakti Pitham, Ahilyanagar" }],
   robots: { index: true, follow: true },
   icons: {
-    icon: [
-      { url: "/spbsp-logo.png", type: "image/png" },
-    ],
+    icon: [{ url: "/spbsp-logo.png", type: "image/png" }],
     shortcut: "/spbsp-logo.png",
     apple: "/spbsp-logo.png",
   },
@@ -46,11 +53,7 @@ export const viewport: Viewport = {
   themeColor: "#E65100",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -63,24 +66,33 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ThemeRegistry>
-          <a href="#main-content" style={{
-            position: "absolute", left: "-9999px", top: "auto",
-            width: "1px", height: "1px", overflow: "hidden",
-          }}>
-            Skip to main content
-          </a>
-          <Navbar />
-          <ProfileCompleteCheck />
-          <SessionTimeout />
-          <ErrorBoundary>
-            <main id="main-content" role="main">
-              {children}
-            </main>
-          </ErrorBoundary>
-          <Footer />
-          <CookieConsent />
-        </ThemeRegistry>
+        <QueryProvider>
+          <ThemeRegistry>
+            <a
+              href="#main-content"
+              style={{
+                position: "absolute",
+                left: "-9999px",
+                top: "auto",
+                width: "1px",
+                height: "1px",
+                overflow: "hidden",
+              }}
+            >
+              Skip to main content
+            </a>
+            <Navbar />
+            <ProfileCompleteCheck />
+            <SessionTimeout />
+            <ErrorBoundary>
+              <main id="main-content" role="main">
+                {children}
+              </main>
+            </ErrorBoundary>
+            <Footer />
+            <CookieConsent />
+          </ThemeRegistry>
+        </QueryProvider>
       </body>
     </html>
   );

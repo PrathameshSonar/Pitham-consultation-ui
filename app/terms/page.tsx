@@ -72,21 +72,29 @@ export default function Terms() {
     <Box sx={s.wrapper}>
       <Paper elevation={0} sx={s.card}>
         <Typography sx={s.subtitle}>{t("terms.subtitle")}</Typography>
-        <Typography variant="h3" sx={s.title}>{t("terms.title")}</Typography>
+        <Typography variant="h3" sx={s.title}>
+          {t("terms.title")}
+        </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {t("privacy.lastUpdated")}: April 2026
         </Typography>
 
-        {SECTIONS.map(sec => (
+        {SECTIONS.map((sec) => (
           <Box key={sec.title}>
-            <Typography variant="h6" sx={s.sectionHeading}>{sec.title}</Typography>
+            <Typography variant="h6" sx={s.sectionHeading}>
+              {sec.title}
+            </Typography>
             <Typography sx={s.sectionText}>{sec.body}</Typography>
           </Box>
         ))}
 
         <Typography sx={{ ...s.sectionText, mt: 3 }}>
           {t("terms.seePrivacy")}{" "}
-          <Box component={Link} href="/privacy" sx={{ color: "primary.main", fontWeight: 600, "&:hover": { textDecoration: "underline" } }}>
+          <Box
+            component={Link}
+            href="/privacy"
+            sx={{ color: "primary.main", fontWeight: 600, "&:hover": { textDecoration: "underline" } }}
+          >
             {t("privacy.title")}
           </Box>
         </Typography>
