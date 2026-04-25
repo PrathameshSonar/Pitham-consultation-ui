@@ -172,53 +172,130 @@ export default function Navbar() {
 
   // Public navbar
   if (isPublic) {
+    const publicLinks: { href: string; label: string }[] = [
+      { href: "/pitham",  label: t("nav.pitham")  },
+      { href: "/about",   label: t("nav.about")   },
+      { href: "/contact", label: t("nav.contact") },
+    ];
+
     return (
-      <AppBar
-        position="sticky"
-        sx={styles.publicAppBar}
-        elevation={0}
-        component="nav"
-        aria-label="Main navigation"
-      >
-        <Toolbar>
-          <Box
-            component={Link}
-            href="/"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              color: "inherit",
-              textDecoration: "none",
-              flexShrink: 0,
-            }}
-          >
-            <Image src="/spbsp-logo.png" alt={t("brand.name")} width={36} height={36} priority />
-            <Typography sx={{ ...styles.brandLogo, color: "inherit" }}>{t("brand.short")}</Typography>
+      <>
+        <AppBar
+          position="sticky"
+          sx={styles.publicAppBar}
+          elevation={0}
+          component="nav"
+          aria-label="Main navigation"
+        >
+          <Toolbar>
+            {/* Brand → home */}
+            <Box
+              component={Link}
+              href="/"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                color: "inherit",
+                textDecoration: "none",
+                flexShrink: 0,
+              }}
+            >
+              <Image src="/spbsp-logo.png" alt={t("brand.name")} width={36} height={36} priority />
+              <Typography sx={{ ...styles.brandLogo, color: "inherit" }}>{t("brand.short")}</Typography>
+            </Box>
+            <Box sx={{ flexGrow: 1 }} />
+
+            {/* Desktop: inline nav + lang + auth buttons */}
+            <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5, mr: 1 }}>
+              {publicLinks.map((l) => (
+                <Button key={l.href} component={Link} href={l.href} sx={styles.publicNavLink}>
+                  {l.label}
+                </Button>
+              ))}
+            </Box>
+            <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
+              {langSwitcher}
+              <Button component={Link} href="/login" sx={styles.publicNavLink}>
+                {t("common.login")}
+              </Button>
+              <Button component={Link} href="/register" variant="contained" color="primary">
+                {t("common.register")}
+              </Button>
+            </Box>
+
+            {/* Mobile: hamburger */}
+            <IconButton
+              onClick={() => setDrawerOpen(true)}
+              sx={{ display: { xs: "flex", md: "none" }, color: "inherit" }}
+              aria-label="Open menu"
+            >
+              <MenuIcon />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+
+        {/* Mobile drawer for public users */}
+        <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+          <Box sx={styles.mobileDrawer} role="presentation">
+            <List>
+              {publicLinks.map((l) => (
+                <ListItem key={l.href} disablePadding>
+                  <ListItemButton
+                    component={Link}
+                    href={l.href}
+                    selected={pathname === l.href}
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    <ListItemText primary={l.label} slotProps={{ primary: { sx: { fontWeight: 600 } } }} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+            <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1.25 }}>
+              <Button
+                component={Link}
+                href="/login"
+                onClick={() => setDrawerOpen(false)}
+                fullWidth
+                variant="outlined"
+                size="large"
+              >
+                {t("common.login")}
+              </Button>
+              <Button
+                component={Link}
+                href="/register"
+                onClick={() => setDrawerOpen(false)}
+                fullWidth
+                variant="contained"
+                size="large"
+              >
+                {t("common.register")}
+              </Button>
+            </Box>
+            <Divider />
+            <Box sx={{ p: 2 }}>
+              <Typography variant="caption" color="text.disabled" sx={{ display: "block", mb: 1 }}>
+                Language
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                {LANGUAGES.map((l) => (
+                  <Button
+                    key={l.code}
+                    size="small"
+                    variant={l.code === lang ? "contained" : "outlined"}
+                    onClick={() => changeLang(l.code)}
+                  >
+                    {l.native}
+                  </Button>
+                ))}
+              </Box>
+            </Box>
           </Box>
-          <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5, mr: 1 }}>
-            <Button component={Link} href="/pitham" sx={styles.publicNavLink}>
-              {t("nav.pitham")}
-            </Button>
-            <Button component={Link} href="/about" sx={styles.publicNavLink}>
-              {t("nav.about")}
-            </Button>
-            <Button component={Link} href="/contact" sx={styles.publicNavLink}>
-              {t("nav.contact")}
-            </Button>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {langSwitcher}
-            <Button component={Link} href="/login" sx={styles.publicNavLink}>
-              {t("common.login")}
-            </Button>
-            <Button component={Link} href="/register" variant="contained" color="primary">
-              {t("common.register")}
-            </Button>
-          </Box>
-        </Toolbar>
-      </AppBar>
+        </Drawer>
+      </>
     );
   }
 
