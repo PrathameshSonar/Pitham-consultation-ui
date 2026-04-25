@@ -822,6 +822,7 @@ export interface EventItem {
   event_date: string;
   event_time?: string | null;
   location?: string | null;
+  location_map_url?: string | null;
   image_url?: string | null;
   is_featured?: boolean;
   created_at: string;
@@ -833,6 +834,7 @@ export interface EventInput {
   event_date: string;
   event_time?: string;
   location?: string;
+  location_map_url?: string;
   image_url?: string;
   is_featured?: boolean;
   image?: File | null;
@@ -845,6 +847,7 @@ function _eventForm(data: Partial<EventInput>): FormData {
   if (data.event_date !== undefined) fd.append("event_date", data.event_date);
   if (data.event_time !== undefined) fd.append("event_time", data.event_time);
   if (data.location !== undefined) fd.append("location", data.location);
+  if (data.location_map_url !== undefined) fd.append("location_map_url", data.location_map_url);
   if (data.image_url !== undefined) fd.append("image_url", data.image_url);
   if (data.is_featured !== undefined) fd.append("is_featured", String(data.is_featured));
   if (data.image) fd.append("image", data.image);

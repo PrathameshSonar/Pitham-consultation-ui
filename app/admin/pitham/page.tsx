@@ -487,6 +487,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
     event_date: "",
     event_time: "",
     location: "",
+    location_map_url: "",
     image_url: "",
     is_featured: false,
   });
@@ -514,6 +515,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
       event_date: "",
       event_time: "",
       location: "",
+      location_map_url: "",
       image_url: "",
       is_featured: false,
     });
@@ -529,6 +531,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
       event_date: item.event_date,
       event_time: item.event_time || "",
       location: item.location || "",
+      location_map_url: item.location_map_url || "",
       image_url: item.image_url && !item.image_url.startsWith("uploads/") ? item.image_url : "",
       is_featured: !!item.is_featured,
     });
@@ -751,6 +754,14 @@ function EventsPanel({ notify }: { notify: Notify }) {
               fullWidth
               value={form.location}
               onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+            />
+            <TextField
+              label="Map link (optional)"
+              fullWidth
+              value={form.location_map_url}
+              onChange={(e) => setForm((f) => ({ ...f, location_map_url: e.target.value }))}
+              placeholder="https://maps.google.com/?q=..."
+              helperText="Paste a Google Maps URL. Visitors will see the location as a clickable link."
             />
             <TextField
               label={t("events.description")}

@@ -568,9 +568,22 @@ function FeaturedEventCard({ ev, lang, t }: { ev: EventItem; lang: string; t: (k
           {ev.event_time && (
             <Chip size="small" icon={<AccessTimeIcon />} label={ev.event_time} variant="outlined" />
           )}
-          {ev.location && (
-            <Chip size="small" icon={<LocationOnIcon />} label={ev.location} variant="outlined" />
-          )}
+          {ev.location &&
+            (ev.location_map_url ? (
+              <Chip
+                component="a"
+                href={ev.location_map_url}
+                target="_blank"
+                rel="noreferrer"
+                clickable
+                size="small"
+                icon={<LocationOnIcon />}
+                label={ev.location}
+                variant="outlined"
+              />
+            ) : (
+              <Chip size="small" icon={<LocationOnIcon />} label={ev.location} variant="outlined" />
+            ))}
         </Stack>
         {ev.description && (
           <Typography

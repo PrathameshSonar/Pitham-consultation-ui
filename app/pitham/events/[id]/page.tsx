@@ -151,14 +151,27 @@ export default function EventDetailPage() {
                 className="!py-5"
               />
             )}
-            {event.location && (
-              <Chip
-                icon={<LocationOnIcon />}
-                label={event.location}
-                variant="outlined"
-                className="!py-5"
-              />
-            )}
+            {event.location &&
+              (event.location_map_url ? (
+                <Chip
+                  component="a"
+                  href={event.location_map_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  clickable
+                  icon={<LocationOnIcon />}
+                  label={event.location}
+                  variant="outlined"
+                  className="!py-5"
+                />
+              ) : (
+                <Chip
+                  icon={<LocationOnIcon />}
+                  label={event.location}
+                  variant="outlined"
+                  className="!py-5"
+                />
+              ))}
           </Stack>
 
           {event.description && (

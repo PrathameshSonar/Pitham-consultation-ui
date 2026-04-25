@@ -9,7 +9,9 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import { getPublicSettings } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
-import { normalizeMapUrl } from "@/lib/mapUrl";
+
+const MAP_EMBED_URL =
+  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3768.669686160781!2d74.7432706!3d19.165930900000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bdcbb001d7a8731%3A0x84ab966e7b4baae3!2sShri%20Pitambara%20Baglamukhi%20Shakti%20Pitham!5e0!3m2!1sen!2sin!4v1777123872218!5m2!1sen!2sin";
 
 export default function Contact() {
   const { t } = useT();
@@ -126,37 +128,22 @@ export default function Contact() {
             )}
           </Paper>
 
-          {/* Google Map */}
-          {(() => {
-            const norm = normalizeMapUrl(s.contact_map_url);
-            return norm.embeddable;
-          })() ? (
-            <Paper
-              elevation={0}
-              className="!rounded-3xl !overflow-hidden !border !border-brand-sand !min-h-[300px]"
-            >
-              <iframe
-                src={normalizeMapUrl(s.contact_map_url).url}
-                width="100%"
-                height="100%"
-                style={{ border: 0, minHeight: 400 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Location"
-              />
-            </Paper>
-          ) : (
-            <Paper
-              elevation={0}
-              className="!p-8 !rounded-3xl !border !border-brand-sand !flex !items-center !justify-center"
-            >
-              <Typography color="text.secondary" className="!text-center">
-                <LocationOnIcon className="!text-[48px] !opacity-30 !block !mx-auto !mb-2" />
-                {t("contact.mapPlaceholder")}
-              </Typography>
-            </Paper>
-          )}
+          {/* Google Map — static embed, location does not change */}
+          <Paper
+            elevation={0}
+            className="!rounded-3xl !overflow-hidden !border !border-brand-sand !min-h-[300px]"
+          >
+            <iframe
+              src={MAP_EMBED_URL}
+              width="100%"
+              height="100%"
+              style={{ border: 0, minHeight: 400 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Shri Pitambara Baglamukhi Shakti Pitham — Location"
+            />
+          </Paper>
         </Box>
       </Box>
     </Box>

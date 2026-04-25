@@ -72,7 +72,6 @@ import {
 } from "@mui/material";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
-import { normalizeMapUrl } from "@/lib/mapUrl";
 
 const ReactQuill = nextDynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
@@ -118,7 +117,6 @@ export default function AdminSettings() {
   const [socialYoutube, setSocialYoutube] = useState("");
   const [socialTwitter, setSocialTwitter] = useState("");
   const [socialWhatsapp, setSocialWhatsapp] = useState("");
-  const [contactMapUrl, setContactMapUrl] = useState("");
 
   useEffect(() => {
     const token = getToken();
@@ -143,7 +141,6 @@ export default function AdminSettings() {
         setSocialYoutube(s.social_youtube || "");
         setSocialTwitter(s.social_twitter || "");
         setSocialWhatsapp(s.social_whatsapp || "");
-        setContactMapUrl(s.contact_map_url || "");
       })
       .catch(() => router.push("/login"))
       .finally(() => setLoading(false));
@@ -375,49 +372,6 @@ export default function AdminSettings() {
                 value={contactAddress}
                 onChange={(e) => setContactAddress(e.target.value)}
               />
-              <TextField
-                label={t("settings.mapUrl")}
-                fullWidth
-                multiline
-                minRows={2}
-                value={contactMapUrl}
-                onChange={(e) => setContactMapUrl(e.target.value)}
-                placeholder='https://www.google.com/maps/embed?pb=...   or paste the entire <iframe src="..."></iframe> snippet'
-                helperText={t("settings.mapUrlHelp")}
-              />
-              {(() => {
-                const norm = normalizeMapUrl(contactMapUrl);
-                if (norm.kind === "empty") return null;
-                if (!norm.embeddable) {
-                  return (
-                    <Alert severity="warning" className="!-mt-2">
-                      {t("settings.mapUrlBad")}
-                    </Alert>
-                  );
-                }
-                return (
-                  <Box>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      className="!block !mb-2"
-                    >
-                      {t("settings.mapPreview")}
-                    </Typography>
-                    <Box className="rounded-lg overflow-hidden border border-brand-sand h-[280px]">
-                      <iframe
-                        src={norm.url}
-                        title="Map preview"
-                        style={{ width: "100%", height: "100%", border: "none" }}
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        allowFullScreen
-                      />
-                    </Box>
-                  </Box>
-                );
-              })()}
-
               <Divider />
               <Typography variant="h6" className="!font-bold !text-brand-maroon">
                 {t("settings.socialLinks")}
@@ -476,7 +430,6 @@ export default function AdminSettings() {
                         contact_email: contactEmail,
                         contact_phone: contactPhone,
                         contact_address: contactAddress,
-                        contact_map_url: normalizeMapUrl(contactMapUrl).url,
                         social_facebook: socialFacebook,
                         social_instagram: socialInstagram,
                         social_youtube: socialYoutube,
