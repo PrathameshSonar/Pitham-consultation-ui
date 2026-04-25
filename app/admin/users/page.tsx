@@ -139,28 +139,24 @@ export default function AdminUsers() {
             placeholder={t("users.searchName")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            sx={{ flex: 1, minWidth: 180 }}
           />
           <TextField
             size="small"
             placeholder={t("users.city")}
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            sx={{ width: 140 }}
           />
           <TextField
             size="small"
             placeholder={t("users.state")}
             value={state}
             onChange={(e) => setState(e.target.value)}
-            sx={{ width: 140 }}
           />
           <TextField
             size="small"
             placeholder={t("users.country")}
             value={country}
             onChange={(e) => setCountry(e.target.value)}
-            sx={{ width: 140 }}
           />
           <TextField
             select
@@ -171,7 +167,6 @@ export default function AdminUsers() {
               setSort(e.target.value as SortKey);
               setPage(0);
             }}
-            sx={{ minWidth: 170 }}
           >
             <MenuItem value="newest">{t("sort.newest")}</MenuItem>
             <MenuItem value="oldest">{t("sort.oldest")}</MenuItem>
@@ -185,6 +180,7 @@ export default function AdminUsers() {
               fetchUsers();
               setPage(0);
             }}
+            sx={{ width: { xs: "100%", md: "auto" } }}
           >
             {t("common.search")}
           </Button>

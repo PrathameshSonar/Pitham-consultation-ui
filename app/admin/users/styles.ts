@@ -27,10 +27,19 @@ export const filtersCard: SxProps<Theme> = {
   borderRadius: 4,
   bgcolor: "background.paper",
   border: `1px solid ${brandColors.sand}`,
-  display: "flex",
-  gap: { xs: 1, md: 2 },
-  flexWrap: "wrap",
+  // Grid layout: stacks single-column on phones (each input full-width),
+  // 2-col on small tablets, dense 4-col on desktop. Avoids the prior issue
+  // where flex+wrap squashed the search box on narrow screens.
+  display: "grid",
+  gap: { xs: 1.25, md: 1.5 },
   alignItems: "center",
+  gridTemplateColumns: {
+    xs: "1fr",
+    sm: "1fr 1fr",
+    md: "2fr 1fr 1fr 1fr 1.5fr auto",
+  },
+  // All form controls inside go full-width within their grid cell.
+  "& .MuiFormControl-root": { width: "100%" },
 };
 
 export const tablePaper: SxProps<Theme> = {

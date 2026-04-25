@@ -174,7 +174,7 @@ export default function AdminBroadcastsPage() {
                   label={t("bc.list")}
                   value={listId}
                   onChange={(e) => setListId(Number(e.target.value) || "")}
-                  sx={{ mt: 1, minWidth: 240 }}
+                  sx={{ mt: 1, width: { xs: "100%", sm: 240 } }}
                   size="small"
                 >
                   {lists.map((l: any) => (

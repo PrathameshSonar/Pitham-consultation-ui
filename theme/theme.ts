@@ -85,6 +85,29 @@ const shared = {
         root: { "@media (max-width: 600px)": { minWidth: "0 !important" } },
       },
     },
+    // DialogActions: by default it's `display: flex` with no wrap, so 3+ buttons
+    // overflow horizontally on small screens. Allow wrapping on mobile.
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          "@media (max-width: 600px)": {
+            flexWrap: "wrap",
+            gap: 8,
+            "& > :not(:first-of-type)": { marginLeft: 0 },
+            // Make every button stretch full-width when it wraps to its own row,
+            // so they line up as full-width stacked buttons rather than half-overlapping.
+            "& > .MuiButton-root": { flex: "1 1 100%", minWidth: 0 },
+          },
+        },
+      },
+    },
+    // Long text inside Dialog content should wrap on word boundaries instead
+    // of pushing the dialog wider than the viewport.
+    MuiDialogContent: {
+      styleOverrides: {
+        root: { "& p, & .MuiTypography-root": { wordBreak: "break-word" } },
+      },
+    },
   },
 };
 

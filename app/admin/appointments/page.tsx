@@ -343,7 +343,20 @@ export default function AdminAppointments() {
           <Tab label={t("appts.tab.completed")} />
         </Tabs>
 
-        <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap", alignItems: "center" }}>
+        <Box
+          sx={{
+            display: "grid",
+            gap: { xs: 1.25, md: 2 },
+            mb: 3,
+            alignItems: "center",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "1fr 1fr",
+              md: "2fr 1fr 1fr",
+            },
+            "& .MuiFormControl-root": { width: "100%" },
+          }}
+        >
           <TextField
             size="small"
             placeholder={t("common.search")}
@@ -358,7 +371,6 @@ export default function AdminAppointments() {
                 ),
               },
             }}
-            sx={{ flex: 1, minWidth: 220 }}
           />
           <DatePicker
             label={t("appts.filterDate")}
@@ -366,7 +378,7 @@ export default function AdminAppointments() {
             onChange={(v) => setFilterDate(v)}
             format="DD/MM/YYYY"
             slotProps={{
-              textField: { size: "small", sx: { minWidth: 170 } },
+              textField: { size: "small" },
               field: { clearable: true },
             }}
           />
@@ -376,7 +388,6 @@ export default function AdminAppointments() {
             label={t("table.sortBy")}
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
-            sx={{ minWidth: 180 }}
           >
             <MenuItem value="newest">{t("sort.newest")}</MenuItem>
             <MenuItem value="oldest">{t("sort.oldest")}</MenuItem>
@@ -958,7 +969,7 @@ export default function AdminAppointments() {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={closeDetails}>{t("common.cancel")}</Button>
-          {detailAppt && detailAppt.status !== "completed" && (
+          {detailAppt && detailAppt.status !== "completed" && detailAppt.status !== "cancelled" && (
             <Button
               variant="contained"
               color="success"

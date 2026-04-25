@@ -523,12 +523,12 @@ export default function AdminDocuments() {
 
             <Box
               sx={{
-                display: "flex",
+                display: "grid",
                 alignItems: "center",
-                justifyContent: "space-between",
-                gap: 2,
+                gap: { xs: 1.25, md: 2 },
                 mb: 2,
-                flexWrap: "wrap",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                "& .MuiFormControl-root": { width: "100%" },
               }}
             >
               <Typography variant="h6" sx={s.sectionTitle}>
@@ -539,7 +539,6 @@ export default function AdminDocuments() {
                 placeholder={t("docs.searchGallery")}
                 value={gallerySearch}
                 onChange={(e) => setGallerySearch(e.target.value)}
-                sx={{ minWidth: 240, flex: { xs: 1, sm: "none" } }}
                 slotProps={{
                   input: {
                     startAdornment: (
@@ -622,12 +621,12 @@ export default function AdminDocuments() {
           <>
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
+                display: "grid",
                 alignItems: "center",
                 mb: 3,
-                gap: 2,
-                flexWrap: "wrap",
+                gap: { xs: 1.25, md: 2 },
+                gridTemplateColumns: { xs: "1fr", sm: "1fr auto" },
+                "& .MuiFormControl-root": { width: "100%" },
               }}
             >
               <TextField
@@ -639,7 +638,6 @@ export default function AdminDocuments() {
                   setSort(e.target.value as SortKey);
                   setPage(0);
                 }}
-                sx={{ minWidth: 200 }}
               >
                 <MenuItem value="newest">{t("sort.newest")}</MenuItem>
                 <MenuItem value="oldest">{t("sort.oldest")}</MenuItem>

@@ -102,14 +102,19 @@ export default function AuditLogTab() {
       <Paper
         elevation={0}
         sx={{
-          p: 2,
+          p: { xs: 1.5, md: 2 },
           mb: 2,
           borderRadius: 4,
           border: `1px solid ${brandColors.sand}`,
-          display: "flex",
-          gap: 1.5,
-          flexWrap: "wrap",
+          display: "grid",
+          gap: { xs: 1.25, md: 1.5 },
           alignItems: "center",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            md: "1fr 1fr 1fr 1fr 1fr auto auto",
+          },
+          "& .MuiFormControl-root": { width: "100%" },
         }}
       >
         <TextField
@@ -118,7 +123,6 @@ export default function AuditLogTab() {
           label={t("tools.admin")}
           value={filterAdminId}
           onChange={(e) => setFilterAdminId(e.target.value)}
-          sx={{ minWidth: 150 }}
         >
           <MenuItem value="">{t("common.all")}</MenuItem>
           {adminOptions.map((a) => (
@@ -133,7 +137,6 @@ export default function AuditLogTab() {
           label={t("tools.action")}
           value={filterAction}
           onChange={(e) => setFilterAction(e.target.value)}
-          sx={{ minWidth: 160 }}
         >
           <MenuItem value="">{t("common.all")}</MenuItem>
           {actionOptions.map((a) => (
@@ -147,14 +150,14 @@ export default function AuditLogTab() {
           value={filterDateFrom}
           onChange={(v) => setFilterDateFrom(v)}
           format="DD/MM/YYYY"
-          slotProps={{ textField: { size: "small", sx: { minWidth: 145 } } }}
+          slotProps={{ textField: { size: "small" } }}
         />
         <DatePicker
           label={t("settings.invoiceTo")}
           value={filterDateTo}
           onChange={(v) => setFilterDateTo(v)}
           format="DD/MM/YYYY"
-          slotProps={{ textField: { size: "small", sx: { minWidth: 145 } } }}
+          slotProps={{ textField: { size: "small" } }}
         />
         <TextField
           select
@@ -162,15 +165,24 @@ export default function AuditLogTab() {
           label={t("table.sortBy")}
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value)}
-          sx={{ minWidth: 130 }}
         >
           <MenuItem value="newest">{t("sort.newest")}</MenuItem>
           <MenuItem value="oldest">{t("sort.oldest")}</MenuItem>
         </TextField>
-        <Button variant="contained" size="small" onClick={applyFilters}>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={applyFilters}
+          sx={{ width: { xs: "100%", md: "auto" } }}
+        >
           {t("common.filter")}
         </Button>
-        <Button variant="outlined" size="small" onClick={clearFilters}>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={clearFilters}
+          sx={{ width: { xs: "100%", md: "auto" } }}
+        >
           {t("common.clear")}
         </Button>
       </Paper>

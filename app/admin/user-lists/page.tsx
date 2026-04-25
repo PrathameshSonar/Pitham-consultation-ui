@@ -274,15 +274,17 @@ export default function AdminUserLists() {
         <Paper
           elevation={0}
           sx={{
-            p: 2,
+            p: { xs: 1.5, md: 2 },
             mb: 3,
             borderRadius: 3,
-            display: "flex",
-            gap: 2,
-            flexWrap: "wrap",
+            display: "grid",
+            gap: { xs: 1.25, md: 2 },
+            gridTemplateColumns: { xs: "1fr", sm: "2fr 1fr" },
+            alignItems: "center",
             border: "1px solid",
             borderColor: "divider",
             bgcolor: "#fff",
+            "& .MuiFormControl-root": { width: "100%" },
           }}
         >
           <TextField
@@ -293,7 +295,6 @@ export default function AdminUserLists() {
               setListSearch(e.target.value);
               setListPage(0);
             }}
-            sx={{ flex: 1, minWidth: 200 }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -313,7 +314,6 @@ export default function AdminUserLists() {
               setListSort(e.target.value as SortKey);
               setListPage(0);
             }}
-            sx={{ minWidth: 180 }}
           >
             <MenuItem value="newest">{t("sort.newest")}</MenuItem>
             <MenuItem value="oldest">{t("sort.oldest")}</MenuItem>

@@ -248,7 +248,15 @@ export default function AdminRecordings() {
           </Button>
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            mb: 3,
+            gridTemplateColumns: { xs: "1fr", sm: "2fr 1fr" },
+            "& .MuiFormControl-root": { width: "100%" },
+          }}
+        >
           <TextField
             size="small"
             placeholder={t("common.search")}
@@ -263,7 +271,6 @@ export default function AdminRecordings() {
                 ),
               },
             }}
-            sx={{ flex: 1, minWidth: 200 }}
           />
           <TextField
             select
@@ -274,7 +281,6 @@ export default function AdminRecordings() {
               setSort(e.target.value as SortKey);
               setPage(0);
             }}
-            sx={{ minWidth: 170 }}
           >
             <MenuItem value="newest">{t("sort.newest")}</MenuItem>
             <MenuItem value="oldest">{t("sort.oldest")}</MenuItem>
