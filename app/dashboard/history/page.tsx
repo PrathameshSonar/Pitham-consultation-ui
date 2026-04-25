@@ -169,7 +169,7 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
         })}
       </Box>
 
-      {a.payment_status !== "paid" && a.status !== "completed" && (
+      {a.payment_status !== "paid" && a.status !== "completed" && a.status !== "cancelled" && (
         <Box sx={{ mt: 1.5, display: "flex", gap: 1, flexWrap: "wrap" }}>
           <Button
             variant="contained"
@@ -191,6 +191,27 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
           >
             {t("appts.cancel")}
           </Button>
+        </Box>
+      )}
+
+      {a.status === "cancelled" && (
+        <Box
+          sx={{
+            mt: 1.5,
+            p: 1.5,
+            borderRadius: 2,
+            bgcolor: "rgba(198,40,40,0.06)",
+            border: "1px solid",
+            borderColor: "error.light",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <CancelIcon fontSize="small" color="error" />
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "error.main" }}>
+            {t("appts.cancelledNotice")}
+          </Typography>
         </Box>
       )}
 

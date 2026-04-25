@@ -15,6 +15,10 @@ import {
   Checkbox,
   Stack,
   CircularProgress,
+  Radio,
+  RadioGroup,
+  FormControl,
+  FormLabel,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
@@ -23,10 +27,28 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import BlockIcon from "@mui/icons-material/Block";
 import GavelIcon from "@mui/icons-material/Gavel";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { bookAppointment, initiatePhonePePayment, getPublicSettings, getToken } from "@/services/api";
+import {
+  bookAppointment,
+  initiatePhonePePayment,
+  getPublicSettings,
+  getProfile,
+  getToken,
+} from "@/services/api";
+import { useAuthQuery } from "@/services/queryHooks";
+import { lettersOnly } from "@/lib/inputFilters";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
 import * as s from "./styles";
+
+type BookingFor = "self" | "other";
+
+const EMPTY_FORM = {
+  name: "",
+  email: "",
+  mobile: "",
+  birth_place: "",
+  problem: "",
+};
 
 export default function BookAppointment() {
   const router = useRouter();
@@ -36,18 +58,54 @@ export default function BookAppointment() {
   const [step, setStep] = useState<"terms" | "form">("terms");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    mobile: "",
-    birth_place: "",
-    problem: "",
-  });
+  // Self / other toggle — defaults to self for the common case.
+  const [bookingFor, setBookingFor] = useState<BookingFor>("self");
+
+  const [form, setForm] = useState(EMPTY_FORM);
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [tob, setTob] = useState<Dayjs | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Cached profile lookup — instant on second visit
+  const { data: profile } = useAuthQuery<any>(["profile"], getProfile);
+
+  // Sync form to the toggle. "self" → prefill from profile; "other" → blank.
+  // The `problem` field is consultation-specific so it's never prefilled.
+  // Selfie is also intentionally NOT prefilled — needs a fresh face photo per booking.
+  useEffect(() => {
+    if (bookingFor === "self" && profile) {
+      setForm({
+        name: profile.name || "",
+        email: profile.email || "",
+        mobile: profile.mobile || "",
+        birth_place: profile.birth_place || "",
+        problem: "",
+      });
+      if (profile.dob) setDob(dayjs(profile.dob));
+      else setDob(null);
+      if (profile.tob) {
+        const parts = (profile.tob || "").split(":");
+        if (parts.length >= 2) {
+          const [h, m, sec] = parts;
+          setTob(
+            dayjs()
+              .hour(parseInt(h))
+              .minute(parseInt(m))
+              .second(parseInt(sec || "0")),
+          );
+        }
+      } else setTob(null);
+    } else if (bookingFor === "other") {
+      setForm(EMPTY_FORM);
+      setDob(null);
+      setTob(null);
+    }
+    // Whatever the user uploaded as a selfie before the toggle is also reset
+    // — selfie should match the person being booked for.
+    setSelfie(null);
+  }, [bookingFor, profile]);
 
   // Settings
   const [settingsLoading, setSettingsLoading] = useState(true);
@@ -250,13 +308,36 @@ export default function BookAppointment() {
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Stack spacing={3}>
+            {/* Self / other toggle — drives form prefill */}
+            <FormControl>
+              <FormLabel sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}>
+                {t("book.bookingFor")}
+              </FormLabel>
+              <RadioGroup
+                row
+                value={bookingFor}
+                onChange={(e) => setBookingFor(e.target.value as BookingFor)}
+              >
+                <FormControlLabel
+                  value="self"
+                  control={<Radio />}
+                  label={t("book.bookingForSelf")}
+                />
+                <FormControlLabel
+                  value="other"
+                  control={<Radio />}
+                  label={t("book.bookingForOther")}
+                />
+              </RadioGroup>
+            </FormControl>
+
             <Box sx={s.gridTwo}>
               <TextField
                 label={t("auth.register.fullName")}
                 required
                 fullWidth
                 value={form.name}
-                onChange={(e) => set("name", e.target.value)}
+                onChange={(e) => set("name", lettersOnly(e.target.value))}
                 slotProps={{ htmlInput: { maxLength: 150, "aria-label": t("auth.register.fullName") } }}
               />
               <TextField
@@ -280,7 +361,7 @@ export default function BookAppointment() {
                 required
                 fullWidth
                 value={form.birth_place}
-                onChange={(e) => set("birth_place", e.target.value)}
+                onChange={(e) => set("birth_place", lettersOnly(e.target.value))}
                 slotProps={{ htmlInput: { maxLength: 150, "aria-label": t("auth.register.birthPlace") } }}
               />
               <DatePicker

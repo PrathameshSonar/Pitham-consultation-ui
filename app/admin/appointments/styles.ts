@@ -40,10 +40,18 @@ export const topRow: SxProps<Theme> = {
 
 export const chipCol: SxProps<Theme> = {
   display: "flex",
-  flexDirection: { xs: "row", sm: "column" },
-  gap: 1,
-  alignItems: { xs: "center", sm: "flex-end" },
-  flexWrap: "wrap",
+  flexDirection: "column",
+  gap: 0.75,
+  alignItems: { xs: "flex-start", sm: "flex-end" },
+  flexShrink: 0,
+  width: { xs: "100%", sm: "auto" },
+  mt: { xs: 1, sm: 0 },
+  // Tighter chip styling on mobile so the long "payment_pending" label
+  // doesn't crowd the appointment info.
+  "& .MuiChip-root": {
+    fontSize: { xs: "0.7rem", sm: "0.75rem" },
+    height: { xs: 22, sm: 24 },
+  },
 };
 
 export const scheduledBox: SxProps<Theme> = {

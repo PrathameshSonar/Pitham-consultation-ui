@@ -422,9 +422,9 @@ export default function AdminAppointments() {
                         sx={{ bgcolor: c.bg, color: c.fg, fontWeight: 600, textTransform: "capitalize" }}
                       />
                       <Chip
-                        label={`${t("appts.payment")}: ${a.payment_status}`}
+                        label={a.payment_status.replace("_", " ")}
                         size="small"
-                        sx={{ bgcolor: pc.bg, color: pc.fg, fontWeight: 500 }}
+                        sx={{ bgcolor: pc.bg, color: pc.fg, fontWeight: 500, textTransform: "capitalize" }}
                       />
                     </Box>
                   </Box>

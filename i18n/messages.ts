@@ -161,6 +161,9 @@ export const messages = {
 
     // ── Book appointment ──
     "book.title":        "Book Appointment",
+    "book.bookingFor":   "Who is this consultation for?",
+    "book.bookingForSelf":  "Myself",
+    "book.bookingForOther": "Someone else",
     "book.subtitle":     "Fill in your details to request a consultation with Guruji.",
     "book.problem":      "Problem Statement / Purpose",
     "book.problem.help": "Describe what guidance you are seeking (Hindi or English)",
@@ -257,6 +260,7 @@ export const messages = {
     "appts.adminCancel":     "Cancel (No Refund)",
     "appts.adminCancelConfirm": "Cancel this consultation? As per no-refund policy, the fee will NOT be refunded.",
     "appts.adminCancelled":  "Appointment cancelled. No refund as per policy.",
+    "appts.cancelledNotice": "This appointment was cancelled and can no longer be paid for.",
     "appts.viewAnalysis":   "View Analysis",
     "appts.bookedBy":       "Booked by",
     "appts.bookedOn":       "Booked on",
@@ -847,6 +851,9 @@ export const messages = {
     "dash.tile.queries.desc": "गुरुजी को प्रश्न भेजें",
 
     "book.title":        "अपॉइंटमेंट बुक करें",
+    "book.bookingFor":   "यह परामर्श किसके लिए है?",
+    "book.bookingForSelf":  "मेरे लिए",
+    "book.bookingForOther": "किसी और के लिए",
     "book.subtitle":     "गुरुजी के साथ परामर्श का अनुरोध करने के लिए अपना विवरण भरें।",
     "book.problem":      "समस्या / उद्देश्य",
     "book.problem.help": "आप कौन-सा मार्गदर्शन चाहते हैं (हिन्दी या अंग्रेज़ी में लिखें)",
@@ -939,6 +946,7 @@ export const messages = {
     "appts.adminCancel":     "रद्द करें (कोई रिफंड नहीं)",
     "appts.adminCancelConfirm": "यह परामर्श रद्द करें? नो-रिफंड नीति के अनुसार शुल्क वापस नहीं किया जाएगा।",
     "appts.adminCancelled":  "अपॉइंटमेंट रद्द। नीति के अनुसार कोई रिफंड नहीं।",
+    "appts.cancelledNotice": "यह अपॉइंटमेंट रद्द कर दिया गया है और अब इसका भुगतान नहीं किया जा सकता।",
     "appts.viewAnalysis":   "विश्लेषण देखें",
     "appts.bookedBy":       "बुक किया गया",
     "appts.bookedOn":       "बुक किया गया",
@@ -1497,6 +1505,9 @@ export const messages = {
     "dash.tile.queries.desc": "गुरुजींना प्रश्न पाठवा",
 
     "book.title":        "भेट बुक करा",
+    "book.bookingFor":   "हा सल्ला कोणासाठी आहे?",
+    "book.bookingForSelf":  "स्वतःसाठी",
+    "book.bookingForOther": "इतर कोणासाठी",
     "book.subtitle":     "गुरुजींसोबत सल्ला मिळवण्यासाठी आपले तपशील भरा.",
     "book.problem":      "समस्या / उद्देश",
     "book.problem.help": "आपल्याला कोणते मार्गदर्शन हवे आहे ते लिहा",
@@ -1589,6 +1600,7 @@ export const messages = {
     "appts.adminCancel":     "रद्द करा (रिफंड नाही)",
     "appts.adminCancelConfirm": "हा सल्ला रद्द करायचा? नो-रिफंड धोरणानुसार शुल्क परत केले जाणार नाही.",
     "appts.adminCancelled":  "भेट रद्द. धोरणानुसार रिफंड नाही.",
+    "appts.cancelledNotice": "ही भेट रद्द करण्यात आली आहे आणि यापुढे पेमेंट करता येणार नाही.",
     "appts.viewAnalysis":   "विश्लेषण पहा",
     "appts.bookedBy":       "बुक केले",
     "appts.bookedOn":       "बुक केले",

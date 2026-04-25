@@ -20,6 +20,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs, { Dayjs } from "dayjs";
 import { registerUser, googleLogin, saveToken } from "@/services/api";
+import { lettersOnly } from "@/lib/inputFilters";
 import { useT } from "@/i18n/I18nProvider";
 import Captcha, { type CaptchaRef } from "@/components/Captcha";
 import * as s from "./styles";
@@ -158,7 +159,7 @@ export default function Register() {
               required
               fullWidth
               value={form.name}
-              onChange={(e) => set("name", e.target.value)}
+              onChange={(e) => set("name", lettersOnly(e.target.value))}
             />
             <TextField
               label={`${t("common.email")} (${t("common.optional")})`}
@@ -180,7 +181,7 @@ export default function Register() {
               required
               fullWidth
               value={form.birth_place}
-              onChange={(e) => set("birth_place", e.target.value)}
+              onChange={(e) => set("birth_place", lettersOnly(e.target.value))}
             />
             <DatePicker
               label={t("auth.register.dob")}
@@ -205,14 +206,14 @@ export default function Register() {
               required
               fullWidth
               value={form.city}
-              onChange={(e) => set("city", e.target.value)}
+              onChange={(e) => set("city", lettersOnly(e.target.value))}
             />
             <TextField
               label={t("auth.register.state")}
               required
               fullWidth
               value={form.state}
-              onChange={(e) => set("state", e.target.value)}
+              onChange={(e) => set("state", lettersOnly(e.target.value))}
             />
             <TextField
               select

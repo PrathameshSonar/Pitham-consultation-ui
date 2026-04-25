@@ -23,6 +23,7 @@ import dayjs, { Dayjs } from "dayjs";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { getProfile, updateProfile, deleteAccount, clearToken, getToken } from "@/services/api";
+import { lettersOnly } from "@/lib/inputFilters";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
 
@@ -197,7 +198,7 @@ export default function ProfilePage() {
               required
               fullWidth
               value={form.name}
-              onChange={(e) => set("name", e.target.value)}
+              onChange={(e) => set("name", lettersOnly(e.target.value))}
               slotProps={{ htmlInput: { "aria-label": t("auth.register.fullName") } }}
             />
             <TextField
@@ -221,7 +222,7 @@ export default function ProfilePage() {
               label={t("auth.register.birthPlace")}
               fullWidth
               value={form.birth_place}
-              onChange={(e) => set("birth_place", e.target.value)}
+              onChange={(e) => set("birth_place", lettersOnly(e.target.value))}
               slotProps={{ htmlInput: { "aria-label": t("auth.register.birthPlace") } }}
             />
             <DatePicker
@@ -246,14 +247,14 @@ export default function ProfilePage() {
               label={t("auth.register.city")}
               fullWidth
               value={form.city}
-              onChange={(e) => set("city", e.target.value)}
+              onChange={(e) => set("city", lettersOnly(e.target.value))}
               slotProps={{ htmlInput: { "aria-label": t("auth.register.city") } }}
             />
             <TextField
               label={t("auth.register.state")}
               fullWidth
               value={form.state}
-              onChange={(e) => set("state", e.target.value)}
+              onChange={(e) => set("state", lettersOnly(e.target.value))}
               slotProps={{ htmlInput: { "aria-label": t("auth.register.state") } }}
             />
             <TextField
