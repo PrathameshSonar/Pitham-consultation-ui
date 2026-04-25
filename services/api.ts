@@ -265,6 +265,50 @@ export async function sendVerificationEmail(token: string) {
   return res.json();
 }
 
+export async function verifyEmailToken(verifyToken: string) {
+  const res = await cfetch(`${BASE}/auth/verify-email?token=${encodeURIComponent(verifyToken)}`);
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function exportMyData(token: string) {
+  const res = await cfetch(`${BASE}/auth/account/export`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function getMyFeedback(apptId: number, token: string) {
+  const res = await cfetch(`${BASE}/appointments/${apptId}/feedback`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json(); // null if not yet submitted
+}
+
+export async function submitFeedback(
+  apptId: number,
+  data: { rating: number; comment?: string },
+  token: string,
+) {
+  const res = await cfetch(`${BASE}/appointments/${apptId}/feedback`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminListFeedback(token: string) {
+  const res = await cfetch(`${BASE}/admin/feedback`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminFeedbackSummary(token: string) {
+  const res = await cfetch(`${BASE}/admin/feedback/summary`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
 export async function adminGenerateInvoice(id: number, token: string) {
   const res = await cfetch(`${BASE}/admin/appointments/${id}/generate-invoice`, {
     method: "POST",

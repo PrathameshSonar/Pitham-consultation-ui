@@ -389,6 +389,7 @@ def assign_slot(
             scheduled_date=data.scheduled_date,
             scheduled_time=data.scheduled_time,
             zoom_link=data.zoom_link,
+            appointment_id=appt.id,
         )
     return {"message": "Slot assigned and email sent"}
 

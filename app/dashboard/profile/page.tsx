@@ -22,7 +22,17 @@ import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs, { Dayjs } from "dayjs";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { getProfile, updateProfile, deleteAccount, clearToken, getToken } from "@/services/api";
+import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
+import DownloadIcon from "@mui/icons-material/Download";
+import {
+  getProfile,
+  updateProfile,
+  deleteAccount,
+  clearToken,
+  getToken,
+  sendVerificationEmail,
+  exportMyData,
+} from "@/services/api";
 import { lettersOnly } from "@/lib/inputFilters";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
@@ -54,6 +64,49 @@ export default function ProfilePage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  // Email verification + data export
+  const [emailVerified, setEmailVerified] = useState<boolean>(true);
+  const [verifyMsg, setVerifyMsg] = useState("");
+  const [verifySending, setVerifySending] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  async function handleSendVerification() {
+    const token = getToken();
+    if (!token) return;
+    setVerifyMsg("");
+    setVerifySending(true);
+    try {
+      await sendVerificationEmail(token);
+      setVerifyMsg(t("profile.verify.sent"));
+    } catch (err: any) {
+      setVerifyMsg(err?.detail || t("profile.verify.failed"));
+    } finally {
+      setVerifySending(false);
+    }
+  }
+
+  async function handleExportData() {
+    const token = getToken();
+    if (!token) return;
+    setExporting(true);
+    try {
+      const data = await exportMyData(token);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `spbsp-my-data-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      // best-effort, no-op
+    } finally {
+      setExporting(false);
+    }
+  }
 
   async function handleDeleteAccount() {
     const token = getToken();
@@ -87,6 +140,7 @@ export default function ProfilePage() {
           state: p.state || "",
           country: p.country || "India",
         });
+        setEmailVerified(!!p.email_verified || !p.email);
         if (p.dob) setDob(dayjs(p.dob));
         if (p.tob) {
           const parts = (p.tob || "").split(":");
@@ -173,6 +227,25 @@ export default function ProfilePage() {
           {t("profile.subtitle")}
         </Typography>
 
+        {!emailVerified && form.email && (
+          <Alert
+            severity="warning"
+            icon={<MarkEmailReadIcon />}
+            sx={{ mb: 2 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={handleSendVerification}
+                disabled={verifySending}
+              >
+                {verifySending ? t("common.saving") : t("profile.verify.send")}
+              </Button>
+            }
+          >
+            {verifyMsg || t("profile.verify.prompt")}
+          </Alert>
+        )}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
@@ -277,6 +350,34 @@ export default function ProfilePage() {
             {saving ? t("common.saving") : t("common.save")}
           </Button>
         </Box>
+      </Paper>
+
+      {/* ── Privacy: download my data ───────────────────────────────────── */}
+      <Paper
+        elevation={0}
+        sx={{
+          maxWidth: 700,
+          mx: "auto",
+          mt: 4,
+          p: { xs: 3, md: 4 },
+          borderRadius: 4,
+          border: `1px solid ${brandColors.sand}`,
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1 }}>
+          {t("profile.export.title")}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, lineHeight: 1.7 }}>
+          {t("profile.export.desc")}
+        </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={handleExportData}
+          disabled={exporting}
+        >
+          {exporting ? t("common.loading") : t("profile.export.button")}
+        </Button>
       </Paper>
 
       {/* ── Danger zone ─────────────────────────────────────────────────── */}

@@ -79,6 +79,7 @@ export default function Footer() {
               { href: "/pitham", label: t("nav.pitham") },
               { href: "/about", label: t("nav.about") },
               { href: "/contact", label: t("nav.contact") },
+              { href: "/faq", label: t("nav.faq") },
               { href: "/register", label: t("common.register") },
             ].map((l) => (
               <Box

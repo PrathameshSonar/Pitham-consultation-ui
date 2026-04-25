@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   // Optimize images from backend uploads
@@ -62,4 +63,20 @@ const withAnalyzer =
       require("@next/bundle-analyzer")({ enabled: true })
     : (cfg: NextConfig) => cfg;
 
-export default withAnalyzer(nextConfig);
+// Only wrap with Sentry when an org/project is configured. Otherwise the
+// build still succeeds but Sentry's plugin no-ops cleanly at runtime.
+const sentryEnabled = !!process.env.SENTRY_ORG && !!process.env.SENTRY_PROJECT;
+const withSentry = sentryEnabled
+  ? (cfg: NextConfig) =>
+      withSentryConfig(cfg, {
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        silent: true,
+        widenClientFileUpload: true,
+        disableLogger: true,
+        tunnelRoute: "/monitoring",
+      })
+  : (cfg: NextConfig) => cfg;
+
+export default withSentry(withAnalyzer(nextConfig));

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Box, Paper, Typography, CircularProgress } from "@mui/material";
+import { Box, Paper, Typography, CircularProgress, Rating } from "@mui/material";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import CampaignIcon from "@mui/icons-material/Campaign";
@@ -19,7 +19,7 @@ import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import dynamic from "next/dynamic";
-import { adminGetAnalytics } from "@/services/api";
+import { adminGetAnalytics, adminFeedbackSummary } from "@/services/api";
 import { useAuthQuery } from "@/services/queryHooks";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
@@ -104,6 +104,7 @@ export default function AdminDashboard() {
   const { t } = useT();
   // Cached for 30s — re-visiting admin dashboard within that window is instant
   const { data, isLoading: loading } = useAuthQuery<any>(["admin-analytics"], adminGetAnalytics);
+  const { data: fbSummary } = useAuthQuery<any>(["admin-feedback-summary"], adminFeedbackSummary);
 
   return (
     <Box sx={s.wrapper}>
@@ -369,6 +370,38 @@ export default function AdminDashboard() {
                 />
                 <MonthlyLineChart data={data.users_per_month} title={t("analytics.usersPerMonth")} />
               </Box>
+
+              {/* ── Feedback summary ── */}
+              {fbSummary && fbSummary.total > 0 && (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: { xs: 2, md: 3 },
+                    borderRadius: 4,
+                    border: `1px solid ${brandColors.sand}`,
+                    mb: 4,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 3,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {t("analytics.feedbackTitle")}
+                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+                      <Typography variant="h4" sx={{ fontWeight: 800, color: brandColors.gold }}>
+                        {fbSummary.average ?? "—"}
+                      </Typography>
+                      <Rating value={fbSummary.average || 0} precision={0.1} readOnly />
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {t("analytics.feedbackTotal", { count: fbSummary.total })}
+                    </Typography>
+                  </Box>
+                </Paper>
+              )}
             </>
           )
         )}

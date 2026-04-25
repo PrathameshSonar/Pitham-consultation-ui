@@ -1,8 +1,18 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import Link from "next/link";
-import { Box, Paper, Typography, Button, Chip, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Chip,
+  CircularProgress,
+  Rating,
+  TextField,
+  Alert,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import VideoCallIcon from "@mui/icons-material/VideoCall";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -21,12 +31,14 @@ import {
   generateReceipt,
   generateInvoice,
   cancelAppointment,
+  getMyFeedback,
+  submitFeedback,
   getToken,
   fileUrl,
 } from "@/services/api";
 import { useAuthQuery, usePublicQuery } from "@/services/queryHooks";
 import { statusChipColors } from "@/theme/sharedStyles";
-import { formatTime12h } from "@/lib/timeSlots";
+import { formatAppointmentDateTime } from "@/lib/timeSlots";
 import { useT } from "@/i18n/I18nProvider";
 import * as s from "./styles";
 
@@ -260,9 +272,9 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
               <Typography variant="caption" color="text.secondary">
                 {t("history.dateTime")}
               </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {a.scheduled_date} · {formatTime12h(a.scheduled_time)}
+                  {formatAppointmentDateTime(a.scheduled_date, a.scheduled_time)}
                 </Typography>
                 <Button size="small" startIcon={<CalendarMonthIcon />} sx={{ ml: 1 }} onClick={onIcs}>
                   {t("history.addToCalendar")}
@@ -357,10 +369,105 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
         </Box>
       )}
 
+      {a.status === "completed" && <FeedbackPanel apptId={a.id} />}
+
       <Typography variant="caption" color="text.disabled" sx={{ mt: 1.5, display: "block" }}>
         {t("history.bookedOn")} {new Date(a.created_at).toLocaleDateString()}
       </Typography>
     </Paper>
+  );
+});
+
+const FeedbackPanel = memo(function FeedbackPanel({ apptId }: { apptId: number }) {
+  const { t } = useT();
+  const qc = useQueryClient();
+  const { data: existing, isLoading } = useAuthQuery<{ rating: number; comment?: string } | null>(
+    ["feedback", apptId],
+    (token) => getMyFeedback(apptId, token),
+  );
+  const [rating, setRating] = useState<number | null>(null);
+  const [comment, setComment] = useState("");
+  const [editing, setEditing] = useState(false);
+
+  const m = useMutation({
+    mutationFn: () => submitFeedback(apptId, { rating: rating || 5, comment }, getToken()),
+    onSuccess: () => {
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["feedback", apptId] });
+    },
+  });
+
+  if (isLoading) return null;
+
+  if (existing && !editing) {
+    return (
+      <Box sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: "rgba(46,125,50,0.06)", border: "1px solid", borderColor: "success.light" }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+          {t("feedback.yourRating")}
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Rating value={existing.rating} readOnly size="small" />
+          <Button
+            size="small"
+            onClick={() => {
+              setRating(existing.rating);
+              setComment(existing.comment || "");
+              setEditing(true);
+            }}
+          >
+            {t("common.edit")}
+          </Button>
+        </Box>
+        {existing.comment && (
+          <Typography variant="body2" sx={{ mt: 1, fontStyle: "italic" }}>
+            “{existing.comment}”
+          </Typography>
+        )}
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: "rgba(230,81,0,0.05)", border: "1px solid", borderColor: "divider" }}>
+      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+        {t("feedback.prompt")}
+      </Typography>
+      <Rating
+        value={rating ?? existing?.rating ?? 0}
+        onChange={(_, v) => setRating(v)}
+        size="large"
+      />
+      <TextField
+        multiline
+        fullWidth
+        minRows={2}
+        size="small"
+        placeholder={t("feedback.commentPlace")}
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        sx={{ mt: 1 }}
+      />
+      {m.isError && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {(m.error as any)?.detail || t("feedback.submitFailed")}
+        </Alert>
+      )}
+      <Box sx={{ mt: 1.5, display: "flex", gap: 1 }}>
+        <Button
+          variant="contained"
+          size="small"
+          disabled={!rating || m.isPending}
+          onClick={() => m.mutate()}
+        >
+          {m.isPending ? t("common.saving") : t("feedback.submit")}
+        </Button>
+        {editing && (
+          <Button size="small" onClick={() => setEditing(false)}>
+            {t("common.cancel")}
+          </Button>
+        )}
+      </Box>
+    </Box>
   );
 });
 
