@@ -87,7 +87,7 @@ export default function AdminAppointments() {
   const { t } = useT();
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState(0); // 0=upcoming, 1=completed
+  const [tab, setTab] = useState(0); // 0=upcoming, 1=completed, 2=cancelled
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
   const [page, setPage] = useState(0);
@@ -281,10 +281,12 @@ export default function AdminAppointments() {
   // ── Filter/sort/paginate ────────────────────────────────────────────────
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const isCompleted = tab === 1;
-    let list = appointments.filter((a) =>
-      isCompleted ? a.status === "completed" : a.status !== "completed",
-    );
+    let list = appointments.filter((a) => {
+      if (tab === 1) return a.status === "completed";
+      if (tab === 2) return a.status === "cancelled";
+      // Upcoming = anything that's not completed and not cancelled
+      return a.status !== "completed" && a.status !== "cancelled";
+    });
     if (q) {
       list = list.filter(
         (a) =>
@@ -341,6 +343,7 @@ export default function AdminAppointments() {
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
           <Tab label={t("appts.tab.upcoming")} />
           <Tab label={t("appts.tab.completed")} />
+          <Tab label={t("appts.tab.cancelled")} />
         </Tabs>
 
         <Box

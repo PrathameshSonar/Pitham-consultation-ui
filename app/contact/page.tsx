@@ -10,6 +10,7 @@ import YouTubeIcon from "@mui/icons-material/YouTube";
 import { getPublicSettings } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
+import { normalizeMapUrl } from "@/lib/mapUrl";
 
 export default function Contact() {
   const { t } = useT();
@@ -137,7 +138,10 @@ export default function Contact() {
           </Paper>
 
           {/* Google Map */}
-          {s.contact_map_url ? (
+          {(() => {
+            const norm = normalizeMapUrl(s.contact_map_url);
+            return norm.embeddable;
+          })() ? (
             <Paper
               elevation={0}
               sx={{
@@ -148,7 +152,7 @@ export default function Contact() {
               }}
             >
               <iframe
-                src={s.contact_map_url}
+                src={normalizeMapUrl(s.contact_map_url).url}
                 width="100%"
                 height="100%"
                 style={{ border: 0, minHeight: 400 }}

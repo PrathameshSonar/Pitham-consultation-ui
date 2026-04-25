@@ -233,17 +233,22 @@ export default function AdminRecordings() {
         <Box
           sx={{
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: { xs: "stretch", sm: "center" },
             mb: 3,
-            flexWrap: "wrap",
-            gap: 2,
+            gap: { xs: 1.5, sm: 2 },
           }}
         >
           <Typography variant="h4" sx={s.title}>
             {t("rec.admin.title")}
           </Typography>
-          <Button variant="contained" startIcon={<GroupIcon />} onClick={openAssign}>
+          <Button
+            variant="contained"
+            startIcon={<GroupIcon />}
+            onClick={openAssign}
+            sx={{ width: { xs: "100%", sm: "auto" }, alignSelf: { xs: "stretch", sm: "auto" } }}
+          >
             {t("rec.assignToList")}
           </Button>
         </Box>
@@ -306,31 +311,71 @@ export default function AdminRecordings() {
                   "&:before": { display: "none" },
                 }}
               >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  sx={{
+                    "& .MuiAccordionSummary-content": { minWidth: 0, my: { xs: 1, sm: 1.5 } },
+                  }}
+                >
                   <Box
-                    sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%", flexWrap: "wrap" }}
+                    sx={{
+                      display: "flex",
+                      flexDirection: { xs: "column", sm: "row" },
+                      alignItems: { xs: "flex-start", sm: "center" },
+                      gap: { xs: 1, sm: 2 },
+                      width: "100%",
+                      minWidth: 0,
+                    }}
                   >
-                    <PlayCircleIcon color="primary" />
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontWeight: 700 }}>{group.title}</Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ wordBreak: "break-all" }}>
-                        {group.url}
+                    {/* Top row: icon + title + URL — always together */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0, flex: 1, width: "100%" }}>
+                      <PlayCircleIcon color="primary" sx={{ flexShrink: 0 }} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ fontWeight: 700, wordBreak: "break-word" }}>
+                          {group.title}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ wordBreak: "break-all", display: "block" }}
+                        >
+                          {group.url}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    {/* Meta row: chip + date — drops below title on mobile */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        flexShrink: 0,
+                        ml: { xs: 4, sm: 0 },
+                      }}
+                    >
+                      <Chip
+                        icon={<PeopleIcon />}
+                        label={`${group.records.length} ${t("rec.users")}`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                      <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                        {new Date(group.created_at).toLocaleDateString()}
                       </Typography>
                     </Box>
-                    <Chip
-                      icon={<PeopleIcon />}
-                      label={`${group.records.length} ${t("rec.users")}`}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                    <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
-                      {new Date(group.created_at).toLocaleDateString()}
-                    </Typography>
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails sx={{ pt: 0 }}>
-                  <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 1,
+                      mb: 2,
+                      flexWrap: "wrap",
+                      "& > .MuiButton-root": { flex: { xs: "1 1 100%", sm: "0 0 auto" } },
+                    }}
+                  >
                     <Button
                       component="a"
                       href={group.url}

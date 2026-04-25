@@ -311,13 +311,13 @@ export default function AdminUsers() {
                     {t("users.history")} ({userAppts.length})
                   </Typography>
                 </AccordionSummary>
-                <AccordionDetails sx={{ p: 0 }}>
+                <AccordionDetails sx={{ p: 0, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
                   {userAppts.length === 0 ? (
                     <Typography color="text.secondary" sx={{ p: 2 }}>
                       {t("users.noAppts")}
                     </Typography>
                   ) : (
-                    <Table size="small">
+                    <Table size="small" sx={{ minWidth: 720 }}>
                       <TableHead>
                         <TableRow sx={{ bgcolor: "action.hover" }}>
                           <TableCell sx={{ fontWeight: 700, py: 1 }}>{t("common.name")}</TableCell>
@@ -352,7 +352,7 @@ export default function AdminUsers() {
                             >
                               {a.problem}
                             </TableCell>
-                            <TableCell sx={{ py: 1 }}>
+                            <TableCell sx={{ py: 1, whiteSpace: "nowrap" }}>
                               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                 <Chip
                                   label={a.status.replace("_", " ")}
@@ -389,13 +389,13 @@ export default function AdminUsers() {
                     {t("users.docs")} ({userDocs.length})
                   </Typography>
                 </AccordionSummary>
-                <AccordionDetails sx={{ p: 0 }}>
+                <AccordionDetails sx={{ p: 0, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
                   {userDocs.length === 0 ? (
                     <Typography color="text.secondary" sx={{ p: 2 }}>
                       {t("users.noDocs")}
                     </Typography>
                   ) : (
-                    <Table size="small">
+                    <Table size="small" sx={{ minWidth: 480 }}>
                       <TableHead>
                         <TableRow sx={{ bgcolor: "action.hover" }}>
                           <TableCell sx={{ fontWeight: 700, py: 1 }}>{t("common.title")}</TableCell>
@@ -477,7 +477,7 @@ export default function AdminUsers() {
             </DialogTitle>
             <DialogContent dividers>
               <Stack spacing={2}>
-                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
                   {[
                     [t("common.name"), viewAppt.name],
                     [t("common.email"), viewAppt.email],

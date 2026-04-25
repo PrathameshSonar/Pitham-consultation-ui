@@ -41,6 +41,7 @@ import {
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
+import { normalizeMapUrl } from "@/lib/mapUrl";
 
 function formatEventDate(iso: string, lang: string): string {
   try {
@@ -327,7 +328,10 @@ export default function PithamPage() {
               </Button>
             </Stack>
 
-            {settings.contact_map_url ? (
+            {(() => {
+              const norm = normalizeMapUrl(settings.contact_map_url);
+              return norm.embeddable;
+            })() ? (
               <Box
                 sx={{
                   borderRadius: 3,
@@ -337,7 +341,7 @@ export default function PithamPage() {
                 }}
               >
                 <iframe
-                  src={settings.contact_map_url}
+                  src={normalizeMapUrl(settings.contact_map_url).url}
                   width="100%"
                   height="100%"
                   style={{ border: 0, minHeight: 280 }}

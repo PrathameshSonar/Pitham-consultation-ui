@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -58,6 +58,14 @@ export default function ProfilePage() {
   });
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [tob, setTob] = useState<Dayjs | null>(null);
+
+  // Snapshot of the values as they were loaded from the server. Save button
+  // stays disabled until at least one field differs from this snapshot.
+  const initialRef = useRef<{
+    form: typeof form;
+    dob: string;
+    tob: string;
+  } | null>(null);
 
   // Delete-account flow
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -131,7 +139,7 @@ export default function ProfilePage() {
     }
     getProfile(token)
       .then((p: any) => {
-        setForm({
+        const loadedForm = {
           name: p.name || "",
           email: p.email || "",
           mobile: p.mobile || "",
@@ -139,25 +147,57 @@ export default function ProfilePage() {
           city: p.city || "",
           state: p.state || "",
           country: p.country || "India",
-        });
+        };
+        setForm(loadedForm);
         setEmailVerified(!!p.email_verified || !p.email);
-        if (p.dob) setDob(dayjs(p.dob));
+
+        let loadedDob: Dayjs | null = null;
+        let loadedTob: Dayjs | null = null;
+        if (p.dob) {
+          loadedDob = dayjs(p.dob);
+          setDob(loadedDob);
+        }
         if (p.tob) {
           const parts = (p.tob || "").split(":");
           if (parts.length >= 2) {
             const [h, m, s] = parts;
-            setTob(
-              dayjs()
-                .hour(parseInt(h))
-                .minute(parseInt(m))
-                .second(parseInt(s || "0")),
-            );
+            loadedTob = dayjs()
+              .hour(parseInt(h))
+              .minute(parseInt(m))
+              .second(parseInt(s || "0"));
+            setTob(loadedTob);
           }
         }
+        initialRef.current = {
+          form: loadedForm,
+          dob: loadedDob ? loadedDob.format("YYYY-MM-DD") : "",
+          tob: loadedTob ? loadedTob.format("HH:mm:ss") : "",
+        };
       })
       .catch(() => router.push("/login"))
       .finally(() => setLoading(false));
   }, [router]);
+
+  // Has the user actually edited anything? Compares each field against the
+  // snapshot taken when the profile was loaded — including dob/tob.
+  const dirty = useMemo(() => {
+    const init = initialRef.current;
+    if (!init) return false;
+    if (
+      init.form.name !== form.name ||
+      init.form.email !== form.email ||
+      init.form.mobile !== form.mobile ||
+      init.form.birth_place !== form.birth_place ||
+      init.form.city !== form.city ||
+      init.form.state !== form.state ||
+      init.form.country !== form.country
+    ) {
+      return true;
+    }
+    const currentDob = dob ? dob.format("YYYY-MM-DD") : "";
+    const currentTob = tob ? tob.format("HH:mm:ss") : "";
+    return currentDob !== init.dob || currentTob !== init.tob;
+  }, [form, dob, tob]);
 
   function set(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -186,6 +226,12 @@ export default function ProfilePage() {
       if (tob) payload.tob = tob.format("HH:mm:ss");
       await updateProfile(payload, token);
       setSuccess(t("profile.saved"));
+      // Re-baseline so the button immediately disables again after a successful save.
+      initialRef.current = {
+        form: { ...form },
+        dob: dob ? dob.format("YYYY-MM-DD") : "",
+        tob: tob ? tob.format("HH:mm:ss") : "",
+      };
     } catch (err: any) {
       setError(err?.detail || t("profile.saveFailed"));
     } finally {
@@ -346,7 +392,13 @@ export default function ProfilePage() {
             </TextField>
           </Box>
 
-          <Button type="submit" variant="contained" size="large" startIcon={<SaveIcon />} disabled={saving}>
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            startIcon={<SaveIcon />}
+            disabled={saving || !dirty}
+          >
             {saving ? t("common.saving") : t("common.save")}
           </Button>
         </Box>

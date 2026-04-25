@@ -554,9 +554,9 @@ export default function AdminDocuments() {
               const q = gallerySearch.trim().toLowerCase();
               const filteredGallery = q
                 ? gallery.filter(
-                    (g: any) =>
-                      g.title.toLowerCase().includes(q) || (g.description || "").toLowerCase().includes(q),
-                  )
+                  (g: any) =>
+                    g.title.toLowerCase().includes(q) || (g.description || "").toLowerCase().includes(q),
+                )
                 : gallery;
 
               if (filteredGallery.length === 0) {
@@ -752,7 +752,6 @@ export default function AdminDocuments() {
                           size="small"
                           startIcon={<DownloadIcon />}
                         >
-                          {t("common.download")}
                         </Button>
                         <IconButton size="small" color="error" onClick={() => setDeleteTarget(doc)}>
                           <DeleteIcon fontSize="small" />

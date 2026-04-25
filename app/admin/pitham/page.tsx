@@ -74,6 +74,16 @@ function youtubeThumb(url: string | null | undefined): string | null {
   return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : null;
 }
 
+/** Turn an Instagram post/reel/tv URL into the public /embed URL. Instagram's
+ * embed endpoint is publicly accessible and renders the post with thumbnail,
+ * caption, and a "View on Instagram" link — no Graph API token required. */
+function instagramEmbedUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const m = url.match(/(https?:\/\/(?:www\.)?instagram\.com\/(?:p|reel|tv)\/[^/?#]+)/);
+  if (!m) return null;
+  return `${m[1].replace(/\/$/, "")}/embed`;
+}
+
 export default function AdminPithamCms() {
   const router = useRouter();
   const params = useSearchParams();
@@ -641,10 +651,10 @@ function EventsPanel({ notify }: { notify: Notify }) {
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 2,
+          alignItems: { xs: "stretch", sm: "center" },
+          gap: { xs: 1.5, sm: 2 },
           mb: 2,
         }}
       >
@@ -652,7 +662,12 @@ function EventsPanel({ notify }: { notify: Notify }) {
           <Tab label={`${t("events.upcoming")} (${upcoming.length})`} />
           <Tab label={`${t("events.past")} (${past.length})`} />
         </Tabs>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={openCreate}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           {t("events.create")}
         </Button>
       </Box>
@@ -666,43 +681,62 @@ function EventsPanel({ notify }: { notify: Notify }) {
               key={ev.id}
               elevation={0}
               sx={{
-                p: 2.5,
+                p: { xs: 2, md: 2.5 },
                 borderRadius: 4,
                 display: "flex",
-                gap: 2,
-                alignItems: "flex-start",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 1.5, sm: 2 },
+                alignItems: { xs: "stretch", sm: "flex-start" },
                 border: ev.is_featured ? `2px solid ${brandColors.gold}` : `1px solid ${brandColors.sand}`,
                 bgcolor: ev.is_featured ? `${brandColors.gold}08` : "background.paper",
-                position: "relative",
               }}
             >
-              {ev.is_featured && (
-                <Chip
-                  icon={<StarIcon />}
-                  label={t("events.featuredBadge")}
-                  size="small"
-                  sx={{
-                    position: "absolute",
-                    top: 12,
-                    right: 12,
-                    bgcolor: brandColors.gold,
-                    color: "#fff",
-                    fontWeight: 700,
-                  }}
-                />
-              )}
               {ev.image_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={ev.image_url.startsWith("http") ? ev.image_url : fileUrl(ev.image_url)}
-                  alt={ev.title}
-                  style={{ width: 96, height: 96, objectFit: "cover", borderRadius: 12, flexShrink: 0 }}
-                />
+                <Box
+                  sx={{
+                    width: { xs: "100%", sm: 96 },
+                    height: { xs: 180, sm: 96 },
+                    flexShrink: 0,
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    bgcolor: "background.default",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={ev.image_url.startsWith("http") ? ev.image_url : fileUrl(ev.image_url)}
+                    alt={ev.title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  />
+                </Box>
               )}
-              <Box sx={{ flex: 1, minWidth: 0, pr: ev.is_featured ? 9 : 0 }}>
-                <Typography sx={{ fontWeight: 700, color: brandColors.maroon, lineHeight: 1.3, mb: 1 }}>
-                  {ev.title}
-                </Typography>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    gap: 1,
+                    mb: 1,
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 700, color: brandColors.maroon, lineHeight: 1.3, wordBreak: "break-word" }}>
+                    {ev.title}
+                  </Typography>
+                  {ev.is_featured && (
+                    <Chip
+                      icon={<StarIcon />}
+                      label={t("events.featuredBadge")}
+                      size="small"
+                      sx={{
+                        bgcolor: brandColors.gold,
+                        color: "#fff",
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                </Box>
                 <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", mb: 1 }}>
                   <Chip icon={<CalendarMonthIcon />} label={ev.event_date} size="small" variant="outlined" />
                   {ev.event_time && (
@@ -713,7 +747,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
                   )}
                 </Stack>
                 {ev.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 1, wordBreak: "break-word" }}>
                     {ev.description}
                   </Typography>
                 )}
@@ -1270,6 +1304,7 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
         >
           {items.map((item) => {
             const yt = isVideo ? youtubeThumb(item.url) : null;
+            const igEmbed = !isVideo ? instagramEmbedUrl(item.url) : null;
             const thumbSrc = item.image_path ? fileUrl(item.image_path) : yt;
             return (
               <Paper
@@ -1282,7 +1317,23 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
                   opacity: item.is_active ? 1 : 0.55,
                 }}
               >
-                {thumbSrc ? (
+                {igEmbed ? (
+                  <Box sx={{ position: "relative", paddingTop: "125%" }}>
+                    <iframe
+                      src={igEmbed}
+                      loading="lazy"
+                      title={item.title || "Instagram post"}
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        border: "none",
+                      }}
+                      allow="encrypted-media"
+                    />
+                  </Box>
+                ) : thumbSrc ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={thumbSrc}
@@ -1389,6 +1440,40 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
               />
             )}
+            {!isVideo && (() => {
+              const preview = instagramEmbedUrl(form.url);
+              if (!preview) return null;
+              return (
+                <Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                    {t("pcms.ig.preview")}
+                  </Typography>
+                  <Box
+                    sx={{
+                      position: "relative",
+                      paddingTop: "125%",
+                      borderRadius: 2,
+                      overflow: "hidden",
+                      border: `1px solid ${brandColors.sand}`,
+                    }}
+                  >
+                    <iframe
+                      src={preview}
+                      loading="lazy"
+                      title="Instagram preview"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        border: "none",
+                      }}
+                      allow="encrypted-media"
+                    />
+                  </Box>
+                </Box>
+              );
+            })()}
             {isVideo && (
               <Box>
                 <Stack

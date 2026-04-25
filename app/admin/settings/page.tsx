@@ -74,6 +74,7 @@ import {
 } from "@mui/material";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
+import { normalizeMapUrl } from "@/lib/mapUrl";
 
 // react-quill must be loaded client-side only (no SSR)
 const ReactQuill = nextDynamic(() => import("react-quill-new"), { ssr: false });
@@ -415,10 +416,48 @@ export default function AdminSettings() {
               <TextField
                 label={t("settings.mapUrl")}
                 fullWidth
+                multiline
+                minRows={2}
                 value={contactMapUrl}
                 onChange={(e) => setContactMapUrl(e.target.value)}
-                placeholder="https://www.google.com/maps/embed?pb=..."
+                placeholder='https://www.google.com/maps/embed?pb=...   or paste the entire <iframe src="..."></iframe> snippet'
+                helperText={t("settings.mapUrlHelp")}
               />
+              {(() => {
+                const norm = normalizeMapUrl(contactMapUrl);
+                if (norm.kind === "empty") return null;
+                if (!norm.embeddable) {
+                  return (
+                    <Alert severity="warning" sx={{ mt: -1 }}>
+                      {t("settings.mapUrlBad")}
+                    </Alert>
+                  );
+                }
+                return (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                      {t("settings.mapPreview")}
+                    </Typography>
+                    <Box
+                      sx={{
+                        borderRadius: 2,
+                        overflow: "hidden",
+                        border: `1px solid ${brandColors.sand}`,
+                        height: 280,
+                      }}
+                    >
+                      <iframe
+                        src={norm.url}
+                        title="Map preview"
+                        style={{ width: "100%", height: "100%", border: "none" }}
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        allowFullScreen
+                      />
+                    </Box>
+                  </Box>
+                );
+              })()}
 
               <Divider />
               <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon }}>
@@ -478,7 +517,8 @@ export default function AdminSettings() {
                         contact_email: contactEmail,
                         contact_phone: contactPhone,
                         contact_address: contactAddress,
-                        contact_map_url: contactMapUrl,
+                        // Auto-extract iframe src if admin pasted the full HTML snippet
+                        contact_map_url: normalizeMapUrl(contactMapUrl).url,
                         social_facebook: socialFacebook,
                         social_instagram: socialInstagram,
                         social_youtube: socialYoutube,
