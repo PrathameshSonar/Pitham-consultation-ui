@@ -1,4 +1,4 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 const BASE = API_BASE;
 
 /** Build a full URL for a backend file path (uploads, receipts, etc.) */
