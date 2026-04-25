@@ -1,5 +1,56 @@
 @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap");
 
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Tailwind v4 — single source of truth for design tokens.                    */
+/* Brand colors mirror theme/colors.ts so the same palette is available to    */
+/* both MUI components (`brandColors.maroon`) and Tailwind utilities          */
+/* (`bg-brand-maroon`, `text-brand-saffron`, etc).                            */
+/* ────────────────────────────────────────────────────────────────────────── */
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@theme {
+  /* Brand palette — keep in lock-step with theme/colors.ts */
+  --color-brand-saffron: #e65100;
+  --color-brand-saffron-light: #ff8a3d;
+  --color-brand-saffron-dark: #ac1900;
+
+  --color-brand-gold: #c99a2e;
+  --color-brand-gold-light: #f4c556;
+  --color-brand-gold-dark: #946c00;
+
+  --color-brand-maroon: #7b1e1e;
+  --color-brand-maroon-light: #a94442;
+
+  --color-brand-cream: #fff8ed;
+  --color-brand-ivory: #fffbf3;
+  --color-brand-sand: #f5e6c8;
+
+  --color-brand-text-dark: #3d2817;
+  --color-brand-text-medium: #6b4f3a;
+  --color-brand-text-light: #7a6557;
+
+  --color-brand-success: #2e7d32;
+  --color-brand-warning: #ed6c02;
+  --color-brand-error: #c62828;
+  --color-brand-info: #0277bd;
+
+  /* Type scale tokens — change once, propagate via the helper classes below */
+  --font-display: "Cinzel", "Poppins", sans-serif;
+  --font-body: "Poppins", "Segoe UI", Roboto, sans-serif;
+
+  --text-page-title: 2.125rem;       /* desktop */
+  --text-page-title-sm: 1.5rem;      /* mobile */
+  --text-page-subtitle: 1rem;
+  --text-page-subtitle-sm: 0.9rem;
+  --text-section-title: 1.25rem;
+  --text-section-title-sm: 1.05rem;
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Base reset                                                                 */
+/* ────────────────────────────────────────────────────────────────────────── */
+
 *,
 *::before,
 *::after {
@@ -25,19 +76,75 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Responsive images */
 img,
 video {
   max-width: 100%;
   height: auto;
 }
 
-/* Prevent tables from overflowing */
 table {
   max-width: 100%;
 }
 
-/* Make MUI dialogs mobile-friendly */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Reusable page-level helper classes.                                        */
+/* Apply via className="page-title" on any heading instead of inline sx so    */
+/* future typography tweaks happen in one place.                              */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-brand-maroon);
+  font-size: var(--text-page-title);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--color-brand-text-medium);
+  font-size: var(--text-page-subtitle);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-brand-maroon);
+  font-size: var(--text-section-title);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.subtle {
+  color: var(--color-brand-text-light);
+}
+
+@media (max-width: 600px) {
+  .page-title {
+    font-size: var(--text-page-title-sm);
+  }
+  .page-subtitle {
+    font-size: var(--text-page-subtitle-sm);
+  }
+  .section-title {
+    font-size: var(--text-section-title-sm);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* MUI dialog tweaks — moved out of inline sx so they apply uniformly         */
+/* ────────────────────────────────────────────────────────────────────────── */
+
 .MuiDialog-paper {
   margin: 16px !important;
   max-height: calc(100vh - 32px) !important;
@@ -58,14 +165,9 @@ table {
   }
 }
 
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
 /* WCAG: visible focus ring for keyboard navigation */
 *:focus-visible {
-  outline: 3px solid #e65100;
+  outline: 3px solid var(--color-brand-saffron);
   outline-offset: 2px;
 }
 
@@ -78,7 +180,7 @@ a[href="#main-content"]:focus {
   height: auto !important;
   overflow: visible !important;
   z-index: 9999;
-  background: #e65100;
+  background: var(--color-brand-saffron);
   color: #fff;
   padding: 8px 16px;
   border-radius: 4px;

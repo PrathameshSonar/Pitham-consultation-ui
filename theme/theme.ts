@@ -3,17 +3,64 @@
 import { createTheme } from "@mui/material/styles";
 import { brandColors } from "./colors";
 
+// Single mobile breakpoint for the typography scale. Keeping it here means any
+// future tweak to mobile font sizing only needs to change this one number.
+const MOBILE = "@media (max-width: 600px)";
+
 const shared = {
   typography: {
     fontFamily: ["'Poppins'", "'Segoe UI'", "Roboto", "sans-serif"].join(","),
-    h1: { fontFamily: "'Cinzel', 'Poppins', sans-serif", fontWeight: 700, letterSpacing: "0.02em" },
-    h2: { fontFamily: "'Cinzel', 'Poppins', sans-serif", fontWeight: 700, letterSpacing: "0.02em" },
-    h3: { fontFamily: "'Cinzel', 'Poppins', sans-serif", fontWeight: 700 },
-    h4: { fontFamily: "'Cinzel', 'Poppins', sans-serif", fontWeight: 700 },
-    h5: { fontWeight: 600 },
-    h6: { fontWeight: 600 },
-    body1: { fontSize: "0.95rem", lineHeight: 1.7, fontWeight: 400 },
-    body2: { fontSize: "0.875rem", lineHeight: 1.6, fontWeight: 400 },
+    // Headings: keep desktop sizes (MUI defaults) and shrink on mobile via @media.
+    // This means every `<Typography variant="hX">` across the app auto-resizes
+    // on small screens — no need to set responsive sx on each call site.
+    h1: {
+      fontFamily: "'Cinzel', 'Poppins', sans-serif",
+      fontWeight: 700,
+      letterSpacing: "0.02em",
+      [MOBILE]: { fontSize: "2rem", lineHeight: 1.2 },
+    },
+    h2: {
+      fontFamily: "'Cinzel', 'Poppins', sans-serif",
+      fontWeight: 700,
+      letterSpacing: "0.02em",
+      [MOBILE]: { fontSize: "1.75rem", lineHeight: 1.25 },
+    },
+    h3: {
+      fontFamily: "'Cinzel', 'Poppins', sans-serif",
+      fontWeight: 700,
+      [MOBILE]: { fontSize: "1.5rem", lineHeight: 1.3 },
+    },
+    h4: {
+      fontFamily: "'Cinzel', 'Poppins', sans-serif",
+      fontWeight: 700,
+      [MOBILE]: { fontSize: "1.35rem", lineHeight: 1.3 },
+    },
+    h5: {
+      fontWeight: 600,
+      [MOBILE]: { fontSize: "1.15rem", lineHeight: 1.35 },
+    },
+    h6: {
+      fontWeight: 600,
+      [MOBILE]: { fontSize: "1rem", lineHeight: 1.4 },
+    },
+    subtitle1: {
+      [MOBILE]: { fontSize: "0.95rem" },
+    },
+    subtitle2: {
+      [MOBILE]: { fontSize: "0.85rem" },
+    },
+    body1: {
+      fontSize: "0.95rem",
+      lineHeight: 1.7,
+      fontWeight: 400,
+      [MOBILE]: { fontSize: "0.9rem", lineHeight: 1.6 },
+    },
+    body2: {
+      fontSize: "0.875rem",
+      lineHeight: 1.6,
+      fontWeight: 400,
+      [MOBILE]: { fontSize: "0.825rem" },
+    },
     caption: { fontWeight: 500 },
     button: { textTransform: "none" as const, fontWeight: 600, letterSpacing: "0.03em" },
   },
