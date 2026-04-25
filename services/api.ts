@@ -1112,8 +1112,14 @@ export async function markAllBroadcastsRead(token: string) {
 }
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
+// All of these are SSR-safe — `window`/`localStorage` don't exist when Next.js
+// prerenders pages on the build server, so every read is guarded. Writes
+// no-op on the server (callers only invoke them from event handlers anyway).
+
+const isBrowser = (): boolean => typeof window !== "undefined";
 
 export function saveToken(token: string, role: string, name: string) {
+  if (!isBrowser()) return;
   localStorage.setItem("token", token);
   localStorage.setItem("role", role);
   localStorage.setItem("name", name);
@@ -1121,6 +1127,7 @@ export function saveToken(token: string, role: string, name: string) {
 }
 
 export function clearToken() {
+  if (!isBrowser()) return;
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("name");
@@ -1129,17 +1136,21 @@ export function clearToken() {
 }
 
 export function getToken(): string {
+  if (!isBrowser()) return "";
   return localStorage.getItem("token") || "";
 }
 
 export function getRole(): string {
+  if (!isBrowser()) return "";
   return localStorage.getItem("role") || "";
 }
 
 export function isSuperAdmin(): boolean {
+  if (!isBrowser()) return false;
   return localStorage.getItem("role") === "admin";
 }
 
 export function isModerator(): boolean {
+  if (!isBrowser()) return false;
   return localStorage.getItem("role") === "moderator";
 }
