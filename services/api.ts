@@ -1,12 +1,14 @@
 // Backend URL precedence:
 //   1. NEXT_PUBLIC_API_URL  — preferred, for environment-specific overrides
-//   2. NEXT_PUBLIC_SITE_URL — historical fallback (some Vercel setups use this name)
-//   3. Hardcoded Render URL — last-resort safety net so prod is never broken by a missing env var
-//   4. localhost            — for `npm run dev`
+//   2. Hardcoded Render URL — last-resort safety net so prod is never broken by a missing env var
+//   3. localhost            — for `npm run dev`
+//
+// NOTE: We deliberately do NOT fall back to NEXT_PUBLIC_SITE_URL — that's the
+// frontend origin (used for OG tags / metadata) and pointing API calls at it
+// turns every request into a same-origin 404.
 const PROD_API_FALLBACK = "https://pitham-consultation-api.onrender.com";
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
-  process.env.NEXT_PUBLIC_SITE_URL ||
   (typeof window !== "undefined" && window.location.hostname !== "localhost"
     ? PROD_API_FALLBACK
     : "http://localhost:8000");
