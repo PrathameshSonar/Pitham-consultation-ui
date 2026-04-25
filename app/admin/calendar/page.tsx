@@ -9,7 +9,7 @@ import VideoCallIcon from "@mui/icons-material/VideoCall";
 import { adminGetAppointments, getToken } from "@/services/api";
 import { formatTime12h } from "@/lib/timeSlots";
 import { useT } from "@/i18n/I18nProvider";
-import * as s from "./styles";
+import { brandColors } from "@/theme/colors";
 
 const MONTH_NAMES = [
   "January",
@@ -33,6 +33,20 @@ function firstDayOfMonth(y: number, m: number) {
   return new Date(y, m, 1).getDay();
 }
 
+function dayCellStyle(isSelected: boolean, isToday: boolean, hasCount: boolean): React.CSSProperties {
+  return {
+    backgroundColor: isSelected
+      ? brandColors.saffron
+      : isToday
+        ? brandColors.ivory
+        : "transparent",
+    color: isSelected ? "#fff" : isToday ? brandColors.saffronDark : brandColors.textDark,
+    border: isSelected
+      ? "none"
+      : `1px solid ${hasCount ? brandColors.goldLight : "transparent"}`,
+  };
+}
+
 export default function AdminCalendar() {
   const router = useRouter();
   const { t } = useT();
@@ -52,7 +66,6 @@ export default function AdminCalendar() {
     }
     adminGetAppointments(token)
       .then((data) => {
-        // Only keep non-completed, non-cancelled appointments with a scheduled date >= today
         const filtered = data.filter(
           (a: any) =>
             a.scheduled_date &&
@@ -89,7 +102,6 @@ export default function AdminCalendar() {
     return appointments.filter((a) => a.scheduled_date === dateStr(day)).length;
   }
 
-  // Sort all upcoming by date+time ascending
   const upcoming = useMemo(() => {
     return [...appointments].sort((a, b) => {
       const d = a.scheduled_date.localeCompare(b.scheduled_date);
@@ -101,16 +113,16 @@ export default function AdminCalendar() {
   const displayed = selectedDay ? upcoming.filter((a) => a.scheduled_date === selectedDay) : upcoming;
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Typography variant="h4" sx={s.title}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-10 px-4">
+      <Box className="max-w-[1200px] mx-auto">
+        <Typography variant="h4" className="!text-brand-maroon !font-bold !mb-6">
           {t("cal.title")}
         </Typography>
 
-        <Box sx={s.gridLayout}>
+        <Box className="grid grid-cols-1 md:grid-cols-[360px_1fr] gap-6">
           {/* ── Side panel: list of upcoming appointments ─────── */}
-          <Box sx={s.sidePanel}>
-            <Typography sx={s.sideHeader}>
+          <Box className="order-2 md:order-1 flex flex-col gap-4 md:max-h-[calc(100vh-150px)] md:overflow-auto md:pr-2">
+            <Typography className="!font-bold !text-brand-maroon !mb-2">
               {selectedDay ? t("cal.onDay", { date: selectedDay }) : t("cal.allScheduled")} (
               {displayed.length})
             </Typography>
@@ -121,23 +133,30 @@ export default function AdminCalendar() {
             )}
 
             {displayed.length === 0 ? (
-              <Paper elevation={0} sx={s.emptyPanel}>
+              <Paper
+                elevation={0}
+                className="!p-6 !text-center !rounded-2xl !border !border-dashed !border-brand-sand"
+              >
                 <Typography color="text.secondary">{t("cal.noToday")}</Typography>
               </Paper>
             ) : (
               displayed.map((a: any) => (
-                <Paper key={a.id} elevation={0} sx={s.apptItem}>
-                  <Box sx={s.dateChip}>
+                <Paper
+                  key={a.id}
+                  elevation={0}
+                  className="!p-4 !rounded-2xl !border !border-brand-sand !transition-colors !duration-150 hover:!border-brand-gold-light"
+                >
+                  <Box className="inline-block px-2 py-0.5 rounded bg-brand-ivory text-brand-saffron-dark text-[0.7rem] font-bold mb-1">
                     {a.scheduled_date === todayStr ? t("cal.today") : a.scheduled_date}
                     {" · "}
                     {formatTime12h(a.scheduled_time)}
                   </Box>
-                  <Typography sx={{ fontWeight: 700, wordBreak: "break-word" }}>{a.name}</Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ wordBreak: "break-word" }}>
+                  <Typography className="!font-bold !break-words">{a.name}</Typography>
+                  <Typography variant="caption" color="text.secondary" className="!break-words">
                     {a.email}
                   </Typography>
                   {a.zoom_link && (
-                    <Box sx={{ mt: 1 }}>
+                    <Box className="mt-2">
                       <Button
                         component="a"
                         href={a.zoom_link}
@@ -156,12 +175,15 @@ export default function AdminCalendar() {
           </Box>
 
           {/* ── Calendar grid ─────────────────────────────── */}
-          <Paper elevation={0} sx={s.calCard}>
-            <Box sx={s.monthNav}>
+          <Paper
+            elevation={0}
+            className="order-1 md:order-2 !p-4 md:!p-6 !rounded-3xl !border !border-brand-sand !h-fit"
+          >
+            <Box className="flex items-center justify-between mb-4">
               <IconButton onClick={prevMonth}>
                 <ChevronLeftIcon />
               </IconButton>
-              <Typography sx={s.monthLabel}>
+              <Typography className="!font-bold !text-brand-maroon !text-base md:!text-[1.15rem]">
                 {MONTH_NAMES[month]} {year}
               </Typography>
               <IconButton onClick={nextMonth}>
@@ -169,13 +191,13 @@ export default function AdminCalendar() {
               </IconButton>
             </Box>
 
-            <Box sx={s.weekRow}>
+            <Box className="grid grid-cols-7 mb-2 [&>span]:text-center [&>span]:text-[0.65rem] md:[&>span]:text-[0.75rem] [&>span]:font-bold [&>span]:text-brand-text-medium [&>span]:uppercase">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
                 <span key={d}>{d}</span>
               ))}
             </Box>
 
-            <Box sx={s.daysGrid}>
+            <Box className="grid grid-cols-7 gap-1">
               {cells.map((day, idx) => {
                 if (!day) return <Box key={`e-${idx}`} />;
                 const ds = dateStr(day);
@@ -187,16 +209,24 @@ export default function AdminCalendar() {
                 return (
                   <Box
                     key={ds}
-                    sx={{
-                      ...s.dayCell(isSelected, isToday, count > 0),
-                      opacity: isPast ? 0.35 : 1,
-                      pointerEvents: isPast ? "none" : "auto",
-                    }}
+                    className={`aspect-square rounded-lg flex flex-col items-center justify-center cursor-pointer text-[0.8rem] md:text-[0.9rem] transition-all duration-150 ${
+                      isSelected || isToday ? "font-bold" : "font-medium"
+                    } ${isPast ? "opacity-35 pointer-events-none" : "opacity-100"} ${
+                      isSelected ? "hover:bg-brand-saffron-dark" : "hover:bg-brand-cream"
+                    }`}
+                    style={dayCellStyle(isSelected, isToday, count > 0)}
                     onClick={() => setSelectedDay(isSelected ? null : ds)}
                   >
                     {day}
                     {count > 0 && (
-                      <Box component="span" sx={s.badge(isSelected)}>
+                      <Box
+                        component="span"
+                        className={`mt-[3px] inline-block min-w-4 h-4 px-1 leading-4 text-[0.6rem] font-bold rounded-full ${
+                          isSelected
+                            ? "bg-white text-brand-saffron-dark"
+                            : "bg-brand-gold-light text-brand-maroon"
+                        }`}
+                      >
                         {count}
                       </Box>
                     )}

@@ -8,7 +8,6 @@ import { Box, Paper, TextField, Button, Typography, Alert, Divider } from "@mui/
 import { loginUser, googleLogin, saveToken } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import Captcha, { type CaptchaRef } from "@/components/Captcha";
-import * as s from "./styles";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
@@ -79,7 +78,7 @@ export default function Login() {
   }
 
   return (
-    <Box sx={s.wrapper}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream flex items-center justify-center p-3 sm:p-6">
       {GOOGLE_CLIENT_ID && (
         <Script
           src="https://accounts.google.com/gsi/client"
@@ -87,14 +86,22 @@ export default function Login() {
           onLoad={initGoogle}
         />
       )}
-      <Paper elevation={0} sx={s.card}>
-        <Typography variant="h4" sx={s.title}>
+      <Paper
+        elevation={0}
+        className="!w-full !max-w-[440px] !p-6 sm:!p-8 md:!p-10 !rounded-2xl md:!rounded-[2.5rem] !bg-brand-ivory !border !border-brand-sand !shadow-[0_20px_60px_rgba(123,30,30,0.12)]"
+      >
+        <Typography
+          variant="h4"
+          className="!text-center !text-brand-maroon !font-bold !mb-1"
+        >
           {t("auth.login.title")}
         </Typography>
-        <Typography sx={s.subtitle}>{t("auth.login.subtitle")}</Typography>
+        <Typography className="!text-center !text-brand-text-medium !mb-8">
+          {t("auth.login.subtitle")}
+        </Typography>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" className="!mb-4">
             {error}
           </Alert>
         )}
@@ -102,8 +109,8 @@ export default function Login() {
         {/* Google Sign-In button */}
         {GOOGLE_CLIENT_ID && (
           <>
-            <Box ref={googleBtnRef} sx={{ mb: 2, display: "flex", justifyContent: "center" }} />
-            <Divider sx={{ mb: 2 }}>
+            <Box ref={googleBtnRef} className="mb-4 flex justify-center" />
+            <Divider className="!mb-4">
               <Typography variant="caption" color="text.secondary">
                 {t("auth.orContinueWith")}
               </Typography>
@@ -111,7 +118,7 @@ export default function Login() {
           </>
         )}
 
-        <Box component="form" onSubmit={handleLogin} sx={s.formStack}>
+        <Box component="form" onSubmit={handleLogin} className="flex flex-col gap-5">
           <TextField
             label={t("auth.login.identifier")}
             fullWidth
@@ -133,16 +140,24 @@ export default function Login() {
             {loading ? t("auth.login.signing") : t("common.login")}
           </Button>
 
-          <Box sx={{ textAlign: "right" }}>
-            <Box component={Link} href="/forgot-password" sx={s.link}>
+          <Box className="text-right">
+            <Box
+              component={Link}
+              href="/forgot-password"
+              className="!text-brand-saffron !font-semibold hover:!underline"
+            >
               <Typography variant="body2">{t("auth.forgot.link")}</Typography>
             </Box>
           </Box>
         </Box>
 
-        <Typography sx={s.footerRow}>
+        <Typography className="!mt-6 !text-center !text-brand-text-medium">
           {t("auth.login.noAccount")}{" "}
-          <Box component={Link} href="/register" sx={s.link}>
+          <Box
+            component={Link}
+            href="/register"
+            className="!text-brand-saffron !font-semibold hover:!underline"
+          >
             {t("common.register")}
           </Box>
         </Typography>

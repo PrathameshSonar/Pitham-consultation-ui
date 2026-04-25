@@ -23,7 +23,6 @@ import { registerUser, googleLogin, saveToken } from "@/services/api";
 import { lettersOnly } from "@/lib/inputFilters";
 import { useT } from "@/i18n/I18nProvider";
 import Captcha, { type CaptchaRef } from "@/components/Captcha";
-import * as s from "./styles";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
@@ -122,15 +121,23 @@ export default function Register() {
   }
 
   return (
-    <Box sx={s.wrapper}>
-      <Paper elevation={0} sx={s.card}>
-        <Typography variant="h4" sx={s.title}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream flex items-center justify-center p-3 sm:p-6">
+      <Paper
+        elevation={0}
+        className="!w-full !max-w-[720px] !p-5 sm:!p-8 md:!p-10 !rounded-2xl md:!rounded-[2.5rem] !bg-brand-ivory !border !border-brand-sand !shadow-[0_20px_60px_rgba(123,30,30,0.12)]"
+      >
+        <Typography
+          variant="h4"
+          className="!text-center !text-brand-maroon !font-bold !mb-1"
+        >
           {t("auth.register.title")}
         </Typography>
-        <Typography sx={s.subtitle}>{t("auth.register.subtitle")}</Typography>
+        <Typography className="!text-center !text-brand-text-medium !mb-8">
+          {t("auth.register.subtitle")}
+        </Typography>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" className="!mb-4">
             {error}
           </Alert>
         )}
@@ -143,8 +150,8 @@ export default function Register() {
               strategy="afterInteractive"
               onLoad={initGoogle}
             />
-            <Box ref={googleBtnRef} sx={{ mb: 2, display: "flex", justifyContent: "center" }} />
-            <Divider sx={{ mb: 2 }}>
+            <Box ref={googleBtnRef} className="mb-4 flex justify-center" />
+            <Divider className="!mb-4">
               <Typography variant="caption" color="text.secondary">
                 {t("auth.orContinueWith")}
               </Typography>
@@ -153,7 +160,7 @@ export default function Register() {
         )}
 
         <Box component="form" onSubmit={handleSubmit}>
-          <Box sx={s.gridTwo}>
+          <Box className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
             <TextField
               label={t("auth.register.fullName")}
               required
@@ -249,7 +256,12 @@ export default function Register() {
             }
             label={
               <Typography variant="body2">
-                <Box component={Link} href="/terms" sx={s.link} target="_blank">
+                <Box
+                  component={Link}
+                  href="/terms"
+                  className="!text-brand-saffron !font-semibold hover:!underline"
+                  target="_blank"
+                >
                   {t("auth.register.acceptTerms")}
                 </Box>
               </Typography>
@@ -258,14 +270,25 @@ export default function Register() {
 
           <Captcha ref={captchaRef} />
 
-          <Button type="submit" variant="contained" size="large" fullWidth disabled={loading} sx={{ mt: 2 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            fullWidth
+            disabled={loading}
+            className="!mt-4"
+          >
             {loading ? t("auth.register.creating") : t("auth.register.cta")}
           </Button>
         </Box>
 
-        <Typography sx={s.footerRow}>
+        <Typography className="!mt-6 !text-center !text-brand-text-medium">
           {t("auth.register.have")}{" "}
-          <Box component={Link} href="/login" sx={s.link}>
+          <Box
+            component={Link}
+            href="/login"
+            className="!text-brand-saffron !font-semibold hover:!underline"
+          >
             {t("common.login")}
           </Box>
         </Typography>

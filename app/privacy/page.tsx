@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { Box, Paper, Typography, Button } from "@mui/material";
 import { useT } from "@/i18n/I18nProvider";
-import * as s from "../terms/styles";
 
 const SECTIONS = [
   {
@@ -56,26 +55,39 @@ export default function Privacy() {
   const router = useRouter();
   const { t } = useT();
   return (
-    <Box sx={s.wrapper}>
-      <Paper elevation={0} sx={s.card}>
-        <Typography sx={s.subtitle}>{t("privacy.subtitle")}</Typography>
-        <Typography variant="h3" sx={s.title}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-12 px-2 sm:px-4">
+      <Paper
+        elevation={0}
+        className="!max-w-[820px] !mx-auto !w-full !p-5 sm:!p-8 md:!p-12 !rounded-2xl md:!rounded-[2.5rem] !bg-brand-ivory !border !border-brand-sand !shadow-[0_12px_40px_rgba(123,30,30,0.08)]"
+      >
+        <Typography className="!text-brand-gold !font-semibold !uppercase !tracking-[0.15em] !text-[0.8rem] !mb-8">
+          {t("privacy.subtitle")}
+        </Typography>
+        <Typography
+          variant="h3"
+          className="!text-brand-maroon !font-bold !mb-2"
+        >
           {t("privacy.title")}
         </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        <Typography color="text.secondary" className="!mb-6">
           {t("privacy.lastUpdated")}: April 2026
         </Typography>
 
         {SECTIONS.map((sec) => (
           <Box key={sec.title}>
-            <Typography variant="h6" sx={s.sectionHeading}>
+            <Typography
+              variant="h6"
+              className="!text-brand-maroon !font-semibold !mb-2 !mt-6"
+            >
               {sec.title}
             </Typography>
-            <Typography sx={s.sectionText}>{sec.body}</Typography>
+            <Typography className="!text-brand-text-medium !leading-[1.8]">
+              {sec.body}
+            </Typography>
           </Box>
         ))}
 
-        <Box sx={s.actionsRow}>
+        <Box className="mt-10 flex gap-4 flex-wrap">
           <Button variant="outlined" size="large" onClick={() => router.back()}>
             {t("common.back")}
           </Button>

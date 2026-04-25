@@ -18,7 +18,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   IconButton,
   TablePagination,
   MenuItem,
@@ -49,7 +48,15 @@ import {
 import { formatTime12h } from "@/lib/timeSlots";
 import { statusChipColors } from "@/theme/sharedStyles";
 import { useT } from "@/i18n/I18nProvider";
-import * as s from "./styles";
+
+const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-12 px-2 sm:px-4";
+const CONTAINER_CLASS = "max-w-[1200px] mx-auto w-full";
+const FILTERS_CARD_CLASS =
+  "!p-3 md:!p-5 !mb-6 !rounded-3xl !bg-brand-ivory !border !border-brand-sand !grid !gap-3 md:!gap-4 !items-center !grid-cols-1 sm:!grid-cols-2 md:!grid-cols-[2fr_1fr_1fr_1fr_1.5fr_auto] [&_.MuiFormControl-root]:!w-full";
+const TABLE_PAPER_CLASS =
+  "!rounded-3xl !bg-brand-ivory !border !border-brand-sand !overflow-auto !max-w-full";
+const TABLE_HEAD_ROW_CLASS =
+  "!bg-brand-cream [&_th]:!font-bold [&_th]:!text-brand-maroon [&_th]:!uppercase [&_th]:!text-[0.75rem] [&_th]:!tracking-[0.05em] [&_th]:!whitespace-nowrap";
 
 type SortKey = "newest" | "oldest" | "name" | "joinedOn";
 
@@ -66,7 +73,6 @@ export default function AdminUsers() {
   const [userAppts, setUserAppts] = useState<any[]>([]);
   const [userDocs, setUserDocs] = useState<any[]>([]);
 
-  // Pagination + sort
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRpp] = useState(10);
   const [sort, setSort] = useState<SortKey>("newest");
@@ -116,24 +122,26 @@ export default function AdminUsers() {
     }
   }
 
-  // Sort
   const sortedUsers = [...users].sort((a, b) => {
     if (sort === "name") return a.name.localeCompare(b.name);
     const ad = new Date(a.created_at).getTime();
     const bd = new Date(b.created_at).getTime();
-    if (sort === "joinedOn") return ad - bd; // oldest joined first
+    if (sort === "joinedOn") return ad - bd;
     return sort === "oldest" ? ad - bd : bd - ad;
   });
   const paged = sortedUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Typography variant="h4" sx={s.title}>
+    <Box className={WRAPPER_CLASS}>
+      <Box className={CONTAINER_CLASS}>
+        <Typography
+          variant="h4"
+          className="!text-brand-maroon !font-bold !mb-4 md:!mb-8 !text-[1.5rem] md:!text-[2.125rem]"
+        >
           {t("users.title")}
         </Typography>
 
-        <Paper elevation={0} sx={s.filtersCard}>
+        <Paper elevation={0} className={FILTERS_CARD_CLASS}>
           <TextField
             size="small"
             placeholder={t("users.searchName")}
@@ -180,26 +188,26 @@ export default function AdminUsers() {
               fetchUsers();
               setPage(0);
             }}
-            sx={{ width: { xs: "100%", md: "auto" } }}
+            className="!w-full md:!w-auto"
           >
             {t("common.search")}
           </Button>
         </Paper>
 
         {loading ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
+          <Box className="text-center py-8">
             <CircularProgress color="primary" />
           </Box>
         ) : users.length === 0 ? (
-          <Paper elevation={0} sx={{ p: 6, textAlign: "center", borderRadius: 4 }}>
+          <Paper elevation={0} className="!p-12 !text-center !rounded-3xl">
             <Typography color="text.secondary">No users found.</Typography>
           </Paper>
         ) : (
           <>
-            <Paper elevation={0} sx={s.tablePaper}>
+            <Paper elevation={0} className={TABLE_PAPER_CLASS}>
               <Table>
                 <TableHead>
-                  <TableRow sx={s.tableHeadRow}>
+                  <TableRow className={TABLE_HEAD_ROW_CLASS}>
                     {[
                       t("common.name"),
                       t("common.email"),
@@ -217,13 +225,13 @@ export default function AdminUsers() {
                 <TableBody>
                   {paged.map((u: any) => (
                     <TableRow key={u.id} hover>
-                      <TableCell sx={{ fontWeight: 600 }}>{u.name}</TableCell>
+                      <TableCell className="!font-semibold">{u.name}</TableCell>
                       <TableCell>{u.email}</TableCell>
                       <TableCell>{u.mobile}</TableCell>
                       <TableCell>{u.city}</TableCell>
                       <TableCell>{u.state}</TableCell>
                       <TableCell>{u.country}</TableCell>
-                      <TableCell sx={{ color: "text.disabled" }}>
+                      <TableCell className="!text-[color:rgba(0,0,0,0.38)]">
                         {new Date(u.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
@@ -256,21 +264,14 @@ export default function AdminUsers() {
       <Dialog open={!!selected} onClose={() => setSelected(null)} fullWidth maxWidth="md">
         {selected && (
           <>
-            <DialogTitle
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontWeight: 700,
-                color: "primary.dark",
-              }}
-            >
+            <DialogTitle className="!flex !justify-between !font-bold !text-brand-saffron-dark">
               {selected.name}
               <IconButton onClick={() => setSelected(null)}>
                 <CloseIcon />
               </IconButton>
             </DialogTitle>
             <DialogContent>
-              <Box sx={s.detailGrid}>
+              <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {[
                   [t("common.email"), selected.email],
                   [t("common.mobile"), selected.mobile],
@@ -286,7 +287,7 @@ export default function AdminUsers() {
                     <Typography variant="caption" color="text.disabled">
                       {k}
                     </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    <Typography variant="body2" className="!font-semibold">
                       {v}
                     </Typography>
                   </Box>
@@ -297,67 +298,53 @@ export default function AdminUsers() {
               <Accordion
                 elevation={0}
                 defaultExpanded
-                sx={{
-                  mb: 1.5,
-                  borderRadius: "12px !important",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  "&:before": { display: "none" },
-                }}
+                className="!mb-3 !rounded-xl !border !border-[#E8D9BF] [&::before]:!hidden"
               >
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <HistoryIcon sx={{ mr: 1, color: "primary.main" }} />
-                  <Typography sx={{ fontWeight: 700, color: "primary.dark" }}>
+                  <HistoryIcon className="!mr-2 !text-brand-saffron" />
+                  <Typography className="!font-bold !text-brand-saffron-dark">
                     {t("users.history")} ({userAppts.length})
                   </Typography>
                 </AccordionSummary>
-                <AccordionDetails sx={{ p: 0, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                <AccordionDetails className="!p-0 !overflow-x-auto">
                   {userAppts.length === 0 ? (
-                    <Typography color="text.secondary" sx={{ p: 2 }}>
+                    <Typography color="text.secondary" className="!p-4">
                       {t("users.noAppts")}
                     </Typography>
                   ) : (
-                    <Table size="small" sx={{ minWidth: 720 }}>
+                    <Table size="small" className="!min-w-[720px]">
                       <TableHead>
-                        <TableRow sx={{ bgcolor: "action.hover" }}>
-                          <TableCell sx={{ fontWeight: 700, py: 1 }}>{t("common.name")}</TableCell>
-                          <TableCell sx={{ fontWeight: 700, py: 1 }}>
+                        <TableRow className="!bg-[rgba(0,0,0,0.04)]">
+                          <TableCell className="!font-bold !py-2">{t("common.name")}</TableCell>
+                          <TableCell className="!font-bold !py-2">
                             {t("users.dob")} / {t("users.tob")}
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 700, py: 1 }}>{t("users.birthPlace")}</TableCell>
-                          <TableCell sx={{ fontWeight: 700, py: 1 }}>{t("common.date")}</TableCell>
-                          <TableCell sx={{ fontWeight: 700, py: 1 }}>{t("appts.problem")}</TableCell>
-                          <TableCell sx={{ fontWeight: 700, py: 1 }}>{t("common.actions")}</TableCell>
+                          <TableCell className="!font-bold !py-2">{t("users.birthPlace")}</TableCell>
+                          <TableCell className="!font-bold !py-2">{t("common.date")}</TableCell>
+                          <TableCell className="!font-bold !py-2">{t("appts.problem")}</TableCell>
+                          <TableCell className="!font-bold !py-2">{t("common.actions")}</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {userAppts.map((a: any) => (
                           <TableRow key={a.id} hover>
-                            <TableCell sx={{ py: 1, whiteSpace: "nowrap" }}>{a.name}</TableCell>
-                            <TableCell sx={{ py: 1, whiteSpace: "nowrap" }}>
+                            <TableCell className="!py-2 !whitespace-nowrap">{a.name}</TableCell>
+                            <TableCell className="!py-2 !whitespace-nowrap">
                               {a.dob} · {formatTime12h(a.tob)}
                             </TableCell>
-                            <TableCell sx={{ py: 1 }}>{a.birth_place}</TableCell>
-                            <TableCell sx={{ py: 1, whiteSpace: "nowrap" }}>
+                            <TableCell className="!py-2">{a.birth_place}</TableCell>
+                            <TableCell className="!py-2 !whitespace-nowrap">
                               {a.scheduled_date || "–"}
                             </TableCell>
-                            <TableCell
-                              sx={{
-                                py: 1,
-                                maxWidth: 200,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
+                            <TableCell className="!py-2 !max-w-[200px] !overflow-hidden !text-ellipsis !whitespace-nowrap">
                               {a.problem}
                             </TableCell>
-                            <TableCell sx={{ py: 1, whiteSpace: "nowrap" }}>
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <TableCell className="!py-2 !whitespace-nowrap">
+                              <Box className="flex items-center gap-2">
                                 <Chip
                                   label={a.status.replace("_", " ")}
                                   size="small"
-                                  sx={{ textTransform: "capitalize" }}
+                                  className="!capitalize"
                                 />
                                 <IconButton size="small" color="primary" onClick={() => setViewAppt(a)}>
                                   <VisibilityIcon fontSize="small" />
@@ -376,41 +363,36 @@ export default function AdminUsers() {
               <Accordion
                 elevation={0}
                 defaultExpanded
-                sx={{
-                  borderRadius: "12px !important",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  "&:before": { display: "none" },
-                }}
+                className="!rounded-xl !border !border-[#E8D9BF] [&::before]:!hidden"
               >
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <DescriptionIcon sx={{ mr: 1, color: "warning.main" }} />
-                  <Typography sx={{ fontWeight: 700, color: "primary.dark" }}>
+                  <DescriptionIcon className="!mr-2 !text-brand-warning" />
+                  <Typography className="!font-bold !text-brand-saffron-dark">
                     {t("users.docs")} ({userDocs.length})
                   </Typography>
                 </AccordionSummary>
-                <AccordionDetails sx={{ p: 0, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                <AccordionDetails className="!p-0 !overflow-x-auto">
                   {userDocs.length === 0 ? (
-                    <Typography color="text.secondary" sx={{ p: 2 }}>
+                    <Typography color="text.secondary" className="!p-4">
                       {t("users.noDocs")}
                     </Typography>
                   ) : (
-                    <Table size="small" sx={{ minWidth: 480 }}>
+                    <Table size="small" className="!min-w-[480px]">
                       <TableHead>
-                        <TableRow sx={{ bgcolor: "action.hover" }}>
-                          <TableCell sx={{ fontWeight: 700, py: 1 }}>{t("common.title")}</TableCell>
-                          <TableCell sx={{ fontWeight: 700, py: 1 }}>{t("common.date")}</TableCell>
-                          <TableCell sx={{ fontWeight: 700, py: 1 }}></TableCell>
+                        <TableRow className="!bg-[rgba(0,0,0,0.04)]">
+                          <TableCell className="!font-bold !py-2">{t("common.title")}</TableCell>
+                          <TableCell className="!font-bold !py-2">{t("common.date")}</TableCell>
+                          <TableCell className="!font-bold !py-2"></TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {userDocs.map((doc: any) => (
                           <TableRow key={doc.id} hover>
-                            <TableCell sx={{ py: 1 }}>
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <TableCell className="!py-2">
+                              <Box className="flex items-center gap-2">
                                 <DescriptionIcon fontSize="small" color="warning" />
                                 <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                  <Typography variant="body2" className="!font-semibold">
                                     {doc.title}
                                   </Typography>
                                   {doc.batch_label && (
@@ -421,11 +403,11 @@ export default function AdminUsers() {
                                 </Box>
                               </Box>
                             </TableCell>
-                            <TableCell sx={{ py: 1, whiteSpace: "nowrap", color: "text.disabled" }}>
+                            <TableCell className="!py-2 !whitespace-nowrap !text-[color:rgba(0,0,0,0.38)]">
                               {new Date(doc.created_at).toLocaleDateString()}
                             </TableCell>
-                            <TableCell sx={{ py: 1 }}>
-                              <Box sx={{ display: "flex", gap: 0.5 }}>
+                            <TableCell className="!py-2">
+                              <Box className="flex gap-1">
                                 <Button
                                   component="a"
                                   href={fileUrl(doc.file_path)}
@@ -458,18 +440,12 @@ export default function AdminUsers() {
           </>
         )}
       </Dialog>
+
       {/* Appointment detail dialog */}
       <Dialog open={!!viewAppt} onClose={() => setViewAppt(null)} fullWidth maxWidth="sm">
         {viewAppt && (
           <>
-            <DialogTitle
-              sx={{
-                fontWeight: 700,
-                color: "primary.dark",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
+            <DialogTitle className="!font-bold !text-brand-saffron-dark !flex !justify-between">
               {t("appts.details")}
               <IconButton onClick={() => setViewAppt(null)} size="small">
                 <CloseIcon />
@@ -477,7 +453,7 @@ export default function AdminUsers() {
             </DialogTitle>
             <DialogContent dividers>
               <Stack spacing={2}>
-                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                <Box className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
                     [t("common.name"), viewAppt.name],
                     [t("common.email"), viewAppt.email],
@@ -490,7 +466,7 @@ export default function AdminUsers() {
                       <Typography variant="caption" color="text.disabled">
                         {k}
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      <Typography variant="body2" className="!font-semibold">
                         {v}
                       </Typography>
                     </Box>
@@ -500,7 +476,7 @@ export default function AdminUsers() {
                   <Typography variant="caption" color="text.disabled">
                     {t("appts.problem")}
                   </Typography>
-                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                  <Typography variant="body2" className="!whitespace-pre-wrap">
                     {viewAppt.problem}
                   </Typography>
                 </Box>
@@ -509,13 +485,7 @@ export default function AdminUsers() {
                     component="img"
                     src={fileUrl(viewAppt.selfie_path)}
                     alt="selfie"
-                    sx={{
-                      maxWidth: 200,
-                      maxHeight: 200,
-                      borderRadius: 2,
-                      border: "1px solid",
-                      borderColor: "divider",
-                    }}
+                    className="!max-w-[200px] !max-h-[200px] !rounded-lg !border !border-[#E8D9BF]"
                   />
                 )}
                 {viewAppt.scheduled_date && (
@@ -523,7 +493,7 @@ export default function AdminUsers() {
                     <Typography variant="caption" color="text.disabled">
                       {t("history.dateTime")}
                     </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    <Typography variant="body2" className="!font-semibold">
                       {viewAppt.scheduled_date} · {formatTime12h(viewAppt.scheduled_time)}
                     </Typography>
                   </Box>
@@ -557,11 +527,10 @@ export default function AdminUsers() {
                   <Chip
                     label={viewAppt.status.replace("_", " ")}
                     size="small"
-                    sx={{
-                      textTransform: "capitalize",
-                      bgcolor: (statusChipColors[viewAppt.status] || statusChipColors.pending).bg,
+                    className="!capitalize !font-semibold"
+                    style={{
+                      backgroundColor: (statusChipColors[viewAppt.status] || statusChipColors.pending).bg,
                       color: (statusChipColors[viewAppt.status] || statusChipColors.pending).fg,
-                      fontWeight: 600,
                     }}
                   />
                 </Box>
@@ -578,7 +547,7 @@ export default function AdminUsers() {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         {snack ? (
-          <Alert severity={snack.severity} onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+          <Alert severity={snack.severity} onClose={() => setSnack(null)} className="!w-full">
             {snack.msg}
           </Alert>
         ) : undefined}

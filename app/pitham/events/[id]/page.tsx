@@ -22,7 +22,6 @@ import StarIcon from "@mui/icons-material/Star";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import { getPublicEvent, fileUrl, type EventItem } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
-import { brandColors } from "@/theme/colors";
 
 function formatEventDate(iso: string, lang: string): string {
   try {
@@ -58,14 +57,7 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          minHeight: "calc(100vh - 64px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <Box className="min-h-[calc(100vh-64px)] flex items-center justify-center">
         <CircularProgress />
       </Box>
     );
@@ -73,27 +65,12 @@ export default function EventDetailPage() {
 
   if (error || !event) {
     return (
-      <Box
-        sx={{
-          minHeight: "calc(100vh - 64px)",
-          py: 8,
-          px: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <Box className="min-h-[calc(100vh-64px)] py-16 px-4 flex items-center justify-center">
         <Paper
           elevation={0}
-          sx={{
-            p: 4,
-            borderRadius: 4,
-            maxWidth: 480,
-            textAlign: "center",
-            border: `1px solid ${brandColors.sand}`,
-          }}
+          className="!p-8 !rounded-3xl !max-w-[480px] !text-center !border !border-brand-sand"
         >
-          <Alert severity="warning" sx={{ mb: 3 }}>
+          <Alert severity="warning" className="!mb-6">
             {error || t("pitham.event.notFound")}
           </Alert>
           <Button component={Link} href="/pitham" startIcon={<ArrowBackIcon />} variant="outlined">
@@ -111,14 +88,14 @@ export default function EventDetailPage() {
     : null;
 
   return (
-    <Box sx={{ minHeight: "calc(100vh - 64px)", bgcolor: "background.default" }}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream">
       {/* Back nav */}
-      <Box sx={{ maxWidth: 1100, mx: "auto", px: { xs: 2, md: 4 }, pt: { xs: 2, md: 3 } }}>
+      <Box className="max-w-[1100px] mx-auto px-4 md:px-8 pt-4 md:pt-6">
         <Button
           component={Link}
           href="/pitham"
           startIcon={<ArrowBackIcon />}
-          sx={{ color: brandColors.maroon, fontWeight: 600 }}
+          className="!text-brand-maroon !font-semibold"
         >
           {t("pitham.event.back")}
         </Button>
@@ -126,17 +103,8 @@ export default function EventDetailPage() {
 
       {/* Hero image */}
       {img && (
-        <Box sx={{ maxWidth: 1100, mx: "auto", px: { xs: 2, md: 4 }, mt: { xs: 2, md: 3 } }}>
-          <Box
-            sx={{
-              borderRadius: 4,
-              overflow: "hidden",
-              aspectRatio: { xs: "16/10", md: "21/9" },
-              maxHeight: 460,
-              position: "relative",
-              border: `1px solid ${brandColors.sand}`,
-            }}
-          >
+        <Box className="max-w-[1100px] mx-auto px-4 md:px-8 mt-4 md:mt-6">
+          <Box className="rounded-3xl overflow-hidden aspect-[16/10] md:aspect-[21/9] max-h-[460px] relative border border-brand-sand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={img}
@@ -148,14 +116,7 @@ export default function EventDetailPage() {
               <Chip
                 icon={<StarIcon />}
                 label={t("events.featuredBadge")}
-                sx={{
-                  position: "absolute",
-                  top: 16,
-                  left: 16,
-                  bgcolor: brandColors.gold,
-                  color: "#fff",
-                  fontWeight: 700,
-                }}
+                className="!absolute !top-4 !left-4 !bg-brand-gold !text-white !font-bold"
               />
             )}
           </Box>
@@ -163,76 +124,56 @@ export default function EventDetailPage() {
       )}
 
       {/* Content */}
-      <Box sx={{ maxWidth: 900, mx: "auto", py: { xs: 4, md: 6 }, px: { xs: 2, md: 4 } }}>
+      <Box className="max-w-[900px] mx-auto py-8 md:py-12 px-4 md:px-8">
         <Paper
           elevation={0}
-          sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+          className="!p-6 md:!p-10 !rounded-3xl !border !border-brand-sand"
         >
           <Typography
             variant="h3"
-            sx={{
-              fontFamily: "'Cinzel', serif",
-              fontWeight: 700,
-              color: brandColors.maroon,
-              fontSize: { xs: "1.6rem", md: "2.2rem" },
-              lineHeight: 1.25,
-              mb: 2.5,
-            }}
+            className="!font-['Cinzel',serif] !font-bold !text-brand-maroon !text-[1.6rem] md:!text-[2.2rem] !leading-[1.25] !mb-5"
           >
             {event.title}
           </Typography>
 
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", mb: 3 }}>
+          <Stack direction="row" spacing={1} useFlexGap className="!flex-wrap !mb-6">
             <Chip
               icon={<CalendarMonthIcon />}
               label={formatEventDate(event.event_date, lang)}
               color="primary"
-              sx={{ fontWeight: 600, py: 2.5 }}
+              className="!font-semibold !py-5"
             />
             {event.event_time && (
-              <Chip icon={<AccessTimeIcon />} label={event.event_time} variant="outlined" sx={{ py: 2.5 }} />
+              <Chip
+                icon={<AccessTimeIcon />}
+                label={event.event_time}
+                variant="outlined"
+                className="!py-5"
+              />
             )}
             {event.location && (
-              <Chip icon={<LocationOnIcon />} label={event.location} variant="outlined" sx={{ py: 2.5 }} />
+              <Chip
+                icon={<LocationOnIcon />}
+                label={event.location}
+                variant="outlined"
+                className="!py-5"
+              />
             )}
           </Stack>
 
           {event.description && (
-            <Typography
-              sx={{
-                color: "text.secondary",
-                lineHeight: 1.9,
-                fontSize: "1.05rem",
-                whiteSpace: "pre-wrap",
-                mb: 4,
-              }}
-            >
+            <Typography className="!text-brand-text-medium !leading-[1.9] !text-[1.05rem] !whitespace-pre-wrap !mb-8">
               {event.description}
             </Typography>
           )}
 
-          <Box
-            sx={{
-              mt: 4,
-              pt: 3,
-              borderTop: `1px solid ${brandColors.sand}`,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 2,
-            }}
-          >
+          <Box className="mt-8 pt-6 border-t border-brand-sand flex flex-wrap gap-4">
             <Button
               variant="contained"
               size="large"
               startIcon={<HowToRegIcon />}
               onClick={() => setSnack(t("pitham.event.regSoon"))}
-              sx={{
-                bgcolor: brandColors.gold,
-                color: "#fff",
-                fontWeight: 700,
-                px: 4,
-                "&:hover": { bgcolor: brandColors.maroon },
-              }}
+              className="!bg-brand-gold !text-white !font-bold !px-8 hover:!bg-brand-maroon"
             >
               {t("pitham.event.register")}
             </Button>
@@ -256,7 +197,7 @@ export default function EventDetailPage() {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         {snack ? (
-          <Alert severity="info" onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+          <Alert severity="info" onClose={() => setSnack(null)} className="!w-full">
             {snack}
           </Alert>
         ) : undefined}

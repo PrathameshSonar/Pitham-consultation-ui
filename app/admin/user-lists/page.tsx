@@ -38,7 +38,9 @@ import {
   getToken,
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
-import * as s from "./styles";
+
+const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-[#FAF6EE] py-8 md:py-12 px-4";
+const CONTAINER_CLASS = "max-w-[1100px] mx-auto";
 
 type SortKey = "newest" | "oldest" | "name";
 
@@ -62,13 +64,11 @@ export default function AdminUserLists() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Search / sort / pagination for the lists grid
   const [listSearch, setListSearch] = useState("");
   const [listSort, setListSort] = useState<SortKey>("newest");
   const [listPage, setListPage] = useState(0);
   const [listRpp, setListRpp] = useState(10);
 
-  // Dialog state
   const [mode, setMode] = useState<Mode>(null);
   const [editing, setEditing] = useState<UserListItem | null>(null);
   const [name, setName] = useState("");
@@ -231,7 +231,7 @@ export default function AdminUserLists() {
 
   if (loading) {
     return (
-      <Box sx={{ ...s.wrapper, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />
       </Box>
     );
@@ -248,10 +248,10 @@ export default function AdminUserLists() {
           : "";
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Box sx={s.headerRow}>
-          <Typography variant="h4" sx={s.title}>
+    <Box className={WRAPPER_CLASS}>
+      <Box className={CONTAINER_CLASS}>
+        <Box className="flex items-center justify-between mb-8 flex-wrap gap-4">
+          <Typography variant="h4" className="!text-brand-maroon !font-bold">
             {t("lists.title")}
           </Typography>
           <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
@@ -260,12 +260,12 @@ export default function AdminUserLists() {
         </Box>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+          <Alert severity="error" className="!mb-4" onClose={() => setError("")}>
             {error}
           </Alert>
         )}
         {success && (
-          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess("")}>
+          <Alert severity="success" className="!mb-4" onClose={() => setSuccess("")}>
             {success}
           </Alert>
         )}
@@ -273,19 +273,7 @@ export default function AdminUserLists() {
         {/* Search + sort toolbar */}
         <Paper
           elevation={0}
-          sx={{
-            p: { xs: 1.5, md: 2 },
-            mb: 3,
-            borderRadius: 3,
-            display: "grid",
-            gap: { xs: 1.25, md: 2 },
-            gridTemplateColumns: { xs: "1fr", sm: "2fr 1fr" },
-            alignItems: "center",
-            border: "1px solid",
-            borderColor: "divider",
-            bgcolor: "#fff",
-            "& .MuiFormControl-root": { width: "100%" },
-          }}
+          className="!p-3 md:!p-4 !mb-6 !rounded-2xl !grid !gap-3 md:!gap-4 !grid-cols-1 sm:!grid-cols-[2fr_1fr] !items-center !border !border-[#E8D9BF] !bg-white [&_.MuiFormControl-root]:!w-full"
         >
           <TextField
             size="small"
@@ -322,31 +310,38 @@ export default function AdminUserLists() {
         </Paper>
 
         {filteredLists.length === 0 ? (
-          <Box sx={s.emptyBox}>
-            <PeopleIcon sx={{ fontSize: "3rem", color: "text.disabled", mb: 1 }} />
+          <Box className="p-12 text-center rounded-3xl bg-white border border-dashed border-brand-sand">
+            <PeopleIcon className="!text-[3rem] !text-[color:rgba(0,0,0,0.38)] !mb-2" />
             <Typography color="text.secondary">{t("lists.empty")}</Typography>
-            <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+            <Typography variant="body2" color="text.disabled" className="!mt-1">
               {t("lists.empty.desc")}
             </Typography>
           </Box>
         ) : (
           <>
             {pagedLists.map((list) => (
-              <Paper key={list.id} elevation={0} sx={s.listCard}>
-                <Box sx={s.listHeader}>
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography sx={s.listName}>{list.name}</Typography>
+              <Paper
+                key={list.id}
+                elevation={0}
+                className="!p-6 !mb-4 !rounded-3xl !bg-white !border !border-brand-sand"
+              >
+                <Box className="flex items-start justify-between gap-4 flex-wrap">
+                  <Box className="min-w-0 flex-1">
+                    <Typography className="!font-bold !text-brand-maroon">{list.name}</Typography>
                     {list.description && (
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ mt: 0.5, wordBreak: "break-word" }}
+                        className="!mt-1 !break-words"
                       >
                         {list.description}
                       </Typography>
                     )}
-                    <Box sx={{ mt: 1 }}>
-                      <Box component="span" sx={s.memberBadge}>
+                    <Box className="mt-2">
+                      <Box
+                        component="span"
+                        className="bg-[#FFF4DE] text-brand-gold font-bold px-3 py-1 rounded-full text-[0.8rem] inline-block"
+                      >
                         {list.member_count} {list.member_count !== 1 ? t("lists.members") : t("lists.member")}
                       </Box>
                     </Box>
@@ -365,7 +360,7 @@ export default function AdminUserLists() {
                     </IconButton>
                   </Box>
                 </Box>
-                <Box sx={s.actionsRow}>
+                <Box className="mt-4 flex gap-2 flex-wrap">
                   <Button
                     size="small"
                     variant="outlined"
@@ -396,23 +391,23 @@ export default function AdminUserLists() {
 
       {/* Dialog */}
       <Dialog open={!!mode} onClose={closeDialog} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>{dialogTitle}</DialogTitle>
+        <DialogTitle className="!font-bold !text-brand-saffron-dark">{dialogTitle}</DialogTitle>
         <DialogContent>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {error}
             </Alert>
           )}
 
           {(mode === "create" || mode === "edit-name") && (
-            <Box sx={{ mt: 1, mb: 2 }}>
+            <Box className="mt-2 mb-4">
               <TextField
                 label="List Name"
                 required
                 fullWidth
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                sx={{ mb: 2 }}
+                className="!mb-4"
               />
               <TextField
                 label="Description"
@@ -431,7 +426,7 @@ export default function AdminUserLists() {
                 size="small"
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                sx={{ mb: 1 }}
+                className="!mb-2"
                 slotProps={{
                   input: {
                     startAdornment: (
@@ -442,7 +437,7 @@ export default function AdminUserLists() {
                   },
                 }}
               />
-              <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+              <Box className="flex gap-2 mb-2">
                 <Button size="small" onClick={selectAllFiltered}>
                   Select all filtered
                 </Button>
@@ -451,12 +446,12 @@ export default function AdminUserLists() {
                 </Button>
                 <Typography
                   variant="caption"
-                  sx={{ ml: "auto", alignSelf: "center", color: "text.secondary" }}
+                  className="!ml-auto !self-center !text-brand-text-medium"
                 >
                   {selectedIds.size} selected
                 </Typography>
               </Box>
-              <Box sx={s.userPickerList}>
+              <Box className="max-h-[380px] overflow-auto border border-brand-sand rounded-lg bg-brand-ivory">
                 <List dense disablePadding>
                   {filteredUsers.map((u: any) => (
                     <ListItemButton key={u.id} onClick={() => toggleUser(u.id)}>
@@ -468,7 +463,7 @@ export default function AdminUserLists() {
                     </ListItemButton>
                   ))}
                   {filteredUsers.length === 0 && (
-                    <Box sx={{ p: 2, textAlign: "center" }}>
+                    <Box className="p-4 text-center">
                       <Typography variant="caption" color="text.secondary">
                         No users match.
                       </Typography>
@@ -479,7 +474,7 @@ export default function AdminUserLists() {
             </>
           )}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={closeDialog}>Cancel</Button>
           <Button variant="contained" onClick={handleSave} disabled={saving}>
             {saving ? "Saving…" : "Save"}

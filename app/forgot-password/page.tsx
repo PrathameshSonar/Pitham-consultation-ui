@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Box, Paper, TextField, Button, Typography, Alert, Stack } from "@mui/material";
 import { forgotPassword, resetPassword } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
-import { brandColors } from "@/theme/colors";
 
 export default function ForgotPassword() {
   const { t } = useT();
@@ -68,43 +67,27 @@ export default function ForgotPassword() {
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: "calc(100vh - 64px)",
-        bgcolor: "background.default",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        p: 3,
-      }}
-    >
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream flex items-center justify-center p-6">
       <Paper
         elevation={0}
-        sx={{
-          width: "100%",
-          maxWidth: 440,
-          p: { xs: 4, md: 5 },
-          borderRadius: 5,
-          border: `1px solid ${brandColors.sand}`,
-          boxShadow: "0 20px 60px rgba(123, 30, 30, 0.12)",
-        }}
+        className="!w-full !max-w-[440px] !p-8 md:!p-10 !rounded-[2.5rem] !border !border-brand-sand !shadow-[0_20px_60px_rgba(123,30,30,0.12)]"
       >
         <Typography
           variant="h4"
-          sx={{ textAlign: "center", color: brandColors.maroon, fontWeight: 700, mb: 0.5 }}
+          className="!text-center !text-brand-maroon !font-bold !mb-1"
         >
           {t("auth.forgot.title")}
         </Typography>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 2, mt: 2 }}>
+          <Alert severity="error" className="!mb-4 !mt-4">
             {error}
           </Alert>
         )}
 
         {step === "request" && (
           <>
-            <Typography sx={{ textAlign: "center", color: brandColors.textMedium, mb: 3 }}>
+            <Typography className="!text-center !text-brand-text-medium !mb-6">
               {t("auth.forgot.subtitle")}
             </Typography>
             <Box component="form" onSubmit={handleRequest}>
@@ -128,7 +111,7 @@ export default function ForgotPassword() {
 
         {step === "reset" && (
           <>
-            <Typography sx={{ textAlign: "center", color: brandColors.textMedium, mb: 3, mt: 1 }}>
+            <Typography className="!text-center !text-brand-text-medium !mb-6 !mt-2">
               {t("auth.forgot.resetSubtitle")}
             </Typography>
             <Box component="form" onSubmit={handleReset}>
@@ -183,16 +166,16 @@ export default function ForgotPassword() {
         )}
 
         {step === "done" && (
-          <Alert severity="success" sx={{ mt: 2 }}>
+          <Alert severity="success" className="!mt-4">
             {t("auth.forgot.success")}
           </Alert>
         )}
 
-        <Typography sx={{ mt: 3, textAlign: "center", color: brandColors.textMedium }}>
+        <Typography className="!mt-6 !text-center !text-brand-text-medium">
           <Box
             component={Link}
             href="/login"
-            sx={{ color: brandColors.saffron, fontWeight: 600, "&:hover": { textDecoration: "underline" } }}
+            className="!text-brand-saffron !font-semibold hover:!underline"
           >
             {t("auth.forgot.backToLogin")}
           </Box>

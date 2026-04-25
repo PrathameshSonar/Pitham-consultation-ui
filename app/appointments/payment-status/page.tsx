@@ -34,11 +34,9 @@ export default function PaymentStatus() {
       return;
     }
 
-    // Extract appointment ID from txn format: SPBSP_{id}_{hex}
     const parts = txn.split("_");
     if (parts.length >= 2) setAppointmentId(parseInt(parts[1], 10) || null);
 
-    // Load fee + check status in parallel
     getPublicSettings()
       .then((s: any) => setFee(s.consultation_fee || 500))
       .catch(() => {});
@@ -76,16 +74,16 @@ export default function PaymentStatus() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className="min-h-[80vh] flex items-center justify-center">
         <CircularProgress color="primary" />
       </Box>
     );
   }
 
   const icons = {
-    success: <CheckCircleIcon sx={{ fontSize: 64, color: "success.main" }} />,
-    pending: <HourglassEmptyIcon sx={{ fontSize: 64, color: "warning.main" }} />,
-    failed: <ErrorIcon sx={{ fontSize: 64, color: "error.main" }} />,
+    success: <CheckCircleIcon className="!text-[64px] !text-brand-success" />,
+    pending: <HourglassEmptyIcon className="!text-[64px] !text-brand-warning" />,
+    failed: <ErrorIcon className="!text-[64px] !text-brand-error" />,
   };
 
   const titles = {
@@ -101,13 +99,16 @@ export default function PaymentStatus() {
   };
 
   return (
-    <Box sx={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", p: 3 }}>
-      <Paper elevation={0} sx={{ p: 5, textAlign: "center", borderRadius: 4, maxWidth: 480 }}>
+    <Box className="min-h-[80vh] flex items-center justify-center p-6">
+      <Paper
+        elevation={0}
+        className="!p-10 !text-center !rounded-3xl !max-w-[480px]"
+      >
         {icons[status]}
-        <Typography variant="h5" sx={{ fontWeight: 700, mt: 2, mb: 1 }}>
+        <Typography variant="h5" className="!font-bold !mt-4 !mb-2">
           {titles[status]}
         </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        <Typography color="text.secondary" className="!mb-6">
           {descs[status]}
         </Typography>
         {status === "failed" && appointmentId && (
@@ -117,7 +118,7 @@ export default function PaymentStatus() {
             startIcon={<PaymentIcon />}
             onClick={handleRetryPayment}
             disabled={retrying}
-            sx={{ mb: 2 }}
+            className="!mb-4"
           >
             {retrying ? t("common.loading") : t("payment.retry")}
           </Button>

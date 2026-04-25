@@ -14,7 +14,6 @@ import {
   CircularProgress,
   Chip,
   InputAdornment,
-  IconButton,
   TablePagination,
   Dialog,
   DialogTitle,
@@ -41,7 +40,9 @@ import {
   getToken,
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
-import * as s from "./styles";
+
+const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4";
+const CONTAINER_CLASS = "max-w-[900px] mx-auto";
 
 type SortKey = "newest" | "oldest" | "title";
 
@@ -62,13 +63,11 @@ export default function AdminRecordings() {
   const [loading, setLoading] = useState(true);
   const [snack, setSnack] = useState<{ msg: string; severity: "success" | "error" } | null>(null);
 
-  // Filters
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
   const [page, setPage] = useState(0);
   const [rpp, setRpp] = useState(10);
 
-  // Assign dialog
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignTitle, setAssignTitle] = useState("");
   const [assignUrl, setAssignUrl] = useState("");
@@ -99,7 +98,6 @@ export default function AdminRecordings() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  // Group recordings by title + URL
   const grouped: RecordingGroup[] = useMemo(() => {
     const groups = new Map<string, RecordingGroup>();
     for (const r of recordings) {
@@ -118,7 +116,6 @@ export default function AdminRecordings() {
     return Array.from(groups.values());
   }, [recordings]);
 
-  // Filter + sort groups
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = grouped;
@@ -221,47 +218,30 @@ export default function AdminRecordings() {
 
   if (loading) {
     return (
-      <Box sx={{ ...s.wrapper, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />
       </Box>
     );
   }
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            justifyContent: "space-between",
-            alignItems: { xs: "stretch", sm: "center" },
-            mb: 3,
-            gap: { xs: 1.5, sm: 2 },
-          }}
-        >
-          <Typography variant="h4" sx={s.title}>
+    <Box className={WRAPPER_CLASS}>
+      <Box className={CONTAINER_CLASS}>
+        <Box className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-6 gap-3 sm:gap-4">
+          <Typography variant="h4" className="!text-brand-maroon !font-bold !mb-0">
             {t("rec.admin.title")}
           </Typography>
           <Button
             variant="contained"
             startIcon={<GroupIcon />}
             onClick={openAssign}
-            sx={{ width: { xs: "100%", sm: "auto" }, alignSelf: { xs: "stretch", sm: "auto" } }}
+            className="!w-full sm:!w-auto sm:!self-auto"
           >
             {t("rec.assignToList")}
           </Button>
         </Box>
 
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            mb: 3,
-            gridTemplateColumns: { xs: "1fr", sm: "2fr 1fr" },
-            "& .MuiFormControl-root": { width: "100%" },
-          }}
-        >
+        <Box className="grid gap-4 mb-6 grid-cols-1 sm:grid-cols-[2fr_1fr] [&_.MuiFormControl-root]:!w-full">
           <TextField
             size="small"
             placeholder={t("common.search")}
@@ -294,7 +274,7 @@ export default function AdminRecordings() {
         </Box>
 
         {filtered.length === 0 ? (
-          <Paper elevation={0} sx={{ p: 5, textAlign: "center", borderRadius: 4 }}>
+          <Paper elevation={0} className="!p-10 !text-center !rounded-3xl">
             <Typography color="text.secondary">{t("rec.none")}</Typography>
           </Paper>
         ) : (
@@ -303,56 +283,27 @@ export default function AdminRecordings() {
               <Accordion
                 key={group.key}
                 elevation={0}
-                sx={{
-                  mb: 1.5,
-                  borderRadius: "16px !important",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  "&:before": { display: "none" },
-                }}
+                className="!mb-3 !rounded-2xl !border !border-[#E8D9BF] [&::before]:!hidden"
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
-                  sx={{
-                    "& .MuiAccordionSummary-content": { minWidth: 0, my: { xs: 1, sm: 1.5 } },
-                  }}
+                  className="[&_.MuiAccordionSummary-content]:!min-w-0 [&_.MuiAccordionSummary-content]:!my-2 sm:[&_.MuiAccordionSummary-content]:!my-3"
                 >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: { xs: "column", sm: "row" },
-                      alignItems: { xs: "flex-start", sm: "center" },
-                      gap: { xs: 1, sm: 2 },
-                      width: "100%",
-                      minWidth: 0,
-                    }}
-                  >
-                    {/* Top row: icon + title + URL — always together */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0, flex: 1, width: "100%" }}>
-                      <PlayCircleIcon color="primary" sx={{ flexShrink: 0 }} />
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography sx={{ fontWeight: 700, wordBreak: "break-word" }}>
-                          {group.title}
-                        </Typography>
+                  <Box className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full min-w-0">
+                    <Box className="flex items-center gap-3 min-w-0 flex-1 w-full">
+                      <PlayCircleIcon color="primary" className="!shrink-0" />
+                      <Box className="flex-1 min-w-0">
+                        <Typography className="!font-bold !break-words">{group.title}</Typography>
                         <Typography
                           variant="caption"
                           color="text.secondary"
-                          sx={{ wordBreak: "break-all", display: "block" }}
+                          className="!break-all !block"
                         >
                           {group.url}
                         </Typography>
                       </Box>
                     </Box>
-                    {/* Meta row: chip + date — drops below title on mobile */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        flexShrink: 0,
-                        ml: { xs: 4, sm: 0 },
-                      }}
-                    >
+                    <Box className="flex items-center gap-2 shrink-0 ml-8 sm:ml-0">
                       <Chip
                         icon={<PeopleIcon />}
                         label={`${group.records.length} ${t("rec.users")}`}
@@ -360,22 +311,18 @@ export default function AdminRecordings() {
                         color="primary"
                         variant="outlined"
                       />
-                      <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                      <Typography
+                        variant="caption"
+                        color="text.disabled"
+                        className="!whitespace-nowrap"
+                      >
                         {new Date(group.created_at).toLocaleDateString()}
                       </Typography>
                     </Box>
                   </Box>
                 </AccordionSummary>
-                <AccordionDetails sx={{ pt: 0 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 1,
-                      mb: 2,
-                      flexWrap: "wrap",
-                      "& > .MuiButton-root": { flex: { xs: "1 1 100%", sm: "0 0 auto" } },
-                    }}
-                  >
+                <AccordionDetails className="!pt-0">
+                  <Box className="flex gap-2 mb-4 flex-wrap [&>.MuiButton-root]:!flex-[1_1_100%] sm:[&>.MuiButton-root]:!flex-none">
                     <Button
                       component="a"
                       href={group.url}
@@ -400,10 +347,10 @@ export default function AdminRecordings() {
                       {t("rec.deleteAll")}
                     </Button>
                   </Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                  <Typography variant="subtitle2" className="!mb-2 !font-semibold">
                     {t("rec.assignedTo")}:
                   </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                  <Box className="flex flex-wrap gap-1">
                     {group.records.map((r: any) => {
                       const u = users.find((x) => x.id === r.user_id);
                       return (
@@ -439,14 +386,14 @@ export default function AdminRecordings() {
 
       {/* Bulk assign dialog */}
       <Dialog open={assignOpen} onClose={() => setAssignOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>{t("rec.assignToList")}</DialogTitle>
+        <DialogTitle className="!font-bold !text-brand-saffron-dark">{t("rec.assignToList")}</DialogTitle>
         <DialogContent>
           {assignError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {assignError}
             </Alert>
           )}
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
+          <Stack spacing={2.5} className="!mt-2">
             <TextField
               label={t("rec.recordingTitle")}
               required
@@ -475,7 +422,7 @@ export default function AdminRecordings() {
               }}
             />
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              <Typography variant="subtitle2" className="!mb-2">
                 {t("rec.selectLists")}
               </Typography>
               {lists.length === 0 ? (
@@ -483,7 +430,7 @@ export default function AdminRecordings() {
                   {t("lists.empty")}
                 </Typography>
               ) : (
-                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <Box className="flex gap-2 flex-wrap">
                   {lists.map((l: any) => {
                     const selected = selectedListIds.has(l.id);
                     return (
@@ -493,7 +440,7 @@ export default function AdminRecordings() {
                         onClick={() => toggleList(l.id)}
                         color={selected ? "primary" : "default"}
                         variant={selected ? "filled" : "outlined"}
-                        sx={{ cursor: "pointer" }}
+                        className="!cursor-pointer"
                       />
                     );
                   })}
@@ -514,7 +461,7 @@ export default function AdminRecordings() {
             )}
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setAssignOpen(false)}>{t("common.cancel")}</Button>
           <Button variant="contained" onClick={handleAssign} disabled={assignSaving}>
             {assignSaving ? t("common.saving") : t("rec.assignBtn")}
@@ -529,7 +476,7 @@ export default function AdminRecordings() {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         {snack ? (
-          <Alert severity={snack.severity} onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+          <Alert severity={snack.severity} onClose={() => setSnack(null)} className="!w-full">
             {snack.msg}
           </Alert>
         ) : undefined}

@@ -41,8 +41,9 @@ import {
   type Broadcast,
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
-import { brandColors } from "@/theme/colors";
-import * as s from "../styles";
+
+const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4";
+const CONTAINER_CLASS = "max-w-[1200px] mx-auto";
 
 export default function AdminBroadcastsPage() {
   const router = useRouter();
@@ -58,16 +59,14 @@ export default function AdminBroadcastsPage() {
   const [snack, setSnack] = useState<{ msg: string; severity: "success" | "error" } | null>(null);
   const [delTarget, setDelTarget] = useState<Broadcast | null>(null);
 
-  // ── History controls (filter, sort, pagination) ─────────────────────────────
   const [historySearch, setHistorySearch] = useState("");
-  const [historyListFilter, setHistoryListFilter] = useState<string>("all"); // "all" | "broadcast-all" | listId
+  const [historyListFilter, setHistoryListFilter] = useState<string>("all");
   const [historySort, setHistorySort] = useState<"newest" | "oldest" | "title">("newest");
   const [historyPage, setHistoryPage] = useState(0);
   const [historyRpp, setHistoryRpp] = useState(10);
 
   const token = getToken();
 
-  // ── Queries ────────────────────────────────────────────────────────────────
   const { data: history = [], isLoading } = useQuery({
     queryKey: ["broadcasts", "admin"],
     queryFn: () => adminListBroadcasts(token),
@@ -80,7 +79,6 @@ export default function AdminBroadcastsPage() {
     enabled: !!token,
   });
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
   const sendMutation = useMutation({
     mutationFn: () =>
       adminCreateBroadcast(
@@ -117,7 +115,6 @@ export default function AdminBroadcastsPage() {
     },
   });
 
-  // Derive filtered + sorted history. Pagination then slices the result.
   const filteredHistory = useMemo(() => {
     const q = historySearch.trim().toLowerCase();
     let rows = history.slice();
@@ -151,7 +148,6 @@ export default function AdminBroadcastsPage() {
     historyPage * historyRpp + historyRpp,
   );
 
-  // Build a quick lookup so list-target chips can show the list name (not just the id).
   const listNameById = useMemo(() => {
     const m = new Map<number, string>();
     for (const l of lists) m.set(l.id, l.name);
@@ -177,20 +173,20 @@ export default function AdminBroadcastsPage() {
   }
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Typography variant="h4" sx={s.headerTitle}>
+    <Box className={WRAPPER_CLASS}>
+      <Box className={CONTAINER_CLASS}>
+        <Typography variant="h4" className="!text-brand-maroon !font-bold !mb-1">
           {t("bc.title")}
         </Typography>
-        <Typography sx={s.headerSubtitle}>{t("bc.subtitle")}</Typography>
+        <Typography className="!text-brand-text-medium">{t("bc.subtitle")}</Typography>
 
         {/* Compose */}
         <Paper
           elevation={0}
-          sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}`, mt: 3 }}
+          className="!p-6 md:!p-8 !rounded-3xl !border !border-brand-sand !mt-6"
         >
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {error}
             </Alert>
           )}
@@ -212,7 +208,11 @@ export default function AdminBroadcastsPage() {
               onChange={(e) => setMessage(e.target.value)}
             />
             <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                className="!block !mb-1"
+              >
                 {t("bc.target")}
               </Typography>
               <RadioGroup row value={target} onChange={(e) => setTarget(e.target.value as "all" | "list")}>
@@ -225,7 +225,7 @@ export default function AdminBroadcastsPage() {
                   label={t("bc.list")}
                   value={listId}
                   onChange={(e) => setListId(Number(e.target.value) || "")}
-                  sx={{ mt: 1, width: { xs: "100%", sm: 240 } }}
+                  className="!mt-2 !w-full sm:!w-60"
                   size="small"
                 >
                   {lists.map((l: any) => (
@@ -236,7 +236,12 @@ export default function AdminBroadcastsPage() {
                 </TextField>
               )}
             </Box>
-            <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+            <Stack
+              direction="row"
+              spacing={1.5}
+              useFlexGap
+              className="!items-center !flex-wrap"
+            >
               <Button component="label" variant="outlined" size="small" startIcon={<CloudUploadIcon />}>
                 {image ? image.name : t("bc.attach")}
                 <input
@@ -261,21 +266,15 @@ export default function AdminBroadcastsPage() {
         </Paper>
 
         {/* History */}
-        <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mt: 5, mb: 2 }}>
+        <Typography
+          variant="h6"
+          className="!font-bold !text-brand-maroon !mt-10 !mb-4"
+        >
           {t("bc.history")}
         </Typography>
 
         {/* Filters: search + by user list + sort */}
-        <Box
-          sx={{
-            display: "grid",
-            gap: { xs: 1.25, md: 2 },
-            mb: 2,
-            alignItems: "center",
-            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "2fr 1fr 1fr" },
-            "& .MuiFormControl-root": { width: "100%" },
-          }}
-        >
+        <Box className="grid gap-3 md:gap-4 mb-4 items-center grid-cols-1 sm:grid-cols-2 md:grid-cols-[2fr_1fr_1fr] [&_.MuiFormControl-root]:!w-full">
           <TextField
             size="small"
             placeholder={t("common.search")}
@@ -329,15 +328,15 @@ export default function AdminBroadcastsPage() {
         </Box>
 
         {isLoading ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
+          <Box className="text-center py-8">
             <CircularProgress />
           </Box>
         ) : filteredHistory.length === 0 ? (
           <Paper
             elevation={0}
-            sx={{ p: 5, borderRadius: 4, border: `1px dashed ${brandColors.sand}`, textAlign: "center" }}
+            className="!p-10 !rounded-3xl !border !border-dashed !border-brand-sand !text-center"
           >
-            <CampaignIcon sx={{ fontSize: 56, color: brandColors.sand, mb: 1 }} />
+            <CampaignIcon className="!text-[56px] !text-brand-sand !mb-2" />
             <Typography color="text.secondary">{t("bc.empty")}</Typography>
           </Paper>
         ) : (
@@ -347,29 +346,10 @@ export default function AdminBroadcastsPage() {
                 <Paper
                   key={b.id}
                   elevation={0}
-                  sx={{
-                    p: { xs: 2, md: 2.5 },
-                    borderRadius: 4,
-                    border: `1px solid ${brandColors.sand}`,
-                    // Stack image above content on mobile so it gets its full width;
-                    // side-by-side from sm and up.
-                    display: "flex",
-                    flexDirection: { xs: "column", sm: "row" },
-                    gap: { xs: 1.5, sm: 2 },
-                    alignItems: { xs: "stretch", sm: "flex-start" },
-                  }}
+                  className="!p-4 md:!p-5 !rounded-3xl !border !border-brand-sand !flex !flex-col sm:!flex-row !gap-3 sm:!gap-4 !items-stretch sm:!items-start"
                 >
                   {b.image_path && (
-                    <Box
-                      sx={{
-                        width: { xs: "100%", sm: 140 },
-                        height: { xs: 200, sm: 140 },
-                        flexShrink: 0,
-                        borderRadius: 2,
-                        overflow: "hidden",
-                        bgcolor: "background.default",
-                      }}
-                    >
+                    <Box className="w-full sm:w-[140px] h-[200px] sm:h-[140px] shrink-0 rounded-lg overflow-hidden bg-brand-cream">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={fileUrl(b.image_path)}
@@ -384,17 +364,9 @@ export default function AdminBroadcastsPage() {
                       />
                     </Box>
                   )}
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        gap: 1,
-                        mb: 0.5,
-                      }}
-                    >
-                      <Typography sx={{ fontWeight: 700, color: brandColors.maroon, wordBreak: "break-word" }}>
+                  <Box className="flex-1 min-w-0">
+                    <Box className="flex justify-between items-start gap-2 mb-1">
+                      <Typography className="!font-bold !text-brand-maroon !break-words">
                         {b.title}
                       </Typography>
                       <IconButton size="small" color="error" onClick={() => setDelTarget(b)}>
@@ -404,11 +376,11 @@ export default function AdminBroadcastsPage() {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ whiteSpace: "pre-wrap", lineHeight: 1.6, mb: 1, wordBreak: "break-word" }}
+                      className="!whitespace-pre-wrap !leading-relaxed !mb-2 !break-words"
                     >
                       {b.message}
                     </Typography>
-                    <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
+                    <Stack direction="row" spacing={1} useFlexGap className="!flex-wrap">
                       <Chip
                         size="small"
                         label={
@@ -458,19 +430,21 @@ export default function AdminBroadcastsPage() {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 700, color: "error.main" }}>{t("common.delete")}</DialogTitle>
+        <DialogTitle className="!font-bold !text-brand-error">
+          {t("common.delete")}
+        </DialogTitle>
         <DialogContent>
           <Typography>{t("bc.delete.confirm")}</Typography>
           {delTarget && (
             <Paper
               elevation={0}
-              sx={{ mt: 2, p: 2, border: "1px solid", borderColor: "divider", borderRadius: 2 }}
+              className="!mt-4 !p-4 !border !border-[#E8D9BF] !rounded-lg"
             >
-              <Typography sx={{ fontWeight: 600 }}>{delTarget.title}</Typography>
+              <Typography className="!font-semibold">{delTarget.title}</Typography>
             </Paper>
           )}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setDelTarget(null)} disabled={deleteMutation.isPending}>
             {t("common.cancel")}
           </Button>
@@ -492,7 +466,7 @@ export default function AdminBroadcastsPage() {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         {snack ? (
-          <Alert severity={snack.severity} onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+          <Alert severity={snack.severity} onClose={() => setSnack(null)} className="!w-full">
             {snack.msg}
           </Alert>
         ) : undefined}

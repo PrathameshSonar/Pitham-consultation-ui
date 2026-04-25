@@ -10,7 +10,6 @@ import {
   Button,
   Alert,
   MenuItem,
-  Stack,
   CircularProgress,
   Dialog,
   DialogTitle,
@@ -35,7 +34,6 @@ import {
 } from "@/services/api";
 import { lettersOnly } from "@/lib/inputFilters";
 import { useT } from "@/i18n/I18nProvider";
-import { brandColors } from "@/theme/colors";
 
 const COUNTRIES = ["India", "USA", "UK", "Canada", "Australia", "Other"];
 
@@ -178,8 +176,6 @@ export default function ProfilePage() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  // Has the user actually edited anything? Compares each field against the
-  // snapshot taken when the profile was loaded — including dob/tob.
   const dirty = useMemo(() => {
     const init = initialRef.current;
     if (!init) return false;
@@ -226,7 +222,6 @@ export default function ProfilePage() {
       if (tob) payload.tob = tob.format("HH:mm:ss");
       await updateProfile(payload, token);
       setSuccess(t("profile.saved"));
-      // Re-baseline so the button immediately disables again after a successful save.
       initialRef.current = {
         form: { ...form },
         dob: dob ? dob.format("YYYY-MM-DD") : "",
@@ -241,35 +236,22 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className="min-h-[60vh] flex items-center justify-center">
         <CircularProgress color="primary" />
       </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: "calc(100vh - 64px)",
-        bgcolor: "background.default",
-        py: { xs: 4, md: 6 },
-        px: 2,
-      }}
-    >
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4">
       <Paper
         elevation={0}
-        sx={{
-          maxWidth: 700,
-          mx: "auto",
-          p: { xs: 3, md: 5 },
-          borderRadius: 4,
-          border: `1px solid ${brandColors.sand}`,
-        }}
+        className="!max-w-[700px] !mx-auto !p-6 md:!p-10 !rounded-3xl !border !border-brand-sand"
       >
-        <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1 }}>
+        <Typography variant="h4" className="!font-bold !text-brand-maroon !mb-2">
           {t("profile.title")}
         </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        <Typography color="text.secondary" className="!mb-6">
           {t("profile.subtitle")}
         </Typography>
 
@@ -277,7 +259,7 @@ export default function ProfilePage() {
           <Alert
             severity="warning"
             icon={<MarkEmailReadIcon />}
-            sx={{ mb: 2 }}
+            className="!mb-4"
             action={
               <Button
                 color="inherit"
@@ -293,25 +275,18 @@ export default function ProfilePage() {
           </Alert>
         )}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" className="!mb-4">
             {error}
           </Alert>
         )}
         {success && (
-          <Alert severity="success" sx={{ mb: 2 }}>
+          <Alert severity="success" className="!mb-4">
             {success}
           </Alert>
         )}
 
         <Box component="form" onSubmit={handleSave}>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-              gap: 2.5,
-              mb: 3,
-            }}
-          >
+          <Box className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
             <TextField
               label={t("auth.register.fullName")}
               required
@@ -407,19 +382,12 @@ export default function ProfilePage() {
       {/* ── Privacy: download my data ───────────────────────────────────── */}
       <Paper
         elevation={0}
-        sx={{
-          maxWidth: 700,
-          mx: "auto",
-          mt: 4,
-          p: { xs: 3, md: 4 },
-          borderRadius: 4,
-          border: `1px solid ${brandColors.sand}`,
-        }}
+        className="!max-w-[700px] !mx-auto !mt-8 !p-6 md:!p-8 !rounded-3xl !border !border-brand-sand"
       >
-        <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1 }}>
+        <Typography variant="h6" className="!font-bold !text-brand-maroon !mb-2">
           {t("profile.export.title")}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, lineHeight: 1.7 }}>
+        <Typography variant="body2" color="text.secondary" className="!mb-5 !leading-[1.7]">
           {t("profile.export.desc")}
         </Typography>
         <Button
@@ -435,21 +403,12 @@ export default function ProfilePage() {
       {/* ── Danger zone ─────────────────────────────────────────────────── */}
       <Paper
         elevation={0}
-        sx={{
-          maxWidth: 700,
-          mx: "auto",
-          mt: 4,
-          p: { xs: 3, md: 4 },
-          borderRadius: 4,
-          border: "1px solid",
-          borderColor: "error.light",
-          bgcolor: "rgba(211, 47, 47, 0.04)",
-        }}
+        className="!max-w-[700px] !mx-auto !mt-8 !p-6 md:!p-8 !rounded-3xl !border !border-[#e57373] !bg-[rgba(211,47,47,0.04)]"
       >
-        <Typography variant="h6" sx={{ fontWeight: 700, color: "error.main", mb: 1 }}>
+        <Typography variant="h6" className="!font-bold !text-brand-error !mb-2">
           {t("profile.delete.title")}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, lineHeight: 1.7 }}>
+        <Typography variant="body2" color="text.secondary" className="!mb-5 !leading-[1.7]">
           {t("profile.delete.desc")}
         </Typography>
         <Button
@@ -467,15 +426,17 @@ export default function ProfilePage() {
       </Paper>
 
       <Dialog open={deleteOpen} onClose={() => !deleting && setDeleteOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: "error.main" }}>{t("profile.delete.title")}</DialogTitle>
+        <DialogTitle className="!font-bold !text-brand-error">
+          {t("profile.delete.title")}
+        </DialogTitle>
         <DialogContent>
           {deleteError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {deleteError}
             </Alert>
           )}
-          <Typography sx={{ mb: 2, lineHeight: 1.7 }}>{t("profile.delete.confirm")}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography className="!mb-4 !leading-[1.7]">{t("profile.delete.confirm")}</Typography>
+          <Typography variant="body2" color="text.secondary" className="!mb-4">
             {t("profile.delete.typePrompt")}
           </Typography>
           <TextField
@@ -486,7 +447,7 @@ export default function ProfilePage() {
             autoFocus
           />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setDeleteOpen(false)} disabled={deleting}>
             {t("common.cancel")}
           </Button>

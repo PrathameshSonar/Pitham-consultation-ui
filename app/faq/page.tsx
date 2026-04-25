@@ -12,7 +12,6 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HelpOutlineIcon from "@mui/icons-material/Help";
 import { useT } from "@/i18n/I18nProvider";
-import { brandColors } from "@/theme/colors";
 
 const FAQ_KEYS = [
   "booking",
@@ -33,33 +32,22 @@ export default function FAQPage() {
   const [open, setOpen] = useState<string | false>(FAQ_KEYS[0]);
 
   return (
-    <Box
-      sx={{
-        minHeight: "calc(100vh - 64px)",
-        bgcolor: "background.default",
-        py: { xs: 4, md: 8 },
-        px: { xs: 2, md: 4 },
-      }}
-    >
-      <Box sx={{ maxWidth: 880, mx: "auto" }}>
-        <Box sx={{ textAlign: "center", mb: 4 }}>
-          <HelpOutlineIcon sx={{ fontSize: 48, color: brandColors.saffron, mb: 1 }} />
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-16 px-4 md:px-8">
+      <Box className="max-w-[880px] mx-auto">
+        <Box className="text-center mb-8">
+          <HelpOutlineIcon className="!text-[48px] !text-brand-saffron !mb-2" />
           <Typography
             variant="h3"
-            sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1 }}
+            className="!font-bold !text-brand-maroon !mb-2"
           >
             {t("faq.title")}
           </Typography>
-          <Typography sx={{ color: "text.secondary" }}>{t("faq.subtitle")}</Typography>
+          <Typography className="!text-brand-text-medium">{t("faq.subtitle")}</Typography>
         </Box>
 
         <Paper
           elevation={0}
-          sx={{
-            p: { xs: 1.5, md: 3 },
-            borderRadius: 4,
-            border: `1px solid ${brandColors.sand}`,
-          }}
+          className="!p-3 md:!p-6 !rounded-3xl !border !border-brand-sand"
         >
           {FAQ_KEYS.map((key) => (
             <Accordion
@@ -68,27 +56,20 @@ export default function FAQPage() {
               elevation={0}
               expanded={open === key}
               onChange={(_, isOpen) => setOpen(isOpen ? key : false)}
-              sx={{
-                bgcolor: "transparent",
-                borderBottom: `1px solid ${brandColors.sand}`,
-                "&:last-of-type": { borderBottom: 0 },
-                "&:before": { display: "none" },
-              }}
+              className="!bg-transparent !border-b !border-brand-sand last-of-type:!border-b-0 [&::before]:!hidden"
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon sx={{ color: brandColors.saffron }} />}
-                sx={{ py: 1 }}
+                expandIcon={<ExpandMoreIcon className="!text-brand-saffron" />}
+                className="!py-2"
               >
-                <Typography
-                  sx={{ fontWeight: 600, color: brandColors.maroon, fontSize: "1rem" }}
-                >
+                <Typography className="!font-semibold !text-brand-maroon !text-base">
                   {t(`faq.q.${key}`)}
                 </Typography>
               </AccordionSummary>
-              <AccordionDetails sx={{ pb: 2 }}>
+              <AccordionDetails className="!pb-4">
                 <Typography
                   variant="body2"
-                  sx={{ color: "text.secondary", whiteSpace: "pre-line", lineHeight: 1.7 }}
+                  className="!text-brand-text-medium !whitespace-pre-line !leading-[1.7]"
                 >
                   {t(`faq.a.${key}`)}
                 </Typography>
@@ -97,14 +78,12 @@ export default function FAQPage() {
           ))}
         </Paper>
 
-        <Typography
-          sx={{ textAlign: "center", mt: 4, color: "text.secondary", fontSize: "0.9rem" }}
-        >
+        <Typography className="!text-center !mt-8 !text-brand-text-medium !text-[0.9rem]">
           {t("faq.contactPrompt")}{" "}
           <Box
             component="a"
             href="/contact"
-            sx={{ color: brandColors.saffron, fontWeight: 600 }}
+            className="text-brand-saffron font-semibold"
           >
             {t("nav.contact")}
           </Box>

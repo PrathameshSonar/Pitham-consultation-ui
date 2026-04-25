@@ -22,7 +22,6 @@ import {
   Chip,
   Switch,
   FormControlLabel,
-  MenuItem,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -62,7 +61,9 @@ import {
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
-import * as s from "../styles";
+
+const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4";
+const CONTAINER_CLASS = "max-w-[1200px] mx-auto";
 
 type TabKey = "banners" | "events" | "gallery" | "testimonials" | "videos" | "instagram";
 
@@ -74,9 +75,6 @@ function youtubeThumb(url: string | null | undefined): string | null {
   return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : null;
 }
 
-/** Turn an Instagram post/reel/tv URL into the public /embed URL. Instagram's
- * embed endpoint is publicly accessible and renders the post with thumbnail,
- * caption, and a "View on Instagram" link — no Graph API token required. */
 function instagramEmbedUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   const m = url.match(/(https?:\/\/(?:www\.)?instagram\.com\/(?:p|reel|tv)\/[^/?#]+)/);
@@ -115,8 +113,8 @@ export default function AdminPithamCms() {
 
   if (forbidden) {
     return (
-      <Box sx={{ ...s.wrapper, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Alert severity="warning" sx={{ maxWidth: 480 }}>
+      <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
+        <Alert severity="warning" className="!max-w-[480px]">
           Only super admins can manage the Pitham page. Moderators do not have access to this section.
         </Alert>
       </Box>
@@ -124,13 +122,13 @@ export default function AdminPithamCms() {
   }
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" sx={s.headerTitle}>
+    <Box className={WRAPPER_CLASS}>
+      <Box className={CONTAINER_CLASS}>
+        <Box className="mb-6">
+          <Typography variant="h4" className="!text-brand-maroon !font-bold !mb-1">
             {t("pcms.title")}
           </Typography>
-          <Typography sx={s.headerSubtitle}>{t("pcms.subtitle")}</Typography>
+          <Typography className="!text-brand-text-medium">{t("pcms.subtitle")}</Typography>
         </Box>
 
         <Tabs
@@ -138,7 +136,7 @@ export default function AdminPithamCms() {
           onChange={(_, v) => changeTab(v as TabKey)}
           variant="scrollable"
           scrollButtons="auto"
-          sx={{ mb: 3, borderBottom: 1, borderColor: "divider" }}
+          className="!mb-6 !border-b !border-[#E8D9BF]"
         >
           <Tab value="banners" label={t("pcms.tab.banners")} />
           <Tab value="events" label={t("pcms.tab.events")} />
@@ -163,7 +161,7 @@ export default function AdminPithamCms() {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         {snack ? (
-          <Alert severity={snack.severity} onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+          <Alert severity={snack.severity} onClose={() => setSnack(null)} className="!w-full">
             {snack.msg}
           </Alert>
         ) : undefined}
@@ -174,17 +172,13 @@ export default function AdminPithamCms() {
 
 type Notify = (n: { msg: string; severity: "success" | "error" } | null) => void;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Empty state + delete confirm helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
 function EmptyState({ icon, label }: { icon: ReactNode; label: string }) {
   return (
     <Paper
       elevation={0}
-      sx={{ p: 5, borderRadius: 4, border: `1px dashed ${brandColors.sand}`, textAlign: "center" }}
+      className="!p-10 !rounded-3xl !border !border-dashed !border-brand-sand !text-center"
     >
-      <Box sx={{ color: brandColors.sand, mb: 1, "& svg": { fontSize: 56 } }}>{icon}</Box>
+      <Box className="text-brand-sand mb-2 [&_svg]:!text-[56px]">{icon}</Box>
       <Typography color="text.secondary">{label}</Typography>
     </Paper>
   );
@@ -207,19 +201,19 @@ function DeleteDialog({
 }) {
   return (
     <Dialog open={open} onClose={() => !busy && onCancel()} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700, color: "error.main" }}>{tFn("common.delete")}</DialogTitle>
+      <DialogTitle className="!font-bold !text-brand-error">{tFn("common.delete")}</DialogTitle>
       <DialogContent>
         <Typography>{tFn("pcms.deleteConfirm")}</Typography>
         {target && (
           <Paper
             elevation={0}
-            sx={{ mt: 2, p: 2, border: "1px solid", borderColor: "divider", borderRadius: 2 }}
+            className="!mt-4 !p-4 !border !border-[#E8D9BF] !rounded-lg"
           >
-            <Typography sx={{ fontWeight: 600 }}>{target.label}</Typography>
+            <Typography className="!font-semibold">{target.label}</Typography>
           </Paper>
         )}
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions className="!px-6 !pb-4">
         <Button onClick={onCancel} disabled={busy}>
           {tFn("common.cancel")}
         </Button>
@@ -230,10 +224,6 @@ function DeleteDialog({
     </Dialog>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Image upload panel — reused for banners and gallery (kind prop)
-// ─────────────────────────────────────────────────────────────────────────────
 
 function ImageUploadPanel({ kind, notify }: { kind: "banner" | "gallery"; notify: Notify }) {
   const { t } = useT();
@@ -339,14 +329,14 @@ function ImageUploadPanel({ kind, notify }: { kind: "banner" | "gallery"; notify
 
   if (loading)
     return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
+      <Box className="text-center py-8">
         <CircularProgress />
       </Box>
     );
 
   return (
     <>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+      <Box className="flex justify-end mb-4">
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
           {addLabel}
         </Button>
@@ -355,23 +345,14 @@ function ImageUploadPanel({ kind, notify }: { kind: "banner" | "gallery"; notify
       {items.length === 0 ? (
         <EmptyState icon={emptyIcon} label={t("pcms.empty")} />
       ) : (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(3, 1fr)" },
-            gap: 2.5,
-          }}
-        >
+        <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {items.map((item) => (
             <Paper
               key={item.id}
               elevation={0}
-              sx={{
-                borderRadius: 4,
-                border: `1px solid ${brandColors.sand}`,
-                overflow: "hidden",
-                opacity: item.is_active ? 1 : 0.55,
-              }}
+              className={`!rounded-3xl !border !border-brand-sand !overflow-hidden ${
+                item.is_active ? "!opacity-100" : "!opacity-55"
+              }`}
             >
               {item.image_path && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -386,20 +367,12 @@ function ImageUploadPanel({ kind, notify }: { kind: "banner" | "gallery"; notify
                   }}
                 />
               )}
-              <Box sx={{ p: 2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: 1,
-                    mb: 0.5,
-                  }}
-                >
-                  <Typography sx={{ fontWeight: 600, lineHeight: 1.3, flex: 1 }}>
+              <Box className="p-4">
+                <Box className="flex justify-between items-start gap-2 mb-1">
+                  <Typography className="!font-semibold !leading-tight !flex-1">
                     {item.title || "—"}
                   </Typography>
-                  <Box sx={{ display: "flex", gap: 0.5 }}>
+                  <Box className="flex gap-1">
                     <IconButton size="small" onClick={() => openEdit(item)}>
                       <EditIcon fontSize="small" />
                     </IconButton>
@@ -424,21 +397,21 @@ function ImageUploadPanel({ kind, notify }: { kind: "banner" | "gallery"; notify
       )}
 
       <Dialog open={open} onClose={() => !busy && setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 700, color: brandColors.maroon }}>
+        <DialogTitle className="!font-bold !text-brand-maroon">
           {editing ? editLabel : addLabel}
         </DialogTitle>
         <DialogContent>
           {err && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {err}
             </Alert>
           )}
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
+          <Stack spacing={2.5} className="!mt-2">
             <Button
               component="label"
               variant="outlined"
               startIcon={<CloudUploadIcon />}
-              sx={{ alignSelf: "flex-start" }}
+              className="!self-start"
             >
               {file ? file.name : editing ? t("events.replaceImage") : t("events.uploadImage")}
               <input
@@ -475,7 +448,7 @@ function ImageUploadPanel({ kind, notify }: { kind: "banner" | "gallery"; notify
             />
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setOpen(false)} disabled={busy}>
             {t("common.cancel")}
           </Button>
@@ -496,10 +469,6 @@ function ImageUploadPanel({ kind, notify }: { kind: "banner" | "gallery"; notify
     </>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Events panel (CRUD with image upload + featured flag)
-// ─────────────────────────────────────────────────────────────────────────────
 
 function EventsPanel({ notify }: { notify: Notify }) {
   const { t } = useT();
@@ -641,23 +610,14 @@ function EventsPanel({ notify }: { notify: Notify }) {
 
   if (loading)
     return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
+      <Box className="text-center py-8">
         <CircularProgress />
       </Box>
     );
 
   return (
     <>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: "space-between",
-          alignItems: { xs: "stretch", sm: "center" },
-          gap: { xs: 1.5, sm: 2 },
-          mb: 2,
-        }}
-      >
+      <Box className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-4">
         <Tabs value={tab} onChange={(_, v) => setTab(v)}>
           <Tab label={`${t("events.upcoming")} (${upcoming.length})`} />
           <Tab label={`${t("events.past")} (${past.length})`} />
@@ -666,7 +626,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={openCreate}
-          sx={{ width: { xs: "100%", sm: "auto" } }}
+          className="!w-full sm:!w-auto"
         >
           {t("events.create")}
         </Button>
@@ -675,33 +635,19 @@ function EventsPanel({ notify }: { notify: Notify }) {
       {visible.length === 0 ? (
         <EmptyState icon={<EventNoteIcon />} label={t("events.empty")} />
       ) : (
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2.5 }}>
+        <Box className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {visible.map((ev) => (
             <Paper
               key={ev.id}
               elevation={0}
-              sx={{
-                p: { xs: 2, md: 2.5 },
-                borderRadius: 4,
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                gap: { xs: 1.5, sm: 2 },
-                alignItems: { xs: "stretch", sm: "flex-start" },
-                border: ev.is_featured ? `2px solid ${brandColors.gold}` : `1px solid ${brandColors.sand}`,
-                bgcolor: ev.is_featured ? `${brandColors.gold}08` : "background.paper",
-              }}
+              className={`!p-4 md:!p-5 !rounded-3xl !flex !flex-col sm:!flex-row !gap-3 sm:!gap-4 !items-stretch sm:!items-start ${
+                ev.is_featured
+                  ? "!border-2 !border-brand-gold !bg-brand-gold/5"
+                  : "!border !border-brand-sand !bg-brand-ivory"
+              }`}
             >
               {ev.image_url && (
-                <Box
-                  sx={{
-                    width: { xs: "100%", sm: 96 },
-                    height: { xs: 180, sm: 96 },
-                    flexShrink: 0,
-                    borderRadius: 2,
-                    overflow: "hidden",
-                    bgcolor: "background.default",
-                  }}
-                >
+                <Box className="w-full sm:w-24 h-[180px] sm:h-24 shrink-0 rounded-lg overflow-hidden bg-brand-cream">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={ev.image_url.startsWith("http") ? ev.image_url : fileUrl(ev.image_url)}
@@ -710,17 +656,9 @@ function EventsPanel({ notify }: { notify: Notify }) {
                   />
                 </Box>
               )}
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    justifyContent: "space-between",
-                    gap: 1,
-                    mb: 1,
-                  }}
-                >
-                  <Typography sx={{ fontWeight: 700, color: brandColors.maroon, lineHeight: 1.3, wordBreak: "break-word" }}>
+              <Box className="flex-1 min-w-0">
+                <Box className="flex items-start justify-between gap-2 mb-2">
+                  <Typography className="!font-bold !text-brand-maroon !leading-tight !break-words">
                     {ev.title}
                   </Typography>
                   {ev.is_featured && (
@@ -728,16 +666,11 @@ function EventsPanel({ notify }: { notify: Notify }) {
                       icon={<StarIcon />}
                       label={t("events.featuredBadge")}
                       size="small"
-                      sx={{
-                        bgcolor: brandColors.gold,
-                        color: "#fff",
-                        fontWeight: 700,
-                        flexShrink: 0,
-                      }}
+                      className="!bg-brand-gold !text-white !font-bold !shrink-0"
                     />
                   )}
                 </Box>
-                <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", mb: 1 }}>
+                <Stack direction="row" spacing={1} useFlexGap className="!flex-wrap !mb-2">
                   <Chip icon={<CalendarMonthIcon />} label={ev.event_date} size="small" variant="outlined" />
                   {ev.event_time && (
                     <Chip icon={<AccessTimeIcon />} label={ev.event_time} size="small" variant="outlined" />
@@ -747,14 +680,18 @@ function EventsPanel({ notify }: { notify: Notify }) {
                   )}
                 </Stack>
                 {ev.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 1, wordBreak: "break-word" }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    className="!leading-relaxed !mb-2 !break-words"
+                  >
                     {ev.description}
                   </Typography>
                 )}
-                <Box sx={{ display: "flex", gap: 0.5, mt: 1 }}>
+                <Box className="flex gap-1 mt-2">
                   <IconButton size="small" onClick={() => toggleFeatured(ev)} title={t("events.featured")}>
                     {ev.is_featured ? (
-                      <StarIcon fontSize="small" sx={{ color: brandColors.gold }} />
+                      <StarIcon fontSize="small" className="!text-brand-gold" />
                     ) : (
                       <StarBorderIcon fontSize="small" />
                     )}
@@ -773,16 +710,16 @@ function EventsPanel({ notify }: { notify: Notify }) {
       )}
 
       <Dialog open={open} onClose={() => !busy && setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 700, color: brandColors.maroon }}>
+        <DialogTitle className="!font-bold !text-brand-maroon">
           {editing ? t("events.edit") : t("events.create")}
         </DialogTitle>
         <DialogContent>
           {err && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {err}
             </Alert>
           )}
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
+          <Stack spacing={2.5} className="!mt-2">
             <TextField
               label={t("events.eventTitle")}
               required
@@ -790,7 +727,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             />
-            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+            <Box className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <TextField
                 label={t("events.eventDate")}
                 type="date"
@@ -824,10 +761,19 @@ function EventsPanel({ notify }: { notify: Notify }) {
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             />
             <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                className="!block !mb-2"
+              >
                 {t("events.image")}
               </Typography>
-              <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+              <Stack
+                direction="row"
+                spacing={1.5}
+                useFlexGap
+                className="!items-center !flex-wrap"
+              >
                 <Button component="label" size="small" variant="outlined" startIcon={<CloudUploadIcon />}>
                   {imgFile ? imgFile.name : t("events.uploadImage")}
                   <input
@@ -854,7 +800,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
                 size="small"
                 value={form.image_url}
                 onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
-                sx={{ mt: 1.5 }}
+                className="!mt-3"
                 helperText={t("events.imageOrUrl")}
               />
             </Box>
@@ -869,7 +815,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
             />
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setOpen(false)} disabled={busy}>
             {t("common.cancel")}
           </Button>
@@ -890,10 +836,6 @@ function EventsPanel({ notify }: { notify: Notify }) {
     </>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Testimonials panel
-// ─────────────────────────────────────────────────────────────────────────────
 
 function TestimonialsPanel({ notify }: { notify: Notify }) {
   const { t } = useT();
@@ -984,14 +926,14 @@ function TestimonialsPanel({ notify }: { notify: Notify }) {
 
   if (loading)
     return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
+      <Box className="text-center py-8">
         <CircularProgress />
       </Box>
     );
 
   return (
     <>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+      <Box className="flex justify-end mb-4">
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
           {t("pcms.test.add")}
         </Button>
@@ -1000,19 +942,16 @@ function TestimonialsPanel({ notify }: { notify: Notify }) {
       {items.length === 0 ? (
         <EmptyState icon={<FormatQuoteIcon />} label={t("pcms.empty")} />
       ) : (
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2.5 }}>
+        <Box className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {items.map((item) => (
             <Paper
               key={item.id}
               elevation={0}
-              sx={{
-                p: 2.5,
-                borderRadius: 4,
-                border: `1px solid ${brandColors.sand}`,
-                opacity: item.is_active ? 1 : 0.55,
-              }}
+              className={`!p-5 !rounded-3xl !border !border-brand-sand ${
+                item.is_active ? "!opacity-100" : "!opacity-55"
+              }`}
             >
-              <Box sx={{ display: "flex", gap: 2 }}>
+              <Box className="flex gap-4">
                 {item.photo_path ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -1022,41 +961,22 @@ function TestimonialsPanel({ notify }: { notify: Notify }) {
                   />
                 ) : (
                   <Box
-                    sx={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: "50%",
-                      bgcolor: brandColors.sand,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: brandColors.maroon,
-                      fontWeight: 700,
-                      fontSize: "1.5rem",
-                      flexShrink: 0,
-                    }}
+                    className="w-16 h-16 rounded-full bg-brand-sand flex items-center justify-center text-brand-maroon font-bold text-[1.5rem] shrink-0"
                   >
                     {item.name.charAt(0).toUpperCase()}
                   </Box>
                 )}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      gap: 1,
-                    }}
-                  >
+                <Box className="flex-1 min-w-0">
+                  <Box className="flex justify-between items-start gap-2">
                     <Box>
-                      <Typography sx={{ fontWeight: 700 }}>{item.name}</Typography>
+                      <Typography className="!font-bold">{item.name}</Typography>
                       {item.location && (
                         <Typography variant="caption" color="text.secondary">
                           {item.location}
                         </Typography>
                       )}
                     </Box>
-                    <Box sx={{ display: "flex", gap: 0.5 }}>
+                    <Box className="flex gap-1">
                       <IconButton size="small" onClick={() => openEdit(item)}>
                         <EditIcon fontSize="small" />
                       </IconButton>
@@ -1068,11 +988,11 @@ function TestimonialsPanel({ notify }: { notify: Notify }) {
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ mt: 1, lineHeight: 1.6, fontStyle: "italic" }}
+                    className="!mt-2 !leading-relaxed !italic"
                   >
                     "{item.quote}"
                   </Typography>
-                  <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+                  <Stack direction="row" spacing={1} className="!mt-3">
                     <Chip
                       size="small"
                       label={item.is_active ? t("pcms.active") : t("pcms.inactive")}
@@ -1089,16 +1009,16 @@ function TestimonialsPanel({ notify }: { notify: Notify }) {
       )}
 
       <Dialog open={open} onClose={() => !busy && setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 700, color: brandColors.maroon }}>
+        <DialogTitle className="!font-bold !text-brand-maroon">
           {editing ? t("pcms.test.edit") : t("pcms.test.add")}
         </DialogTitle>
         <DialogContent>
           {err && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {err}
             </Alert>
           )}
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
+          <Stack spacing={2.5} className="!mt-2">
             <TextField
               label={t("pcms.test.name")}
               required
@@ -1121,7 +1041,12 @@ function TestimonialsPanel({ notify }: { notify: Notify }) {
               value={form.quote}
               onChange={(e) => setForm((f) => ({ ...f, quote: e.target.value }))}
             />
-            <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+            <Stack
+              direction="row"
+              spacing={1.5}
+              useFlexGap
+              className="!items-center !flex-wrap"
+            >
               <Button component="label" size="small" variant="outlined" startIcon={<CloudUploadIcon />}>
                 {photo ? photo.name : t("pcms.test.photo")}
                 <input
@@ -1158,7 +1083,7 @@ function TestimonialsPanel({ notify }: { notify: Notify }) {
             />
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setOpen(false)} disabled={busy}>
             {t("common.cancel")}
           </Button>
@@ -1179,10 +1104,6 @@ function TestimonialsPanel({ notify }: { notify: Notify }) {
     </>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Generic media panel (videos / instagram)
-// ─────────────────────────────────────────────────────────────────────────────
 
 function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify }) {
   const { t } = useT();
@@ -1275,7 +1196,7 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
 
   if (loading)
     return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
+      <Box className="text-center py-8">
         <CircularProgress />
       </Box>
     );
@@ -1286,7 +1207,7 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
 
   return (
     <>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+      <Box className="flex justify-end mb-4">
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
           {addLabel}
         </Button>
@@ -1295,13 +1216,7 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
       {items.length === 0 ? (
         <EmptyState icon={isVideo ? <VideocamIcon /> : <InstagramIcon />} label={t("pcms.empty")} />
       ) : (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(3, 1fr)" },
-            gap: 2.5,
-          }}
-        >
+        <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {items.map((item) => {
             const yt = isVideo ? youtubeThumb(item.url) : null;
             const igEmbed = !isVideo ? instagramEmbedUrl(item.url) : null;
@@ -1310,15 +1225,12 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
               <Paper
                 key={item.id}
                 elevation={0}
-                sx={{
-                  borderRadius: 4,
-                  border: `1px solid ${brandColors.sand}`,
-                  overflow: "hidden",
-                  opacity: item.is_active ? 1 : 0.55,
-                }}
+                className={`!rounded-3xl !border !border-brand-sand !overflow-hidden ${
+                  item.is_active ? "!opacity-100" : "!opacity-55"
+                }`}
               >
                 {igEmbed ? (
-                  <Box sx={{ position: "relative", paddingTop: "125%" }}>
+                  <Box className="relative pt-[125%]">
                     <iframe
                       src={igEmbed}
                       loading="lazy"
@@ -1342,36 +1254,21 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
                   />
                 ) : (
                   <Box
-                    sx={{
-                      aspectRatio: "16/9",
-                      bgcolor: brandColors.sand,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: brandColors.maroon,
-                    }}
+                    className="aspect-video bg-brand-sand flex items-center justify-center text-brand-maroon"
                   >
                     {isVideo ? (
-                      <VideocamIcon sx={{ fontSize: 48 }} />
+                      <VideocamIcon className="!text-[48px]" />
                     ) : (
-                      <InstagramIcon sx={{ fontSize: 48 }} />
+                      <InstagramIcon className="!text-[48px]" />
                     )}
                   </Box>
                 )}
-                <Box sx={{ p: 2 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      gap: 1,
-                      mb: 0.5,
-                    }}
-                  >
-                    <Typography sx={{ fontWeight: 600, lineHeight: 1.3, flex: 1 }}>
+                <Box className="p-4">
+                  <Box className="flex justify-between items-start gap-2 mb-1">
+                    <Typography className="!font-semibold !leading-tight !flex-1">
                       {item.title || "—"}
                     </Typography>
-                    <Box sx={{ display: "flex", gap: 0.5 }}>
+                    <Box className="flex gap-1">
                       <IconButton size="small" onClick={() => openEdit(item)}>
                         <EditIcon fontSize="small" />
                       </IconButton>
@@ -1384,7 +1281,7 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{ display: "block", mb: 1, wordBreak: "break-all" }}
+                      className="!block !mb-2 !break-all"
                     >
                       {item.url}
                     </Typography>
@@ -1406,16 +1303,16 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
       )}
 
       <Dialog open={open} onClose={() => !busy && setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 700, color: brandColors.maroon }}>
+        <DialogTitle className="!font-bold !text-brand-maroon">
           {editing ? editLabel : addLabel}
         </DialogTitle>
         <DialogContent>
           {err && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {err}
             </Alert>
           )}
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
+          <Stack spacing={2.5} className="!mt-2">
             {isVideo && (
               <TextField
                 label={t("pcms.video.title")}
@@ -1445,18 +1342,14 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
               if (!preview) return null;
               return (
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    className="!block !mb-2"
+                  >
                     {t("pcms.ig.preview")}
                   </Typography>
-                  <Box
-                    sx={{
-                      position: "relative",
-                      paddingTop: "125%",
-                      borderRadius: 2,
-                      overflow: "hidden",
-                      border: `1px solid ${brandColors.sand}`,
-                    }}
-                  >
+                  <Box className="relative pt-[125%] rounded-lg overflow-hidden border border-brand-sand">
                     <iframe
                       src={preview}
                       loading="lazy"
@@ -1480,7 +1373,7 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
                   direction="row"
                   spacing={1.5}
                   useFlexGap
-                  sx={{ alignItems: "center", flexWrap: "wrap" }}
+                  className="!items-center !flex-wrap"
                 >
                   <Button component="label" size="small" variant="outlined" startIcon={<CloudUploadIcon />}>
                     {thumb ? thumb.name : t("pcms.video.thumb")}
@@ -1500,7 +1393,11 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
                     />
                   )}
                 </Stack>
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  className="!block !mt-1"
+                >
                   {t("pcms.video.thumbHelp")}
                 </Typography>
               </Box>
@@ -1523,7 +1420,7 @@ function MediaPanel({ kind, notify }: { kind: PithamMediaKind; notify: Notify })
             />
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setOpen(false)} disabled={busy}>
             {t("common.cancel")}
           </Button>

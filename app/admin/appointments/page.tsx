@@ -59,7 +59,9 @@ import {
 import { statusChipColors } from "@/theme/sharedStyles";
 import { TIME_SLOTS, formatTime12h } from "@/lib/timeSlots";
 import { useT } from "@/i18n/I18nProvider";
-import * as s from "./styles";
+
+const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-12 px-2 sm:px-4";
+const CONTAINER_CLASS = "max-w-[1200px] mx-auto w-full";
 
 type ModalMode = "verify" | "slot" | "reschedule" | null;
 type SortKey = "newest" | "oldest" | "name";
@@ -87,7 +89,7 @@ export default function AdminAppointments() {
   const { t } = useT();
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState(0); // 0=upcoming, 1=completed, 2=cancelled
+  const [tab, setTab] = useState(0);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
   const [page, setPage] = useState(0);
@@ -101,23 +103,18 @@ export default function AdminAppointments() {
   const [generatingZoom, setGeneratingZoom] = useState(false);
   const [snack, setSnack] = useState<{ msg: string; severity: "success" | "error" } | null>(null);
 
-  // Details dialog (view + complete)
   const [detailAppt, setDetailAppt] = useState<any>(null);
   const [analysisFile, setAnalysisFile] = useState<File | null>(null);
   const [analysisNotes, setAnalysisNotes] = useState("");
   const [recordingLink, setRecordingLink] = useState("");
   const [completing, setCompleting] = useState(false);
 
-  // Gallery docs for sadhna assignment
   const [galleryDocs, setGalleryDocs] = useState<any[]>([]);
   const [selectedDocIds, setSelectedDocIds] = useState<number[]>([]);
 
-  // Users map for showing account owner name
   const [usersMap, setUsersMap] = useState<Record<number, any>>({});
-  // Assigned docs for completed appointment
   const [assignedDocs, setAssignedDocs] = useState<any[]>([]);
 
-  // Date filter
   const [filterDate, setFilterDate] = useState<Dayjs | null>(null);
 
   function set<K extends keyof SlotForm>(k: K, v: SlotForm[K]) {
@@ -231,11 +228,9 @@ export default function AdminAppointments() {
     setError("");
     const token = getToken();
     if (!token) return;
-    // Load gallery docs for sadhna picker
     adminGetGallery(token)
       .then(setGalleryDocs)
       .catch(() => {});
-    // Load docs assigned to this user for this consultation
     if (appt.status === "completed") {
       adminGetUserDocuments(appt.user_id, token)
         .then((docs: any[]) => {
@@ -278,13 +273,11 @@ export default function AdminAppointments() {
     }
   }
 
-  // ── Filter/sort/paginate ────────────────────────────────────────────────
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = appointments.filter((a) => {
       if (tab === 1) return a.status === "completed";
       if (tab === 2) return a.status === "cancelled";
-      // Upcoming = anything that's not completed and not cancelled
       return a.status !== "completed" && a.status !== "cancelled";
     });
     if (q) {
@@ -316,7 +309,7 @@ export default function AdminAppointments() {
 
   if (loading) {
     return (
-      <Box sx={{ ...s.wrapper, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />
       </Box>
     );
@@ -334,32 +327,22 @@ export default function AdminAppointments() {
   const showSlotFields = mode === "slot" || mode === "reschedule";
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Typography variant="h4" sx={s.title}>
+    <Box className={WRAPPER_CLASS}>
+      <Box className={CONTAINER_CLASS}>
+        <Typography
+          variant="h4"
+          className="!text-brand-maroon !font-bold !mb-4 md:!mb-8 !text-[1.5rem] md:!text-[2.125rem]"
+        >
           {t("appts.title")}
         </Typography>
 
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} className="!mb-6">
           <Tab label={t("appts.tab.upcoming")} />
           <Tab label={t("appts.tab.completed")} />
           <Tab label={t("appts.tab.cancelled")} />
         </Tabs>
 
-        <Box
-          sx={{
-            display: "grid",
-            gap: { xs: 1.25, md: 2 },
-            mb: 3,
-            alignItems: "center",
-            gridTemplateColumns: {
-              xs: "1fr",
-              sm: "1fr 1fr",
-              md: "2fr 1fr 1fr",
-            },
-            "& .MuiFormControl-root": { width: "100%" },
-          }}
-        >
+        <Box className="grid gap-3 md:gap-4 mb-6 items-center grid-cols-1 sm:grid-cols-2 md:grid-cols-[2fr_1fr_1fr] [&_.MuiFormControl-root]:!w-full">
           <TextField
             size="small"
             placeholder={t("common.search")}
@@ -399,7 +382,7 @@ export default function AdminAppointments() {
         </Box>
 
         {filtered.length === 0 ? (
-          <Paper elevation={0} sx={{ p: 6, textAlign: "center", borderRadius: 4 }}>
+          <Paper elevation={0} className="!p-12 !text-center !rounded-3xl">
             <Typography color="text.secondary">{t("appts.empty")}</Typography>
           </Paper>
         ) : (
@@ -408,43 +391,54 @@ export default function AdminAppointments() {
               const c = statusChipColors[a.status] || statusChipColors.pending;
               const pc = statusChipColors[a.payment_status] || statusChipColors.pending;
               return (
-                <Paper key={a.id} elevation={0} sx={s.apptCard}>
-                  <Box sx={s.topRow}>
-                    <Box sx={{ minWidth: 0, flex: 1 }}>
-                      <Typography sx={{ fontWeight: 700 }}>{a.name}</Typography>
+                <Paper
+                  key={a.id}
+                  elevation={0}
+                  className="!p-4 md:!p-6 !mb-4 !rounded-3xl !border !border-brand-sand !overflow-hidden"
+                >
+                  <Box className="flex justify-between items-start flex-wrap gap-3">
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="!font-bold">{a.name}</Typography>
                       {usersMap[a.user_id] && usersMap[a.user_id].name !== a.name && (
-                        <Typography variant="caption" color="info.main" sx={{ fontWeight: 600 }}>
+                        <Typography variant="caption" color="info.main" className="!font-semibold">
                           {t("appts.bookedBy")}: {usersMap[a.user_id].name}
                         </Typography>
                       )}
-                      <Typography variant="body2" color="text.secondary" sx={{ wordBreak: "break-word" }}>
+                      <Typography variant="body2" color="text.secondary" className="!break-words">
                         {a.email} · {a.mobile}
                       </Typography>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
+                      <Typography variant="body2" className="!mt-2">
                         {a.problem.length > 130 ? a.problem.slice(0, 130) + "…" : a.problem}
                       </Typography>
-                      <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, display: "block" }}>
-                        {t("users.dob")}: {a.dob} · {t("users.tob")}: {formatTime12h(a.tob)} · {a.birth_place}
+                      <Typography
+                        variant="caption"
+                        color="text.disabled"
+                        className="!mt-1 !block"
+                      >
+                        {t("users.dob")}: {a.dob} · {t("users.tob")}: {formatTime12h(a.tob)} ·{" "}
+                        {a.birth_place}
                         {" · "}
                         {t("appts.bookedOn")}: {new Date(a.created_at).toLocaleDateString()}
                       </Typography>
                     </Box>
-                    <Box sx={s.chipCol}>
+                    <Box className="flex flex-col gap-1.5 items-start sm:items-end shrink-0 w-full sm:w-auto mt-2 sm:mt-0 [&_.MuiChip-root]:!text-[0.7rem] sm:[&_.MuiChip-root]:!text-[0.75rem] [&_.MuiChip-root]:!h-[22px] sm:[&_.MuiChip-root]:!h-6">
                       <Chip
                         label={a.status.replace("_", " ")}
                         size="small"
-                        sx={{ bgcolor: c.bg, color: c.fg, fontWeight: 600, textTransform: "capitalize" }}
+                        className="!font-semibold !capitalize"
+                        style={{ backgroundColor: c.bg, color: c.fg }}
                       />
                       <Chip
                         label={a.payment_status.replace("_", " ")}
                         size="small"
-                        sx={{ bgcolor: pc.bg, color: pc.fg, fontWeight: 500, textTransform: "capitalize" }}
+                        className="!font-medium !capitalize"
+                        style={{ backgroundColor: pc.bg, color: pc.fg }}
                       />
                     </Box>
                   </Box>
 
                   {(a.scheduled_date || (a.status !== "completed" && a.zoom_link) || a.recording_link) && (
-                    <Box sx={s.scheduledBox}>
+                    <Box className="mt-4 pt-4 border-t border-dashed border-brand-sand flex gap-3 md:gap-6 flex-wrap items-center">
                       {a.scheduled_date && (
                         <Typography variant="body2">
                           {a.scheduled_date} · {formatTime12h(a.scheduled_time)}
@@ -458,7 +452,7 @@ export default function AdminAppointments() {
                           rel="noreferrer"
                           size="small"
                           startIcon={<VideoCallIcon />}
-                          sx={{ p: 0, "&:hover": { bgcolor: "transparent" } }}
+                          className="!p-0 hover:!bg-transparent"
                         >
                           {t("appts.zoomLink")}
                         </Button>
@@ -471,7 +465,7 @@ export default function AdminAppointments() {
                           rel="noreferrer"
                           size="small"
                           startIcon={<PlayCircleIcon />}
-                          sx={{ p: 0, "&:hover": { bgcolor: "transparent" } }}
+                          className="!p-0 hover:!bg-transparent"
                         >
                           {t("appts.watchRecording")}
                         </Button>
@@ -479,7 +473,7 @@ export default function AdminAppointments() {
                     </Box>
                   )}
 
-                  <Box sx={s.actions}>
+                  <Box className="mt-4 flex gap-2 flex-wrap">
                     <Button
                       size="small"
                       variant="outlined"
@@ -532,14 +526,14 @@ export default function AdminAppointments() {
       </Box>
 
       <Dialog open={!!mode} onClose={closeModal} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ fontWeight: 700, color: "primary.dark" }}>{modalTitle}</DialogTitle>
+        <DialogTitle className="!font-bold !text-brand-saffron-dark">{modalTitle}</DialogTitle>
         <DialogContent>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {error}
             </Alert>
           )}
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
+          <Stack spacing={2.5} className="!mt-2">
             {mode === "verify" && (
               <TextField
                 label={t("appts.paymentRef")}
@@ -575,21 +569,21 @@ export default function AdminAppointments() {
                   ))}
                 </TextField>
 
-                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <Box className="flex gap-2 flex-wrap">
                   <TextField
                     label={t("appts.zoomLink")}
                     fullWidth
                     placeholder="https://zoom.us/j/..."
                     value={form.zoom_link}
                     onChange={(e) => set("zoom_link", e.target.value)}
-                    sx={{ flex: 1, minWidth: 200 }}
+                    className="!flex-1 !min-w-[200px]"
                   />
                   <Button
                     variant="outlined"
                     startIcon={<VideocamIcon />}
                     onClick={handleGenerateZoom}
                     disabled={generatingZoom || !form.scheduled_date || !form.scheduled_time}
-                    sx={{ whiteSpace: "nowrap" }}
+                    className="!whitespace-nowrap"
                   >
                     {generatingZoom ? t("common.saving") : t("appts.zoomGenerate")}
                   </Button>
@@ -617,7 +611,7 @@ export default function AdminAppointments() {
             )}
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={closeModal}>{t("common.cancel")}</Button>
           <Button variant="contained" onClick={handleSave} disabled={saving}>
             {saving ? t("common.saving") : t("common.confirm")}
@@ -626,15 +620,7 @@ export default function AdminAppointments() {
       </Dialog>
 
       <Dialog open={!!detailAppt} onClose={closeDetails} fullWidth maxWidth="md">
-        <DialogTitle
-          sx={{
-            fontWeight: 700,
-            color: "primary.dark",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+        <DialogTitle className="!font-bold !text-brand-saffron-dark !flex !items-center !justify-between">
           {t("appts.details")}
           <IconButton onClick={closeDetails} size="small">
             <CloseIcon />
@@ -643,18 +629,18 @@ export default function AdminAppointments() {
         <DialogContent dividers>
           {detailAppt && (
             <Stack spacing={2.5}>
-              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+              <Box className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Box>
                   <Typography variant="caption" color="text.secondary">
                     {t("common.name")}
                   </Typography>
-                  <Typography sx={{ fontWeight: 600 }}>{detailAppt.name}</Typography>
+                  <Typography className="!font-semibold">{detailAppt.name}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
                     {t("common.email")}
                   </Typography>
-                  <Typography sx={{ wordBreak: "break-word" }}>{detailAppt.email}</Typography>
+                  <Typography className="!break-words">{detailAppt.email}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
@@ -682,9 +668,8 @@ export default function AdminAppointments() {
                 </Box>
               </Box>
 
-              {/* Show account owner if different from appointment name */}
               {usersMap[detailAppt.user_id] && usersMap[detailAppt.user_id].name !== detailAppt.name && (
-                <Alert severity="info" sx={{ py: 0.5 }}>
+                <Alert severity="info" className="!py-1">
                   {t("appts.bookedBy")}: <strong>{usersMap[detailAppt.user_id].name}</strong> (
                   {usersMap[detailAppt.user_id].email})
                 </Alert>
@@ -694,25 +679,23 @@ export default function AdminAppointments() {
                 <Typography variant="caption" color="text.secondary">
                   {t("appts.problem")}
                 </Typography>
-                <Typography sx={{ whiteSpace: "pre-wrap" }}>{detailAppt.problem}</Typography>
+                <Typography className="!whitespace-pre-wrap">{detailAppt.problem}</Typography>
               </Box>
 
               {detailAppt.selfie_path && (
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    className="!block !mb-2"
+                  >
                     {t("appts.selfie")}
                   </Typography>
                   <Box
                     component="img"
                     src={fileUrl(detailAppt.selfie_path)}
                     alt="selfie"
-                    sx={{
-                      maxWidth: 260,
-                      maxHeight: 260,
-                      borderRadius: 2,
-                      border: "1px solid",
-                      borderColor: "divider",
-                    }}
+                    className="!max-w-[260px] !max-h-[260px] !rounded-lg !border !border-[#E8D9BF]"
                   />
                 </Box>
               )}
@@ -722,14 +705,13 @@ export default function AdminAppointments() {
                   <Typography variant="caption" color="text.secondary">
                     {t("history.dateTime")}
                   </Typography>
-                  <Typography sx={{ fontWeight: 600 }}>
+                  <Typography className="!font-semibold">
                     {detailAppt.scheduled_date} · {formatTime12h(detailAppt.scheduled_time)}
                   </Typography>
                 </Box>
               )}
 
-              {/* ── Receipt PDF ── */}
-              <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+              <Box className="flex gap-3 flex-wrap">
                 {detailAppt.receipt_path ? (
                   <Button
                     component="a"
@@ -753,7 +735,6 @@ export default function AdminAppointments() {
                       try {
                         await adminGenerateReceipt(detailAppt.id, token);
                         await reload();
-                        // Refresh detailAppt
                         const updated = appointments.find((a: any) => a.id === detailAppt.id);
                         if (updated) setDetailAppt(updated);
                         setSnack({ msg: t("appts.receiptGenerated"), severity: "success" });
@@ -766,7 +747,6 @@ export default function AdminAppointments() {
                   </Button>
                 )}
 
-                {/* CA Invoice / Bill Receipt */}
                 <Button
                   variant="outlined"
                   size="small"
@@ -790,14 +770,16 @@ export default function AdminAppointments() {
                 </Button>
               </Box>
 
-              {/* ── Analysis Section ── */}
-              <Box sx={{ borderTop: "1px dashed", borderColor: "divider", pt: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, color: "primary.dark" }}>
+              <Box className="border-t border-dashed border-[#E8D9BF] pt-4">
+                <Typography
+                  variant="subtitle1"
+                  className="!font-bold !mb-3 !text-brand-saffron-dark"
+                >
                   {t("appts.analysis")}
                 </Typography>
 
                 {detailAppt.analysis_path && (
-                  <Box sx={{ mb: 2 }}>
+                  <Box className="mb-4">
                     <Button
                       component="a"
                       href={fileUrl(detailAppt.analysis_path)}
@@ -818,7 +800,7 @@ export default function AdminAppointments() {
                       component="label"
                       variant="outlined"
                       startIcon={<CloudUploadIcon />}
-                      sx={{ alignSelf: "flex-start" }}
+                      className="!self-start"
                     >
                       {analysisFile ? analysisFile.name : t("appts.analysisUpload")}
                       <input
@@ -844,15 +826,17 @@ export default function AdminAppointments() {
                     <Typography variant="caption" color="text.secondary">
                       {t("appts.analysisNotes")}
                     </Typography>
-                    <Typography sx={{ whiteSpace: "pre-wrap" }}>{detailAppt.analysis_notes}</Typography>
+                    <Typography className="!whitespace-pre-wrap">{detailAppt.analysis_notes}</Typography>
                   </Box>
                 )}
               </Box>
 
-              {/* ── Recording Link Section ── */}
-              <Box sx={{ borderTop: "1px dashed", borderColor: "divider", pt: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, color: "primary.dark" }}>
-                  <PlayCircleIcon sx={{ verticalAlign: "middle", mr: 0.5 }} />
+              <Box className="border-t border-dashed border-[#E8D9BF] pt-4">
+                <Typography
+                  variant="subtitle1"
+                  className="!font-bold !mb-3 !text-brand-saffron-dark"
+                >
+                  <PlayCircleIcon className="!align-middle !mr-1" />
                   {t("appts.recording")}
                 </Typography>
 
@@ -888,10 +872,12 @@ export default function AdminAppointments() {
                 ) : null}
               </Box>
 
-              {/* ── Sadhna Documents Section ── */}
-              <Box sx={{ borderTop: "1px dashed", borderColor: "divider", pt: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.5, color: "primary.dark" }}>
-                  <DescriptionIcon sx={{ verticalAlign: "middle", mr: 0.5 }} />
+              <Box className="border-t border-dashed border-[#E8D9BF] pt-4">
+                <Typography
+                  variant="subtitle1"
+                  className="!font-bold !mb-3 !text-brand-saffron-dark"
+                >
+                  <DescriptionIcon className="!align-middle !mr-1" />
                   {t("appts.sadhnaDocuments")}
                 </Typography>
 
@@ -901,20 +887,11 @@ export default function AdminAppointments() {
                       {t("docs.empty.gallery")}
                     </Typography>
                   ) : (
-                    <Box
-                      sx={{
-                        maxHeight: 240,
-                        overflow: "auto",
-                        border: "1px solid",
-                        borderColor: "divider",
-                        borderRadius: 2,
-                        p: 1,
-                      }}
-                    >
+                    <Box className="max-h-[240px] overflow-auto border border-[#E8D9BF] rounded-lg p-2">
                       {galleryDocs.map((doc: any) => (
                         <FormControlLabel
                           key={doc.id}
-                          sx={{ display: "flex", mr: 0, mb: 0.5 }}
+                          className="!flex !mr-0 !mb-1"
                           control={
                             <Checkbox
                               size="small"
@@ -929,8 +906,8 @@ export default function AdminAppointments() {
                             />
                           }
                           label={
-                            <Box sx={{ minWidth: 0 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            <Box className="min-w-0">
+                              <Typography variant="body2" className="!font-semibold">
                                 {doc.title}
                               </Typography>
                               {doc.description && (
@@ -945,7 +922,7 @@ export default function AdminAppointments() {
                     </Box>
                   )
                 ) : assignedDocs.length > 0 ? (
-                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  <Box className="flex gap-2 flex-wrap">
                     {assignedDocs.map((doc: any) => (
                       <Button
                         key={doc.id}
@@ -970,7 +947,7 @@ export default function AdminAppointments() {
             </Stack>
           )}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={closeDetails}>{t("common.cancel")}</Button>
           {detailAppt && detailAppt.status !== "completed" && detailAppt.status !== "cancelled" && (
             <Button
@@ -1014,7 +991,7 @@ export default function AdminAppointments() {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         {snack ? (
-          <Alert severity={snack.severity} onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+          <Alert severity={snack.severity} onClose={() => setSnack(null)} className="!w-full">
             {snack.msg}
           </Alert>
         ) : undefined}

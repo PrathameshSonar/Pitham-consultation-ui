@@ -3,37 +3,14 @@
 import { Box, Paper, Typography } from "@mui/material";
 import Image from "next/image";
 import { useT } from "@/i18n/I18nProvider";
-import { brandColors } from "@/theme/colors";
 
 export default function About() {
   const { t } = useT();
   return (
-    <Box
-      sx={{
-        minHeight: "calc(100vh - 64px)",
-        bgcolor: "background.default",
-        py: { xs: 4, md: 8 },
-        px: { xs: 2, md: 4 },
-      }}
-    >
-      <Box sx={{ maxWidth: 900, mx: "auto" }}>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            alignItems: "center",
-            gap: 4,
-            mb: 6,
-          }}
-        >
-          <Box
-            sx={{
-              position: "relative",
-              width: { xs: 200, md: 280 },
-              height: { xs: 240, md: 340 },
-              flexShrink: 0,
-            }}
-          >
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-16 px-4 md:px-8">
+      <Box className="max-w-[900px] mx-auto">
+        <Box className="flex flex-col md:flex-row items-center gap-8 mb-12">
+          <Box className="relative w-[200px] md:w-[280px] h-[240px] md:h-[340px] shrink-0">
             <Image
               src="/guruji.png"
               alt="Shri Mayuresh Guruji Vispute"
@@ -42,21 +19,26 @@ export default function About() {
             />
           </Box>
           <Box>
-            <Typography variant="h3" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
+            <Typography variant="h3" className="!font-bold !text-brand-maroon !mb-4">
               {t("about.title")}
             </Typography>
-            <Typography sx={{ lineHeight: 2, color: "text.secondary" }}>{t("about.description")}</Typography>
+            <Typography className="!leading-[2] !text-brand-text-medium">
+              {t("about.description")}
+            </Typography>
           </Box>
         </Box>
 
         <Paper
           elevation={0}
-          sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+          className="!p-6 md:!p-10 !rounded-3xl !border !border-brand-sand"
         >
-          <Typography variant="h5" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
+          <Typography variant="h5" className="!font-bold !text-brand-maroon !mb-4">
             {t("about.servicesTitle")}
           </Typography>
-          <Box component="ul" sx={{ pl: 3, "& li": { mb: 1, color: "text.secondary" } }}>
+          <Box
+            component="ul"
+            className="pl-6 [&_li]:mb-2 [&_li]:text-brand-text-medium"
+          >
             <li>
               <strong>Kundali Reading</strong> — Detailed birth chart analysis
             </li>

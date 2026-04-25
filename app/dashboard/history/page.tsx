@@ -40,7 +40,10 @@ import { useAuthQuery, usePublicQuery } from "@/services/queryHooks";
 import { statusChipColors } from "@/theme/sharedStyles";
 import { formatAppointmentDateTime } from "@/lib/timeSlots";
 import { useT } from "@/i18n/I18nProvider";
-import * as s from "./styles";
+
+const WRAPPER_CLASS =
+  "min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-12 px-2 sm:px-4";
+const CONTAINER_CLASS = "max-w-[900px] mx-auto w-full";
 
 interface Appointment {
   id: number;
@@ -102,7 +105,6 @@ interface RowProps {
   t: (k: any) => string;
 }
 
-/** Memoized row — re-renders only when its own appointment / docs / fee change. */
 const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, t }: RowProps) {
   const qc = useQueryClient();
   const c = statusChipColors[a.status] || statusChipColors.pending;
@@ -112,7 +114,7 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
     onSuccess: (payment) => {
       if (payment.redirect_url) window.location.href = payment.redirect_url;
     },
-    onError: () => {}, // PhonePe not configured — ignore
+    onError: () => {},
   });
 
   const cancelMutation = useMutation({
@@ -142,23 +144,26 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
   const onIcs = useCallback(() => downloadIcs(a), [a]);
 
   return (
-    <Paper elevation={0} sx={s.apptCard}>
-      <Box sx={s.apptTopRow}>
+    <Paper
+      elevation={0}
+      className="!p-4 md:!p-6 !mb-4 !rounded-3xl !border !border-brand-sand !transition-all !duration-200 !overflow-hidden hover:!shadow-[0_8px_25px_rgba(230,81,0,0.08)]"
+    >
+      <Box className="flex justify-between items-start flex-wrap gap-2">
         <Box>
-          <Typography sx={s.apptName}>{a.name}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography className="!font-bold !text-brand-maroon !break-words">{a.name}</Typography>
+          <Typography variant="body2" color="text.secondary" className="!mt-1">
             {a.problem.length > 120 ? a.problem.slice(0, 120) + "…" : a.problem}
           </Typography>
         </Box>
         <Chip
           label={a.status.replace("_", " ")}
           size="small"
-          sx={{ bgcolor: c.bg, color: c.fg, fontWeight: 600, textTransform: "capitalize" }}
+          className="!font-semibold !capitalize"
+          style={{ backgroundColor: c.bg, color: c.fg }}
         />
       </Box>
 
-      {/* Timeline */}
-      <Box sx={{ display: "flex", gap: 0.5, mt: 1.5, flexWrap: "wrap" }}>
+      <Box className="flex gap-1 mt-3 flex-wrap">
         {STEPS.map((step) => {
           const done =
             step === "booked"
@@ -175,14 +180,14 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
               size="small"
               variant={done ? "filled" : "outlined"}
               color={done ? "success" : "default"}
-              sx={{ textTransform: "capitalize", fontSize: "0.7rem" }}
+              className="!capitalize !text-[0.7rem]"
             />
           );
         })}
       </Box>
 
       {a.payment_status !== "paid" && a.status !== "completed" && a.status !== "cancelled" && (
-        <Box sx={{ mt: 1.5, display: "flex", gap: 1, flexWrap: "wrap" }}>
+        <Box className="mt-3 flex gap-2 flex-wrap">
           <Button
             variant="contained"
             size="small"
@@ -207,28 +212,16 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
       )}
 
       {a.status === "cancelled" && (
-        <Box
-          sx={{
-            mt: 1.5,
-            p: 1.5,
-            borderRadius: 2,
-            bgcolor: "rgba(198,40,40,0.06)",
-            border: "1px solid",
-            borderColor: "error.light",
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
+        <Box className="mt-3 p-3 rounded-lg bg-[rgba(198,40,40,0.06)] border border-[#ef9a9a] flex items-center gap-2">
           <CancelIcon fontSize="small" color="error" />
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "error.main" }}>
+          <Typography variant="body2" className="!font-semibold !text-brand-error">
             {t("appts.cancelledNotice")}
           </Typography>
         </Box>
       )}
 
       {a.payment_status === "paid" && (
-        <Box sx={{ mt: 1.5 }}>
+        <Box className="mt-3">
           {a.receipt_path ? (
             <Button
               component="a"
@@ -266,17 +259,22 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
       )}
 
       {(a.scheduled_date || a.zoom_link) && (
-        <Box sx={s.scheduledBox}>
+        <Box className="mt-4 pt-4 border-t border-dashed border-brand-sand grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-3">
           {a.scheduled_date && (
             <Box>
               <Typography variant="caption" color="text.secondary">
                 {t("history.dateTime")}
               </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              <Box className="flex items-center gap-2 flex-wrap">
+                <Typography variant="body2" className="!font-semibold">
                   {formatAppointmentDateTime(a.scheduled_date, a.scheduled_time)}
                 </Typography>
-                <Button size="small" startIcon={<CalendarMonthIcon />} sx={{ ml: 1 }} onClick={onIcs}>
+                <Button
+                  size="small"
+                  startIcon={<CalendarMonthIcon />}
+                  className="!ml-2"
+                  onClick={onIcs}
+                >
                   {t("history.addToCalendar")}
                 </Button>
               </Box>
@@ -295,7 +293,7 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
                 startIcon={<VideoCallIcon />}
                 size="small"
                 color="primary"
-                sx={{ justifyContent: "flex-start", p: 0, "&:hover": { bgcolor: "transparent" } }}
+                className="!justify-start !p-0 hover:!bg-transparent"
               >
                 {t("history.zoom")}
               </Button>
@@ -305,7 +303,7 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
       )}
 
       {(a.analysis_path || a.recording_link) && (
-        <Box sx={{ mt: 1.5, display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+        <Box className="mt-3 flex gap-3 flex-wrap">
           {a.analysis_path && (
             <Button
               component="a"
@@ -336,21 +334,21 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
       )}
 
       {a.analysis_notes && (
-        <Typography variant="body2" sx={{ mt: 1, whiteSpace: "pre-wrap" }} color="text.secondary">
+        <Typography variant="body2" className="!mt-2 !whitespace-pre-wrap" color="text.secondary">
           {a.analysis_notes}
         </Typography>
       )}
 
       {consultationDocs.length > 0 && (
-        <Box sx={{ mt: 2, pt: 1.5, borderTop: "1px dashed", borderColor: "divider" }}>
+        <Box className="mt-4 pt-3 border-t border-dashed border-[#E8D9BF]">
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ display: "block", mb: 1, fontWeight: 600 }}
+            className="!block !mb-2 !font-semibold"
           >
             {t("appts.sadhnaDocuments")}
           </Typography>
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          <Box className="flex gap-2 flex-wrap">
             {consultationDocs.map((doc) => (
               <Button
                 key={doc.id}
@@ -371,7 +369,11 @@ const AppointmentRow = memo(function AppointmentRow({ a, consultationDocs, fee, 
 
       {a.status === "completed" && <FeedbackPanel apptId={a.id} />}
 
-      <Typography variant="caption" color="text.disabled" sx={{ mt: 1.5, display: "block" }}>
+      <Typography
+        variant="caption"
+        color="text.disabled"
+        className="!mt-3 !block"
+      >
         {t("history.bookedOn")} {new Date(a.created_at).toLocaleDateString()}
       </Typography>
     </Paper>
@@ -401,11 +403,15 @@ const FeedbackPanel = memo(function FeedbackPanel({ apptId }: { apptId: number }
 
   if (existing && !editing) {
     return (
-      <Box sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: "rgba(46,125,50,0.06)", border: "1px solid", borderColor: "success.light" }}>
-        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+      <Box className="mt-4 p-4 rounded-lg bg-[rgba(46,125,50,0.06)] border border-[#a5d6a7]">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          className="!block !mb-1"
+        >
           {t("feedback.yourRating")}
         </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box className="flex items-center gap-2">
           <Rating value={existing.rating} readOnly size="small" />
           <Button
             size="small"
@@ -419,7 +425,7 @@ const FeedbackPanel = memo(function FeedbackPanel({ apptId }: { apptId: number }
           </Button>
         </Box>
         {existing.comment && (
-          <Typography variant="body2" sx={{ mt: 1, fontStyle: "italic" }}>
+          <Typography variant="body2" className="!mt-2 !italic">
             “{existing.comment}”
           </Typography>
         )}
@@ -428,8 +434,8 @@ const FeedbackPanel = memo(function FeedbackPanel({ apptId }: { apptId: number }
   }
 
   return (
-    <Box sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: "rgba(230,81,0,0.05)", border: "1px solid", borderColor: "divider" }}>
-      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+    <Box className="mt-4 p-4 rounded-lg bg-[rgba(230,81,0,0.05)] border border-[#E8D9BF]">
+      <Typography variant="subtitle2" className="!font-bold !mb-2">
         {t("feedback.prompt")}
       </Typography>
       <Rating
@@ -445,14 +451,14 @@ const FeedbackPanel = memo(function FeedbackPanel({ apptId }: { apptId: number }
         placeholder={t("feedback.commentPlace")}
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        sx={{ mt: 1 }}
+        className="!mt-2"
       />
       {m.isError && (
-        <Alert severity="error" sx={{ mt: 1 }}>
+        <Alert severity="error" className="!mt-2">
           {(m.error as any)?.detail || t("feedback.submitFailed")}
         </Alert>
       )}
-      <Box sx={{ mt: 1.5, display: "flex", gap: 1 }}>
+      <Box className="mt-3 flex gap-2">
         <Button
           variant="contained"
           size="small"
@@ -474,7 +480,6 @@ const FeedbackPanel = memo(function FeedbackPanel({ apptId }: { apptId: number }
 export default function History() {
   const { t } = useT();
 
-  // Three parallel queries — each is cached by TanStack Query and survives navigation.
   const { data: appointments = [], isLoading: la } = useAuthQuery<Appointment[]>(
     ["my-appointments"],
     getMyAppointments,
@@ -485,17 +490,20 @@ export default function History() {
 
   if (la || ld || ls) {
     return (
-      <Box sx={{ ...s.wrapper, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />
       </Box>
     );
   }
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Box sx={s.headerRow}>
-          <Typography variant="h4" sx={s.title}>
+    <Box className={WRAPPER_CLASS}>
+      <Box className={CONTAINER_CLASS}>
+        <Box className="flex items-center justify-between mb-4 md:mb-8 flex-wrap gap-3">
+          <Typography
+            variant="h4"
+            className="!text-brand-maroon !font-bold !text-[1.4rem] md:!text-[2.125rem]"
+          >
             {t("history.title")}
           </Typography>
           <Button
@@ -509,11 +517,14 @@ export default function History() {
         </Box>
 
         {appointments.length === 0 ? (
-          <Paper elevation={0} sx={s.emptyCard}>
-            <Typography variant="h1" sx={{ fontSize: "3rem", mb: 1 }}>
+          <Paper
+            elevation={0}
+            className="!p-8 md:!p-12 !text-center !rounded-3xl !border !border-dashed !border-brand-sand"
+          >
+            <Typography variant="h1" className="!text-[3rem] !mb-2">
               📅
             </Typography>
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
+            <Typography color="text.secondary" className="!mb-4">
               {t("history.empty")}
             </Typography>
             <Button component={Link} href="/dashboard/book-appointment" variant="outlined">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -35,7 +35,6 @@ import DownloadIcon from "@mui/icons-material/Download";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import nextDynamic from "next/dynamic";
 import SearchIcon from "@mui/icons-material/Search";
-import HistoryIcon from "@mui/icons-material/History";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import {
   adminGetSettings,
@@ -65,7 +64,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   List,
   ListItem,
   ListItemAvatar,
@@ -76,7 +74,6 @@ import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
 import { normalizeMapUrl } from "@/lib/mapUrl";
 
-// react-quill must be loaded client-side only (no SSR)
 const ReactQuill = nextDynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
 
@@ -90,6 +87,9 @@ const QUILL_MODULES = {
     ["clean"],
   ],
 };
+
+const PAPER_CARD_CLASS =
+  "!p-6 md:!p-10 !rounded-3xl !border !border-brand-sand";
 
 export default function AdminSettings() {
   const router = useRouter();
@@ -110,7 +110,6 @@ export default function AdminSettings() {
   const [terms, setTerms] = useState("");
   const [pendingChanges, setPendingChanges] = useState<any[]>([]);
 
-  // Contact & Social
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactAddress, setContactAddress] = useState("");
@@ -148,7 +147,6 @@ export default function AdminSettings() {
       })
       .catch(() => router.push("/login"))
       .finally(() => setLoading(false));
-    // Load pending changes for super admin
     if (isSuperAdmin()) {
       adminGetPendingSettings(token)
         .then(setPendingChanges)
@@ -189,30 +187,23 @@ export default function AdminSettings() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className="min-h-[60vh] flex items-center justify-center">
         <CircularProgress color="primary" />
       </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: "calc(100vh - 64px)",
-        bgcolor: "background.default",
-        py: { xs: 3, md: 6 },
-        px: { xs: 1, sm: 2 },
-      }}
-    >
-      <Box sx={{ maxWidth: 900, mx: "auto" }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-12 px-2 sm:px-4">
+      <Box className="max-w-[900px] mx-auto">
+        <Typography variant="h4" className="!font-bold !text-brand-maroon !mb-4">
           {t("settings.title")}
         </Typography>
 
         <Tabs
           value={settingsTab}
           onChange={(_, v) => setSettingsTab(v)}
-          sx={{ mb: 3 }}
+          className="!mb-6"
           variant="scrollable"
           scrollButtons="auto"
         >
@@ -231,21 +222,14 @@ export default function AdminSettings() {
         {settingsTab === "reminders" && <RemindersTab />}
 
         {settingsTab === "consultation" && (
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 3, md: 5 },
-              borderRadius: 4,
-              border: `1px solid ${brandColors.sand}`,
-            }}
-          >
+          <Paper elevation={0} className={PAPER_CARD_CLASS}>
             {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity="error" className="!mb-4">
                 {error}
               </Alert>
             )}
             {success && (
-              <Alert severity="success" sx={{ mb: 2 }}>
+              <Alert severity="success" className="!mb-4">
                 {success}
               </Alert>
             )}
@@ -258,7 +242,7 @@ export default function AdminSettings() {
                 onChange={(e) => setFee(e.target.value)}
                 fullWidth
                 slotProps={{
-                  input: { startAdornment: <Typography sx={{ mr: 1 }}>&#8377;</Typography> },
+                  input: { startAdornment: <Typography className="!mr-2">&#8377;</Typography> },
                   htmlInput: { "aria-label": t("settings.fee") },
                 }}
               />
@@ -331,34 +315,17 @@ export default function AdminSettings() {
 
         {/* ── Terms & Conditions Tab ── */}
         {settingsTab === "terms" && (
-          <Paper
-            elevation={0}
-            sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
-          >
+          <Paper elevation={0} className={PAPER_CARD_CLASS}>
             <Typography
               variant="h6"
-              sx={{
-                fontWeight: 700,
-                color: brandColors.maroon,
-                mb: 1,
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-              }}
+              className="!font-bold !text-brand-maroon !mb-2 !flex !items-center !gap-2"
             >
               <EditNoteIcon /> {t("settings.termsEditor")}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" className="!mb-4">
               {t("settings.termsEditorHelp")}
             </Typography>
-            <Box
-              sx={{
-                ".ql-container": { minHeight: 200, fontSize: "0.95rem", borderRadius: "0 0 10px 10px" },
-                ".ql-toolbar": { borderRadius: "10px 10px 0 0", bgcolor: "background.paper" },
-                ".ql-editor": { minHeight: 200 },
-                mb: 3,
-              }}
-            >
+            <Box className="mb-6 [&_.ql-container]:min-h-[200px] [&_.ql-container]:text-[0.95rem] [&_.ql-container]:rounded-b-[10px] [&_.ql-toolbar]:rounded-t-[10px] [&_.ql-toolbar]:bg-brand-ivory [&_.ql-editor]:min-h-[200px]">
               <ReactQuill
                 theme="snow"
                 value={terms}
@@ -379,15 +346,10 @@ export default function AdminSettings() {
           </Paper>
         )}
 
-        {/* ── Audit Log Tab (super admin) ── */}
-        {/* ── Search Tab ── */}
         {/* ── Contact & Social Tab ── */}
         {settingsTab === "contact" && (
-          <Paper
-            elevation={0}
-            sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
+          <Paper elevation={0} className={PAPER_CARD_CLASS}>
+            <Typography variant="h6" className="!font-bold !text-brand-maroon !mb-4">
               {t("settings.contactInfo")}
             </Typography>
             <Stack spacing={2.5}>
@@ -428,24 +390,21 @@ export default function AdminSettings() {
                 if (norm.kind === "empty") return null;
                 if (!norm.embeddable) {
                   return (
-                    <Alert severity="warning" sx={{ mt: -1 }}>
+                    <Alert severity="warning" className="!-mt-2">
                       {t("settings.mapUrlBad")}
                     </Alert>
                   );
                 }
                 return (
                   <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      className="!block !mb-2"
+                    >
                       {t("settings.mapPreview")}
                     </Typography>
-                    <Box
-                      sx={{
-                        borderRadius: 2,
-                        overflow: "hidden",
-                        border: `1px solid ${brandColors.sand}`,
-                        height: 280,
-                      }}
-                    >
+                    <Box className="rounded-lg overflow-hidden border border-brand-sand h-[280px]">
                       <iframe
                         src={norm.url}
                         title="Map preview"
@@ -460,7 +419,7 @@ export default function AdminSettings() {
               })()}
 
               <Divider />
-              <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon }}>
+              <Typography variant="h6" className="!font-bold !text-brand-maroon">
                 {t("settings.socialLinks")}
               </Typography>
 
@@ -517,7 +476,6 @@ export default function AdminSettings() {
                         contact_email: contactEmail,
                         contact_phone: contactPhone,
                         contact_address: contactAddress,
-                        // Auto-extract iframe src if admin pasted the full HTML snippet
                         contact_map_url: normalizeMapUrl(contactMapUrl).url,
                         social_facebook: socialFacebook,
                         social_instagram: socialInstagram,
@@ -543,7 +501,6 @@ export default function AdminSettings() {
 
         {settingsTab === "audit" && superAdmin && <AuditLogTab />}
 
-        {/* ── Export Tab (super admin) — includes Invoice ZIP download ── */}
         {settingsTab === "export" && superAdmin && (
           <Stack spacing={3}>
             <ExportTab />
@@ -551,54 +508,36 @@ export default function AdminSettings() {
           </Stack>
         )}
 
-        {/* ── Moderators Tab (super admin only) ── */}
         {settingsTab === "moderators" && superAdmin && <ModeratorsTab />}
 
         {/* ── Pending Approvals (super admin only) ── */}
         {superAdmin && pendingChanges.length > 0 && (
           <Paper
             elevation={0}
-            sx={{
-              maxWidth: 800,
-              mx: "auto",
-              mt: 4,
-              p: { xs: 3, md: 5 },
-              borderRadius: 4,
-              border: `1px solid ${brandColors.sand}`,
-            }}
+            className="!max-w-[800px] !mx-auto !mt-8 !p-6 md:!p-10 !rounded-3xl !border !border-brand-sand"
           >
-            <Typography variant="h5" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
+            <Typography variant="h5" className="!font-bold !text-brand-maroon !mb-4">
               {t("settings.pendingApprovals")}
             </Typography>
             <Stack spacing={2}>
               {pendingChanges.map((pc: any) => (
-                <Paper key={pc.id} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                <Paper key={pc.id} variant="outlined" className="!p-4 !rounded-lg">
+                  <Typography variant="body2" className="!font-semibold">
                     {pc.submitted_by} wants to change <strong>{pc.key}</strong>
                   </Typography>
                   {pc.key === "consultation_terms" ? (
                     <Paper
                       variant="outlined"
-                      sx={{
-                        p: 3,
-                        my: 1.5,
-                        borderRadius: 3,
-                        bgcolor: "background.default",
-                        "& h1, & h2, & h3": { color: "primary.dark", mt: 2, mb: 1, fontSize: "1.1rem" },
-                        "& ol, & ul": { pl: 3 },
-                        "& li": { mb: 0.5 },
-                        "& p": { mb: 1 },
-                        "& strong": { fontWeight: 700 },
-                      }}
+                      className="!p-6 !my-3 !rounded-2xl !bg-brand-cream [&_h1]:!text-brand-saffron-dark [&_h2]:!text-brand-saffron-dark [&_h3]:!text-brand-saffron-dark [&_h1]:!mt-4 [&_h2]:!mt-4 [&_h3]:!mt-4 [&_h1]:!mb-2 [&_h2]:!mb-2 [&_h3]:!mb-2 [&_h1]:!text-[1.1rem] [&_h2]:!text-[1.1rem] [&_h3]:!text-[1.1rem] [&_ol]:!pl-6 [&_ul]:!pl-6 [&_li]:!mb-1 [&_p]:!mb-2 [&_strong]:!font-bold"
                     >
                       <div dangerouslySetInnerHTML={{ __html: pc.value }} />
                     </Paper>
                   ) : (
-                    <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+                    <Typography variant="body1" className="!font-semibold !mb-2">
                       {pc.key === "consultation_fee" ? `₹${pc.value}` : pc.value}
                     </Typography>
                   )}
-                  <Box sx={{ display: "flex", gap: 1 }}>
+                  <Box className="flex gap-2">
                     <Button
                       size="small"
                       variant="contained"
@@ -607,7 +546,6 @@ export default function AdminSettings() {
                         const token = getToken();
                         await adminApproveSettingChange(pc.id, token);
                         setPendingChanges((prev) => prev.filter((x) => x.id !== pc.id));
-                        // Reload settings
                         const s = await adminGetSettings(token);
                         setFee(s.consultation_fee || "500");
                         setTerms(s.consultation_terms || "");
@@ -660,8 +598,8 @@ function GlobalSearchTab() {
   }
 
   return (
-    <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}>
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+    <Paper elevation={0} className="!p-6 !rounded-3xl !border !border-brand-sand">
+      <Box className="flex gap-4 mb-6">
         <TextField
           fullWidth
           placeholder={t("tools.searchPlaceholder")}
@@ -687,10 +625,10 @@ function GlobalSearchTab() {
         <Stack spacing={2.5}>
           {results.users.length > 0 && (
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+              <Typography variant="subtitle2" className="!font-bold !mb-2">
                 {t("tools.users")} ({results.users.length})
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              <Box className="flex gap-2 flex-wrap">
                 {results.users.map((u: any) => (
                   <Chip key={u.id} label={`${u.name} — ${u.email || u.mobile}`} />
                 ))}
@@ -699,10 +637,10 @@ function GlobalSearchTab() {
           )}
           {results.appointments.length > 0 && (
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+              <Typography variant="subtitle2" className="!font-bold !mb-2">
                 {t("tools.appointments")} ({results.appointments.length})
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              <Box className="flex gap-2 flex-wrap">
                 {results.appointments.map((a: any) => (
                   <Chip key={a.id} label={`${a.name} — ${a.status}`} variant="outlined" />
                 ))}
@@ -711,10 +649,10 @@ function GlobalSearchTab() {
           )}
           {results.documents.length > 0 && (
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+              <Typography variant="subtitle2" className="!font-bold !mb-2">
                 {t("tools.documents")} ({results.documents.length})
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              <Box className="flex gap-2 flex-wrap">
                 {results.documents.map((d: any) => (
                   <Chip key={d.id} label={d.title} variant="outlined" />
                 ))}
@@ -748,21 +686,18 @@ function RemindersTab() {
   }
 
   return (
-    <Paper
-      elevation={0}
-      sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
-    >
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+    <Paper elevation={0} className={PAPER_CARD_CLASS}>
+      <Typography variant="h6" className="!font-bold !mb-2">
         {t("tools.sendReminders")}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+      <Typography variant="body2" color="text.secondary" className="!mb-6">
         {t("tools.remindersDesc")}
       </Typography>
       <Button variant="contained" startIcon={<NotificationsIcon />} onClick={handleSend}>
         {t("tools.sendNow")}
       </Button>
       {snack && (
-        <Alert severity={snack.severity} sx={{ mt: 2 }} onClose={() => setSnack(null)}>
+        <Alert severity={snack.severity} className="!mt-4" onClose={() => setSnack(null)}>
           {snack.msg}
         </Alert>
       )}
@@ -778,14 +713,12 @@ function AuditLogTab() {
   const [rpp, setRpp] = useState(20);
   const [loading, setLoading] = useState(true);
 
-  // Filters
   const [filterAction, setFilterAction] = useState("");
   const [filterAdminId, setFilterAdminId] = useState("");
   const [filterDateFrom, setFilterDateFrom] = useState<Dayjs | null>(null);
   const [filterDateTo, setFilterDateTo] = useState<Dayjs | null>(null);
   const [sortOrder, setSortOrder] = useState("newest");
 
-  // Filter options from backend
   const [actionOptions, setActionOptions] = useState<string[]>([]);
   const [adminOptions, setAdminOptions] = useState<{ id: number; name: string }[]>([]);
 
@@ -830,7 +763,6 @@ function AuditLogTab() {
     setFilterDateTo(null);
     setSortOrder("newest");
     setPage(0);
-    // Reload with no filters
     const token = getToken();
     if (!token) return;
     setLoading(true);
@@ -849,24 +781,9 @@ function AuditLogTab() {
 
   return (
     <Box>
-      {/* Filters */}
       <Paper
         elevation={0}
-        sx={{
-          p: { xs: 1.5, md: 2 },
-          mb: 2,
-          borderRadius: 4,
-          border: `1px solid ${brandColors.sand}`,
-          display: "grid",
-          gap: { xs: 1.25, md: 1.5 },
-          alignItems: "center",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "1fr 1fr",
-            md: "1fr 1fr 1fr 1fr 1fr auto auto",
-          },
-          "& .MuiFormControl-root": { width: "100%" },
-        }}
+        className="!p-3 md:!p-4 !mb-4 !rounded-3xl !border !border-brand-sand !grid !gap-3 md:!gap-4 !items-center !grid-cols-1 sm:!grid-cols-2 md:!grid-cols-[1fr_1fr_1fr_1fr_1fr_auto_auto] [&_.MuiFormControl-root]:!w-full"
       >
         <TextField
           select
@@ -924,7 +841,7 @@ function AuditLogTab() {
           variant="contained"
           size="small"
           onClick={applyFilters}
-          sx={{ width: { xs: "100%", md: "auto" } }}
+          className="!w-full md:!w-auto"
         >
           {t("common.filter")}
         </Button>
@@ -932,44 +849,43 @@ function AuditLogTab() {
           variant="outlined"
           size="small"
           onClick={clearFilters}
-          sx={{ width: { xs: "100%", md: "auto" } }}
+          className="!w-full md:!w-auto"
         >
           {t("common.clear")}
         </Button>
       </Paper>
 
-      {/* Table */}
       <Paper
         elevation={0}
-        sx={{ borderRadius: 4, border: `1px solid ${brandColors.sand}`, overflow: "auto" }}
+        className="!rounded-3xl !border !border-brand-sand !overflow-auto"
       >
         {loading ? (
-          <Box sx={{ p: 4, textAlign: "center" }}>
+          <Box className="p-8 text-center">
             <CircularProgress />
           </Box>
         ) : logs.length === 0 ? (
-          <Typography sx={{ p: 4, textAlign: "center" }} color="text.secondary">
+          <Typography className="!p-8 !text-center" color="text.secondary">
             {t("tools.noLogs")}
           </Typography>
         ) : (
           <>
             <Table size="small">
               <TableHead>
-                <TableRow sx={{ bgcolor: "background.default" }}>
-                  <TableCell sx={{ fontWeight: 700 }}>{t("common.date")}</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>{t("tools.admin")}</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>{t("tools.action")}</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>{t("tools.entity")}</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>{t("tools.details")}</TableCell>
+                <TableRow className="!bg-brand-cream">
+                  <TableCell className="!font-bold">{t("common.date")}</TableCell>
+                  <TableCell className="!font-bold">{t("tools.admin")}</TableCell>
+                  <TableCell className="!font-bold">{t("tools.action")}</TableCell>
+                  <TableCell className="!font-bold">{t("tools.entity")}</TableCell>
+                  <TableCell className="!font-bold">{t("tools.details")}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {logs.map((l: any) => (
                   <TableRow key={l.id} hover>
-                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                    <TableCell className="!whitespace-nowrap">
                       {l.created_at ? new Date(l.created_at).toLocaleString() : "—"}
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>{l.admin_name}</TableCell>
+                    <TableCell className="!font-semibold">{l.admin_name}</TableCell>
                     <TableCell>
                       <Chip label={l.action} size="small" />
                     </TableCell>
@@ -977,7 +893,7 @@ function AuditLogTab() {
                       {l.entity_type}
                       {l.entity_id ? ` #${l.entity_id}` : ""}
                     </TableCell>
-                    <TableCell sx={{ maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <TableCell className="!max-w-[300px] !overflow-hidden !text-ellipsis">
                       {l.details}
                     </TableCell>
                   </TableRow>
@@ -1049,23 +965,11 @@ function ExportTab() {
   }
 
   return (
-    <Paper
-      elevation={0}
-      sx={{ p: { xs: 3, md: 5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
-    >
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+    <Paper elevation={0} className={PAPER_CARD_CLASS}>
+      <Typography variant="h6" className="!font-bold !mb-4">
         {t("tools.exportData")}
       </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gap: { xs: 1.25, md: 2 },
-          mb: 3,
-          alignItems: "center",
-          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-          "& .MuiFormControl-root": { width: "100%" },
-        }}
-      >
+      <Box className="grid gap-3 md:gap-4 mb-6 items-center grid-cols-1 sm:grid-cols-2 [&_.MuiFormControl-root]:!w-full">
         <DatePicker
           label={t("settings.invoiceFrom")}
           value={exportFrom}
@@ -1081,7 +985,7 @@ function ExportTab() {
           slotProps={{ textField: { size: "small" } }}
         />
       </Box>
-      <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
+      <Stack direction="row" spacing={2} useFlexGap className="!flex-wrap">
         <Button
           variant="outlined"
           startIcon={<DownloadIcon />}
@@ -1133,7 +1037,6 @@ function InvoiceDownloadSection() {
         dateTo.format("YYYY-MM-DD"),
         token,
       );
-      // Trigger download
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -1150,46 +1053,24 @@ function InvoiceDownloadSection() {
   }
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: { xs: 3, md: 5 },
-        borderRadius: 4,
-        border: `1px solid ${brandColors.sand}`,
-      }}
-    >
+    <Paper elevation={0} className={PAPER_CARD_CLASS}>
       <Typography
         variant="h6"
-        sx={{
-          fontWeight: 700,
-          color: brandColors.maroon,
-          mb: 1,
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-        }}
+        className="!font-bold !text-brand-maroon !mb-2 !flex !items-center !gap-2"
       >
         <ReceiptLongIcon /> {t("settings.invoiceDownload")}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+      <Typography variant="body2" color="text.secondary" className="!mb-6">
         {t("settings.invoiceDownloadHelp")}
       </Typography>
 
       {invoiceError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" className="!mb-4">
           {invoiceError}
         </Alert>
       )}
 
-      <Box
-        sx={{
-          display: "grid",
-          gap: { xs: 1.25, md: 2 },
-          alignItems: "center",
-          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr auto" },
-          "& .MuiFormControl-root": { width: "100%" },
-        }}
-      >
+      <Box className="grid gap-3 md:gap-4 items-center grid-cols-1 sm:grid-cols-[1fr_1fr_auto] [&_.MuiFormControl-root]:!w-full">
         <DatePicker
           label={t("settings.invoiceFrom")}
           value={dateFrom}
@@ -1209,7 +1090,7 @@ function InvoiceDownloadSection() {
           startIcon={<DownloadIcon />}
           onClick={handleDownload}
           disabled={downloading || !dateFrom || !dateTo}
-          sx={{ width: { xs: "100%", sm: "auto" } }}
+          className="!w-full sm:!w-auto"
         >
           {downloading ? t("common.loading") : t("settings.invoiceDownloadBtn")}
         </Button>
@@ -1217,10 +1098,6 @@ function InvoiceDownloadSection() {
     </Paper>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Moderators tab — super-admin only
-// ─────────────────────────────────────────────────────────────────────────────
 
 function ModeratorsTab() {
   const { t } = useT();
@@ -1316,7 +1193,7 @@ function ModeratorsTab() {
 
   if (loading) {
     return (
-      <Box sx={{ p: 4, textAlign: "center" }}>
+      <Box className="p-8 text-center">
         <CircularProgress />
       </Box>
     );
@@ -1326,49 +1203,38 @@ function ModeratorsTab() {
 
   return (
     <Stack spacing={3}>
-      {/* Header card */}
       <Paper
         elevation={0}
-        sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+        className="!p-6 md:!p-8 !rounded-3xl !border !border-brand-sand"
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-            mb: 1,
-          }}
-        >
+        <Box className="flex items-center justify-between flex-wrap gap-4 mb-2">
           <Typography
             variant="h6"
-            sx={{ fontWeight: 700, color: brandColors.maroon, display: "flex", alignItems: "center", gap: 1 }}
+            className="!font-bold !text-brand-maroon !flex !items-center !gap-2"
           >
             <GroupIcon /> {t("mod.title")}
           </Typography>
           <Chip
             label={t("mod.count", { current: cap.current, max: cap.max })}
             color={atLimit ? "warning" : "primary"}
-            sx={{ fontWeight: 700 }}
+            className="!font-bold"
           />
         </Box>
         <Typography variant="body2" color="text.secondary">
           {t("mod.subtitle", { max: cap.max })}
         </Typography>
         {error && (
-          <Alert severity="error" sx={{ mt: 2 }}>
+          <Alert severity="error" className="!mt-4">
             {error}
           </Alert>
         )}
       </Paper>
 
-      {/* Current moderators */}
       <Paper
         elevation={0}
-        sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+        className="!p-5 md:!p-7 !rounded-3xl !border !border-brand-sand"
       >
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
+        <Typography variant="subtitle1" className="!font-bold !mb-4">
           {t("mod.current")}
         </Typography>
         {moderators.length === 0 ? (
@@ -1392,12 +1258,14 @@ function ModeratorsTab() {
                 }
               >
                 <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: brandColors.maroon }}>
+                  <Avatar
+                    style={{ backgroundColor: brandColors.maroon }}
+                  >
                     {m.name?.charAt(0).toUpperCase() || "?"}
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText
-                  primary={<Typography sx={{ fontWeight: 600 }}>{m.name}</Typography>}
+                  primary={<Typography className="!font-semibold">{m.name}</Typography>}
                   secondary={`${m.email || m.mobile || ""}${m.city ? " · " + m.city : ""}`}
                 />
               </ListItem>
@@ -1406,20 +1274,19 @@ function ModeratorsTab() {
         )}
       </Paper>
 
-      {/* Promote new moderator */}
       <Paper
         elevation={0}
-        sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+        className="!p-5 md:!p-7 !rounded-3xl !border !border-brand-sand"
       >
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
+        <Typography variant="subtitle1" className="!font-bold !mb-4">
           {t("mod.add")}
         </Typography>
         {atLimit && (
-          <Alert severity="warning" sx={{ mb: 2 }}>
+          <Alert severity="warning" className="!mb-4">
             {t("mod.atLimit")}
           </Alert>
         )}
-        <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
+        <Box className="flex gap-3 mb-4">
           <TextField
             fullWidth
             size="small"
@@ -1475,7 +1342,7 @@ function ModeratorsTab() {
                   <Avatar>{u.name?.charAt(0).toUpperCase() || "?"}</Avatar>
                 </ListItemAvatar>
                 <ListItemText
-                  primary={<Typography sx={{ fontWeight: 600 }}>{u.name}</Typography>}
+                  primary={<Typography className="!font-semibold">{u.name}</Typography>}
                   secondary={`${u.email || u.mobile || ""}${u.city ? " · " + u.city : ""}`}
                 />
               </ListItem>
@@ -1484,13 +1351,12 @@ function ModeratorsTab() {
         )}
       </Paper>
 
-      {/* Promote confirm */}
       <Dialog open={!!promoteTarget} onClose={() => !busy && setPromoteTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: brandColors.maroon }}>{t("mod.addBtn")}</DialogTitle>
+        <DialogTitle className="!font-bold !text-brand-maroon">{t("mod.addBtn")}</DialogTitle>
         <DialogContent>
           <Typography>{t("mod.promoteConfirm", { name: promoteTarget?.name || "" })}</Typography>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setPromoteTarget(null)} disabled={busy}>
             {t("common.cancel")}
           </Button>
@@ -1500,13 +1366,12 @@ function ModeratorsTab() {
         </DialogActions>
       </Dialog>
 
-      {/* Revoke confirm */}
       <Dialog open={!!revokeTarget} onClose={() => !busy && setRevokeTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: "error.main" }}>{t("mod.revoke")}</DialogTitle>
+        <DialogTitle className="!font-bold !text-brand-error">{t("mod.revoke")}</DialogTitle>
         <DialogContent>
           <Typography>{t("mod.revokeConfirm", { name: revokeTarget?.name || "" })}</Typography>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setRevokeTarget(null)} disabled={busy}>
             {t("common.cancel")}
           </Button>
@@ -1523,7 +1388,7 @@ function ModeratorsTab() {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         {snack ? (
-          <Alert severity={snack.severity} onClose={() => setSnack(null)} sx={{ width: "100%" }}>
+          <Alert severity={snack.severity} onClose={() => setSnack(null)} className="!w-full">
             {snack.msg}
           </Alert>
         ) : undefined}

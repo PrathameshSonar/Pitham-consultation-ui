@@ -24,9 +24,7 @@ import { useAuthQuery } from "@/services/queryHooks";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
 import type { MessageKey } from "@/i18n/messages";
-import * as s from "./styles";
 
-// Single dynamic import for all chart components (avoids Cell rendering issue)
 const StatusPieChart = dynamic(() => import("@/components/AdminCharts").then((m) => m.StatusPieChart), {
   ssr: false,
 });
@@ -37,64 +35,66 @@ const MonthlyLineChart = dynamic(() => import("@/components/AdminCharts").then((
   ssr: false,
 });
 
+const TILE_ICON_CLASS = "!text-[2.4rem] !text-brand-saffron";
+
 const TILES: { href: string; icon: React.ReactNode; labelKey: MessageKey; descKey: MessageKey }[] = [
   {
     href: "/admin/appointments",
-    icon: <EventNoteIcon sx={s.tileIcon} />,
+    icon: <EventNoteIcon className={TILE_ICON_CLASS} />,
     labelKey: "adm.tile.appts",
     descKey: "adm.tile.appts.desc",
   },
   {
     href: "/admin/users",
-    icon: <GroupIcon sx={s.tileIcon} />,
+    icon: <GroupIcon className={TILE_ICON_CLASS} />,
     labelKey: "adm.tile.users",
     descKey: "adm.tile.users.desc",
   },
   {
     href: "/admin/user-lists",
-    icon: <PeopleIcon sx={s.tileIcon} />,
+    icon: <PeopleIcon className={TILE_ICON_CLASS} />,
     labelKey: "adm.tile.lists",
     descKey: "adm.tile.lists.desc",
   },
   {
     href: "/admin/calendar",
-    icon: <CalendarMonthIcon sx={s.tileIcon} />,
+    icon: <CalendarMonthIcon className={TILE_ICON_CLASS} />,
     labelKey: "adm.tile.cal",
     descKey: "adm.tile.cal.desc",
   },
   {
     href: "/admin/documents",
-    icon: <DescriptionIcon sx={s.tileIcon} />,
+    icon: <DescriptionIcon className={TILE_ICON_CLASS} />,
     labelKey: "adm.tile.docs",
     descKey: "adm.tile.docs.desc",
   },
   {
     href: "/admin/recordings",
-    icon: <VideocamIcon sx={s.tileIcon} />,
+    icon: <VideocamIcon className={TILE_ICON_CLASS} />,
     labelKey: "adm.tile.rec",
     descKey: "adm.tile.rec.desc",
   },
   {
     href: "/admin/queries",
-    icon: <ChatBubbleIcon sx={s.tileIcon} />,
+    icon: <ChatBubbleIcon className={TILE_ICON_CLASS} />,
     labelKey: "adm.tile.queries",
     descKey: "adm.tile.queries.desc",
   },
   {
     href: "/admin/broadcasts",
-    icon: <CampaignIcon sx={s.tileIcon} />,
+    icon: <CampaignIcon className={TILE_ICON_CLASS} />,
     labelKey: "adm.tile.broadcast",
     descKey: "adm.tile.broadcast.desc",
   },
   {
     href: "/admin/pitham",
-    icon: <EventAvailableIcon sx={s.tileIcon} />,
+    icon: <EventAvailableIcon className={TILE_ICON_CLASS} />,
     labelKey: "adm.tile.pcms",
     descKey: "adm.tile.pcms.desc",
   },
   {
     href: "/admin/settings",
-    icon: <SettingsIcon sx={s.tileIcon} />,
+    icon: <SettingsIcon className={TILE_ICON_CLASS} />,
     labelKey: "nav.settings",
     descKey: "adm.tile.appts.desc",
   },
@@ -102,36 +102,30 @@ const TILES: { href: string; icon: React.ReactNode; labelKey: MessageKey; descKe
 
 export default function AdminDashboard() {
   const { t } = useT();
-  // Cached for 30s — re-visiting admin dashboard within that window is instant
   const { data, isLoading: loading } = useAuthQuery<any>(["admin-analytics"], adminGetAnalytics);
   const { data: fbSummary } = useAuthQuery<any>(["admin-feedback-summary"], adminFeedbackSummary);
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Box sx={s.header}>
-          <Typography variant="h4" sx={s.headerTitle}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4">
+      <Box className="max-w-[1200px] mx-auto">
+        <Box className="mb-8">
+          <Typography variant="h4" className="!text-brand-maroon !font-bold !mb-1">
             {t("adm.dashboard.title")}
           </Typography>
-          <Typography sx={s.headerSubtitle}>{t("adm.dashboard.subtitle")}</Typography>
+          <Typography className="!text-brand-text-medium">
+            {t("adm.dashboard.subtitle")}
+          </Typography>
         </Box>
 
         {loading ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
+          <Box className="text-center py-8">
             <CircularProgress />
           </Box>
         ) : (
           data && (
             <>
               {/* ── Summary Cards ── */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
-                  gap: { xs: 1.5, md: 2.5 },
-                  mb: 4,
-                }}
-              >
+              <Box className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-5 mb-8">
                 {[
                   {
                     label: t("adm.tile.users"),
@@ -161,23 +155,23 @@ export default function AdminDashboard() {
                   <Paper
                     key={i}
                     elevation={0}
-                    sx={{
-                      p: { xs: 2, md: 3 },
-                      borderRadius: 4,
-                      border: `1px solid ${brandColors.sand}`,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                    }}
+                    className="!p-4 md:!p-6 !rounded-3xl !border !border-brand-sand !flex !items-center !gap-4"
                   >
-                    <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: `${card.color}18`, color: card.color }}>
+                    <Box
+                      className="p-3 rounded-2xl"
+                      style={{ backgroundColor: `${card.color}18`, color: card.color }}
+                    >
                       {card.icon}
                     </Box>
                     <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 800, color: card.color, lineHeight: 1 }}>
+                      <Typography
+                        variant="h4"
+                        className="!font-extrabold !leading-none"
+                        style={{ color: card.color }}
+                      >
                         {card.value}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      <Typography variant="caption" color="text.secondary" className="!font-semibold">
                         {card.label}
                       </Typography>
                     </Box>
@@ -186,14 +180,7 @@ export default function AdminDashboard() {
               </Box>
 
               {/* ── 30-day highlights ── */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
-                  gap: { xs: 1.5, md: 2.5 },
-                  mb: 4,
-                }}
-              >
+              <Box className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-5 mb-8">
                 {[
                   {
                     label: t("analytics.newUsers"),
@@ -219,15 +206,10 @@ export default function AdminDashboard() {
                   <Paper
                     key={i}
                     elevation={0}
-                    sx={{
-                      p: { xs: 1.5, md: 2.5 },
-                      borderRadius: 3,
-                      border: `1px solid ${brandColors.sand}`,
-                      textAlign: "center",
-                    }}
+                    className="!p-3 md:!p-5 !rounded-2xl !border !border-brand-sand !text-center"
                   >
-                    <Box sx={{ color: brandColors.saffron, mb: 0.5 }}>{card.icon}</Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                    <Box className="text-brand-saffron mb-1">{card.icon}</Box>
+                    <Typography variant="h5" className="!font-extrabold">
                       {card.value}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -238,103 +220,69 @@ export default function AdminDashboard() {
               </Box>
 
               {/* ── Revenue Cards ── */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-                  gap: { xs: 1.5, md: 2.5 },
-                  mb: 4,
-                }}
-              >
+              <Box className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-5 mb-8">
                 <Paper
                   elevation={0}
-                  sx={{
-                    p: { xs: 2, md: 3 },
-                    borderRadius: 4,
-                    border: `1px solid ${brandColors.sand}`,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                  }}
+                  className="!p-4 md:!p-6 !rounded-3xl !border !border-brand-sand !flex !items-center !gap-4"
                 >
                   <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 3,
-                      bgcolor: `${brandColors.success}18`,
-                      color: brandColors.success,
-                    }}
+                    className="p-3 rounded-2xl"
+                    style={{ backgroundColor: `${brandColors.success}18`, color: brandColors.success }}
                   >
                     <CurrencyRupeeIcon />
                   </Box>
                   <Box>
                     <Typography
                       variant="h4"
-                      sx={{ fontWeight: 800, color: brandColors.success, lineHeight: 1 }}
+                      className="!font-extrabold !text-brand-success !leading-none"
                     >
                       &#8377;{(data.revenue.total || 0).toLocaleString("en-IN")}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    <Typography variant="caption" color="text.secondary" className="!font-semibold">
                       {t("analytics.totalRevenue")}
                     </Typography>
                   </Box>
                 </Paper>
                 <Paper
                   elevation={0}
-                  sx={{
-                    p: { xs: 2, md: 3 },
-                    borderRadius: 4,
-                    border: `1px solid ${brandColors.sand}`,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                  }}
+                  className="!p-4 md:!p-6 !rounded-3xl !border !border-brand-sand !flex !items-center !gap-4"
                 >
                   <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 3,
-                      bgcolor: `${brandColors.info}18`,
-                      color: brandColors.info,
-                    }}
+                    className="p-3 rounded-2xl"
+                    style={{ backgroundColor: `${brandColors.info}18`, color: brandColors.info }}
                   >
                     <AccessTimeIcon />
                   </Box>
                   <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: brandColors.info, lineHeight: 1 }}>
+                    <Typography
+                      variant="h4"
+                      className="!font-extrabold !text-brand-info !leading-none"
+                    >
                       {data.revenue.total_hours}h
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    <Typography variant="caption" color="text.secondary" className="!font-semibold">
                       {t("analytics.totalHours")}
                     </Typography>
                   </Box>
                 </Paper>
                 <Paper
                   elevation={0}
-                  sx={{
-                    p: { xs: 2, md: 3 },
-                    borderRadius: 4,
-                    border: `1px solid ${brandColors.sand}`,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                  }}
+                  className="!p-4 md:!p-6 !rounded-3xl !border !border-brand-sand !flex !items-center !gap-4"
                 >
                   <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 3,
-                      bgcolor: `${brandColors.gold}18`,
-                      color: brandColors.gold,
-                    }}
+                    className="p-3 rounded-2xl"
+                    style={{ backgroundColor: `${brandColors.gold}18`, color: brandColors.gold }}
                   >
                     <CheckCircleIcon />
                   </Box>
                   <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: brandColors.gold, lineHeight: 1 }}>
+                    <Typography
+                      variant="h4"
+                      className="!font-extrabold !text-brand-gold !leading-none"
+                    >
                       {data.revenue.total_completed}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    <Typography variant="caption" color="text.secondary" className="!font-semibold">
                       {t("analytics.totalCompleted")}
                     </Typography>
                   </Box>
@@ -342,27 +290,13 @@ export default function AdminDashboard() {
               </Box>
 
               {/* ── Pie Charts ── */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-                  gap: 3,
-                  mb: 4,
-                }}
-              >
+              <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <StatusPieChart data={data.appointment_by_status} title={t("analytics.apptStatus")} />
                 <StatusPieChart data={data.appointment_by_payment} title={t("analytics.paymentStatus")} />
               </Box>
 
               {/* ── Monthly Charts ── */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-                  gap: 3,
-                  mb: 4,
-                }}
-              >
+              <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <MonthlyBarChart data={data.appointments_per_month} title={t("analytics.apptPerMonth")} />
                 <MonthlyBarChart
                   data={data.revenue_per_month.map((r: any) => ({ month: r.month, count: r.revenue }))}
@@ -375,23 +309,14 @@ export default function AdminDashboard() {
               {fbSummary && fbSummary.total > 0 && (
                 <Paper
                   elevation={0}
-                  sx={{
-                    p: { xs: 2, md: 3 },
-                    borderRadius: 4,
-                    border: `1px solid ${brandColors.sand}`,
-                    mb: 4,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 3,
-                    flexWrap: "wrap",
-                  }}
+                  className="!p-4 md:!p-6 !rounded-3xl !border !border-brand-sand !mb-8 !flex !items-center !gap-6 !flex-wrap"
                 >
                   <Box>
                     <Typography variant="caption" color="text.secondary">
                       {t("analytics.feedbackTitle")}
                     </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                      <Typography variant="h4" sx={{ fontWeight: 800, color: brandColors.gold }}>
+                    <Box className="flex items-center gap-2 mt-1">
+                      <Typography variant="h4" className="!font-extrabold !text-brand-gold">
                         {fbSummary.average ?? "—"}
                       </Typography>
                       <Rating value={fbSummary.average || 0} precision={0.1} readOnly />
@@ -407,16 +332,25 @@ export default function AdminDashboard() {
         )}
 
         {/* ── Quick navigation tiles ── */}
-        <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
+        <Typography variant="h6" className="!font-bold !text-brand-maroon !mb-4">
           {t("analytics.quickNav")}
         </Typography>
-        <Box sx={s.tilesGrid}>
+        <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {TILES.map((tile) => (
-            <Box key={tile.href} component={Link} href={tile.href} sx={s.tile}>
+            <Box
+              key={tile.href}
+              component={Link}
+              href={tile.href}
+              className="p-6 rounded-3xl bg-brand-ivory border border-brand-sand flex items-center gap-5 cursor-pointer no-underline transition-all duration-[250ms] hover:-translate-y-[3px] hover:shadow-[0_12px_30px_rgba(123,30,30,0.12)] hover:border-brand-gold"
+            >
               {tile.icon}
               <Box>
-                <Typography sx={s.tileTitle}>{t(tile.labelKey)}</Typography>
-                <Typography sx={s.tileDesc}>{t(tile.descKey)}</Typography>
+                <Typography className="!font-bold !text-brand-maroon">
+                  {t(tile.labelKey)}
+                </Typography>
+                <Typography className="!text-brand-text-medium !text-[0.85rem]">
+                  {t(tile.descKey)}
+                </Typography>
               </Box>
             </Box>
           ))}

@@ -15,9 +15,7 @@ import {
   type Broadcast,
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
-import { brandColors } from "@/theme/colors";
 
-/** Memoized list row — re-renders only when the broadcast or its read state changes. */
 const NotificationRow = memo(function NotificationRow({
   b,
   onMarkRead,
@@ -28,30 +26,15 @@ const NotificationRow = memo(function NotificationRow({
   return (
     <Paper
       elevation={0}
-      sx={{
-        p: 3,
-        borderRadius: 4,
-        position: "relative",
-        border: `1px solid ${b.is_read ? brandColors.sand : brandColors.saffron}`,
-        bgcolor: b.is_read ? "background.paper" : `${brandColors.saffron}08`,
-        transition: "all 0.15s ease",
-      }}
+      className={`!p-6 !rounded-3xl !relative !transition-all !duration-150 !border ${
+        b.is_read ? "!border-brand-sand !bg-brand-ivory" : "!border-brand-saffron !bg-brand-saffron/5"
+      }`}
       onClick={() => !b.is_read && onMarkRead(b.id)}
     >
       {!b.is_read && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            width: 10,
-            height: 10,
-            borderRadius: "50%",
-            bgcolor: brandColors.saffron,
-          }}
-        />
+        <Box className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-brand-saffron" />
       )}
-      <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+      <Box className="flex gap-4 items-start">
         {b.image_path && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -61,15 +44,19 @@ const NotificationRow = memo(function NotificationRow({
             style={{ width: 96, height: 96, objectFit: "cover", borderRadius: 12, flexShrink: 0 }}
           />
         )}
-        <Box sx={{ flex: 1, minWidth: 0, pr: !b.is_read ? 3 : 0 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 0.5 }}>
+        <Box className={`flex-1 min-w-0 ${b.is_read ? "" : "pr-6"}`}>
+          <Typography variant="h6" className="!font-bold !text-brand-maroon !mb-1">
             {b.title}
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            className="!block !mb-2"
+          >
             {new Date(b.created_at).toLocaleString()}
             {b.sent_by_name ? ` · ${b.sent_by_name}` : ""}
           </Typography>
-          <Typography sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7, color: "text.secondary" }}>
+          <Typography className="!whitespace-pre-wrap !leading-[1.7] !text-brand-text-medium">
             {b.message}
           </Typography>
         </Box>
@@ -116,28 +103,12 @@ export default function NotificationsPage() {
   const unreadCount = items.filter((b: Broadcast) => !b.is_read).length;
 
   return (
-    <Box
-      sx={{
-        minHeight: "calc(100vh - 64px)",
-        bgcolor: "background.default",
-        py: { xs: 3, md: 5 },
-        px: { xs: 2, md: 4 },
-      }}
-    >
-      <Box sx={{ maxWidth: 800, mx: "auto" }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-            mb: 3,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <NotificationsIcon sx={{ color: brandColors.maroon, fontSize: "2rem" }} />
-            <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon }}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-10 px-4 md:px-8">
+      <Box className="max-w-[800px] mx-auto">
+        <Box className="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <Box className="flex items-center gap-3">
+            <NotificationsIcon className="!text-brand-maroon !text-[2rem]" />
+            <Typography variant="h4" className="!font-bold !text-brand-maroon">
               {t("notif.title")}
             </Typography>
             {unreadCount > 0 && (
@@ -158,15 +129,15 @@ export default function NotificationsPage() {
         </Box>
 
         {isLoading ? (
-          <Box sx={{ textAlign: "center", py: 6 }}>
+          <Box className="text-center py-12">
             <CircularProgress />
           </Box>
         ) : items.length === 0 ? (
           <Paper
             elevation={0}
-            sx={{ p: 5, borderRadius: 4, border: `1px dashed ${brandColors.sand}`, textAlign: "center" }}
+            className="!p-10 !rounded-3xl !border !border-dashed !border-brand-sand !text-center"
           >
-            <NotificationsIcon sx={{ fontSize: 64, color: brandColors.sand, mb: 1 }} />
+            <NotificationsIcon className="!text-[64px] !text-brand-sand !mb-2" />
             <Typography color="text.secondary">{t("notif.empty")}</Typography>
           </Paper>
         ) : (

@@ -19,7 +19,10 @@ import { getMyQueries, getMyRecordings, submitQuery, getToken } from "@/services
 import { useAuthQuery } from "@/services/queryHooks";
 import { statusChipColors } from "@/theme/sharedStyles";
 import { useT } from "@/i18n/I18nProvider";
-import * as s from "./styles";
+
+const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4";
+const CONTAINER_CLASS = "max-w-[780px] mx-auto";
+const SUB_HEADING_CLASS = "!text-brand-maroon !font-bold !mb-4";
 
 interface QueryItem {
   id: number;
@@ -40,32 +43,37 @@ interface RecordingItem {
 const QueryRow = memo(function QueryRow({ q, replyLabel }: { q: QueryItem; replyLabel: string }) {
   const c = statusChipColors[q.status] || statusChipColors.open;
   return (
-    <Paper elevation={0} sx={s.queryCard}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 1,
-          flexWrap: "wrap",
-          gap: 1,
-        }}
-      >
-        <Typography sx={{ fontWeight: 700, color: "text.primary" }}>{q.subject}</Typography>
-        <Chip label={q.status} size="small" sx={{ bgcolor: c.bg, color: c.fg, fontWeight: 600 }} />
+    <Paper
+      elevation={0}
+      className="!p-6 !mb-4 !rounded-3xl !border !border-brand-sand"
+    >
+      <Box className="flex justify-between items-center mb-2 flex-wrap gap-2">
+        <Typography className="!font-bold !text-brand-text-dark">{q.subject}</Typography>
+        <Chip
+          label={q.status}
+          size="small"
+          className="!font-semibold"
+          style={{ backgroundColor: c.bg, color: c.fg }}
+        />
       </Box>
-      <Typography variant="body2" color="text.secondary" sx={{ wordBreak: "break-word" }}>
+      <Typography variant="body2" color="text.secondary" className="!break-words">
         {q.message}
       </Typography>
       {q.reply && (
-        <Box sx={s.replyBlock}>
-          <Typography sx={s.replyLabel}>🪔 {replyLabel}</Typography>
-          <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
+        <Box className="mt-4 pt-4 border-t border-dashed border-brand-sand">
+          <Typography className="!text-brand-saffron !font-bold !text-[0.75rem] !uppercase !tracking-[0.1em] !mb-1">
+            🪔 {replyLabel}
+          </Typography>
+          <Typography variant="body2" className="!break-words">
             {q.reply}
           </Typography>
         </Box>
       )}
-      <Typography variant="caption" color="text.disabled" sx={{ mt: 1, display: "block" }}>
+      <Typography
+        variant="caption"
+        color="text.disabled"
+        className="!mt-2 !block"
+      >
         {new Date(q.created_at).toLocaleDateString()}
       </Typography>
     </Paper>
@@ -74,9 +82,12 @@ const QueryRow = memo(function QueryRow({ q, replyLabel }: { q: QueryItem; reply
 
 const RecordingRow = memo(function RecordingRow({ r, watchLabel }: { r: RecordingItem; watchLabel: string }) {
   return (
-    <Paper elevation={0} sx={s.recCard}>
-      <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography sx={{ fontWeight: 700, wordBreak: "break-word" }}>{r.title}</Typography>
+    <Paper
+      elevation={0}
+      className="!p-6 !mb-4 !rounded-3xl !border !border-brand-sand !flex !justify-between !items-center !gap-4"
+    >
+      <Box className="min-w-0 flex-1">
+        <Typography className="!font-bold !break-words">{r.title}</Typography>
         <Typography variant="caption" color="text.disabled">
           {new Date(r.created_at).toLocaleDateString()}
         </Typography>
@@ -135,26 +146,29 @@ export default function Queries() {
 
   if (loadingQ || loadingR) {
     return (
-      <Box sx={{ ...s.wrapper, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />
       </Box>
     );
   }
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Paper elevation={0} sx={s.formCard}>
-          <Typography variant="h5" sx={s.sectionTitle}>
+    <Box className={WRAPPER_CLASS}>
+      <Box className={CONTAINER_CLASS}>
+        <Paper
+          elevation={0}
+          className="!p-6 md:!p-8 !rounded-3xl !border !border-brand-sand !mb-10"
+        >
+          <Typography variant="h5" className="!text-brand-maroon !font-bold !mb-6">
             {t("queries.ask")}
           </Typography>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" className="!mb-4">
               {error}
             </Alert>
           )}
           {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <Alert severity="success" className="!mb-4">
               {success}
             </Alert>
           )}
@@ -181,7 +195,7 @@ export default function Queries() {
                 variant="contained"
                 startIcon={<SendIcon />}
                 disabled={submitMutation.isPending}
-                sx={{ alignSelf: "flex-start" }}
+                className="!self-start"
               >
                 {submitMutation.isPending ? t("queries.sending") : t("queries.send")}
               </Button>
@@ -189,11 +203,14 @@ export default function Queries() {
           </Box>
         </Paper>
 
-        <Typography variant="h5" sx={s.subHeading}>
+        <Typography variant="h5" className={SUB_HEADING_CLASS}>
           {t("queries.my")}
         </Typography>
         {queries.length === 0 ? (
-          <Paper elevation={0} sx={s.emptyBox}>
+          <Paper
+            elevation={0}
+            className="!p-8 !text-center !rounded-3xl !border !border-dashed !border-brand-sand"
+          >
             <Typography color="text.secondary">{t("queries.none")}</Typography>
           </Paper>
         ) : (
@@ -202,7 +219,7 @@ export default function Queries() {
 
         {recordings.length > 0 && (
           <>
-            <Typography variant="h5" sx={{ ...s.subHeading, mt: 5 }}>
+            <Typography variant="h5" className={`${SUB_HEADING_CLASS} !mt-10`}>
               {t("rec.my")}
             </Typography>
             {recordings.map((r) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Paper, Typography, Button, Stack, IconButton } from "@mui/material";
+import { Box, Paper, Typography, Button, Stack } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -9,7 +9,6 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import { getPublicSettings } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
-import { brandColors } from "@/theme/colors";
 import { normalizeMapUrl } from "@/lib/mapUrl";
 
 export default function Contact() {
@@ -44,52 +43,38 @@ export default function Contact() {
   ].filter((x) => x.url);
 
   return (
-    <Box
-      sx={{
-        minHeight: "calc(100vh - 64px)",
-        bgcolor: "background.default",
-        py: { xs: 4, md: 8 },
-        px: { xs: 2, md: 4 },
-      }}
-    >
-      <Box sx={{ maxWidth: 800, mx: "auto" }}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-16 px-4 md:px-8">
+      <Box className="max-w-[800px] mx-auto">
         <Typography
           variant="h3"
-          sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1, textAlign: "center" }}
+          className="!font-bold !text-brand-maroon !mb-2 !text-center"
         >
           {t("contact.title")}
         </Typography>
-        <Typography sx={{ textAlign: "center", color: "text.secondary", mb: 4 }}>
+        <Typography className="!text-center !text-brand-text-medium !mb-8">
           {t("contact.subtitle")}
         </Typography>
 
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
+        <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Contact Info */}
           <Paper
             elevation={0}
-            sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+            className="!p-6 md:!p-8 !rounded-3xl !border !border-brand-sand"
           >
             {contactItems.length === 0 ? (
               <Typography color="text.secondary">{t("contact.noInfo")}</Typography>
             ) : (
               <Stack spacing={3}>
                 {contactItems.map((item, i) => (
-                  <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Box
-                      sx={{
-                        color: brandColors.saffron,
-                        p: 1.5,
-                        borderRadius: 3,
-                        bgcolor: `${brandColors.saffron}15`,
-                      }}
-                    >
+                  <Box key={i} className="flex items-center gap-4">
+                    <Box className="text-brand-saffron p-3 rounded-2xl bg-brand-saffron/10">
                       {item.icon}
                     </Box>
                     <Box>
                       <Typography variant="caption" color="text.secondary">
                         {item.label}
                       </Typography>
-                      <Typography sx={{ fontWeight: 600 }}>{item.value}</Typography>
+                      <Typography className="!font-semibold">{item.value}</Typography>
                     </Box>
                   </Box>
                 ))}
@@ -105,7 +90,7 @@ export default function Contact() {
                 variant="contained"
                 color="success"
                 fullWidth
-                sx={{ mt: 3 }}
+                className="!mt-6"
               >
                 {t("contact.whatsapp")}
               </Button>
@@ -113,11 +98,15 @@ export default function Contact() {
 
             {/* Social Links */}
             {socials.length > 0 && (
-              <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid", borderColor: "divider" }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+              <Box className="mt-6 pt-4 border-t border-[#E8D9BF]">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  className="!block !mb-2"
+                >
                   {t("settings.socialLinks")}
                 </Typography>
-                <Box sx={{ display: "flex", gap: 1 }}>
+                <Box className="flex gap-2">
                   {socials.map((social, i) => (
                     <Button
                       key={i}
@@ -144,12 +133,7 @@ export default function Contact() {
           })() ? (
             <Paper
               elevation={0}
-              sx={{
-                borderRadius: 4,
-                overflow: "hidden",
-                border: `1px solid ${brandColors.sand}`,
-                minHeight: 300,
-              }}
+              className="!rounded-3xl !overflow-hidden !border !border-brand-sand !min-h-[300px]"
             >
               <iframe
                 src={normalizeMapUrl(s.contact_map_url).url}
@@ -165,17 +149,10 @@ export default function Contact() {
           ) : (
             <Paper
               elevation={0}
-              sx={{
-                p: 4,
-                borderRadius: 4,
-                border: `1px solid ${brandColors.sand}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="!p-8 !rounded-3xl !border !border-brand-sand !flex !items-center !justify-center"
             >
-              <Typography color="text.secondary" sx={{ textAlign: "center" }}>
-                <LocationOnIcon sx={{ fontSize: 48, opacity: 0.3, display: "block", mx: "auto", mb: 1 }} />
+              <Typography color="text.secondary" className="!text-center">
+                <LocationOnIcon className="!text-[48px] !opacity-30 !block !mx-auto !mb-2" />
                 {t("contact.mapPlaceholder")}
               </Typography>
             </Paper>

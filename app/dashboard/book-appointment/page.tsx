@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import DOMPurify from "dompurify";
@@ -38,7 +38,6 @@ import { useAuthQuery } from "@/services/queryHooks";
 import { lettersOnly } from "@/lib/inputFilters";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
-import * as s from "./styles";
 
 type BookingFor = "self" | "other";
 
@@ -50,15 +49,26 @@ const EMPTY_FORM = {
   problem: "",
 };
 
+const WRAPPER_CLASS =
+  "min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-12 px-2 sm:px-4";
+const CARD_CLASS =
+  "!max-w-[720px] !mx-auto !w-full !p-4 sm:!p-6 md:!p-10 !rounded-2xl md:!rounded-[2.5rem] !bg-brand-ivory !border !border-brand-sand !shadow-[0_12px_40px_rgba(123,30,30,0.08)]";
+const TITLE_CLASS = "!text-brand-maroon !font-bold !mb-2";
+const SUBTITLE_CLASS = "!text-brand-text-medium !mb-8";
+const GRID_TWO_CLASS = "grid grid-cols-1 sm:grid-cols-2 gap-5";
+const FILE_WRAP_CLASS =
+  "flex items-start sm:items-center flex-col sm:flex-row gap-3 p-4 border-2 border-dashed border-brand-sand rounded-lg bg-brand-ivory";
+const PAYMENT_NOTE_CLASS =
+  "p-5 rounded-2xl bg-brand-ivory border border-brand-gold-light my-6";
+const PAYMENT_NOTE_TITLE_CLASS = "!font-bold !text-brand-gold !mb-1";
+
 export default function BookAppointment() {
   const router = useRouter();
   const { t } = useT();
 
-  // Step: "terms" or "form"
   const [step, setStep] = useState<"terms" | "form">("terms");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  // Self / other toggle — defaults to self for the common case.
   const [bookingFor, setBookingFor] = useState<BookingFor>("self");
 
   const [form, setForm] = useState(EMPTY_FORM);
@@ -68,12 +78,8 @@ export default function BookAppointment() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Cached profile lookup — instant on second visit
   const { data: profile } = useAuthQuery<any>(["profile"], getProfile);
 
-  // Sync form to the toggle. "self" → prefill from profile; "other" → blank.
-  // The `problem` field is consultation-specific so it's never prefilled.
-  // Selfie is also intentionally NOT prefilled — needs a fresh face photo per booking.
   useEffect(() => {
     if (bookingFor === "self" && profile) {
       setForm({
@@ -102,12 +108,9 @@ export default function BookAppointment() {
       setDob(null);
       setTob(null);
     }
-    // Whatever the user uploaded as a selfie before the toggle is also reset
-    // — selfie should match the person being booked for.
     setSelfie(null);
   }, [bookingFor, profile]);
 
-  // Settings
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [bookingEnabled, setBookingEnabled] = useState(true);
   const [holdMessage, setHoldMessage] = useState("");
@@ -182,30 +185,32 @@ export default function BookAppointment() {
 
   if (settingsLoading) {
     return (
-      <Box sx={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className="min-h-[60vh] flex items-center justify-center">
         <CircularProgress color="primary" />
       </Box>
     );
   }
 
-  // Booking on hold
   if (!bookingEnabled) {
     return (
-      <Box sx={{ ...s.wrapper, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Paper elevation={0} sx={{ p: 6, textAlign: "center", borderRadius: 4, maxWidth: 520 }}>
-          <BlockIcon sx={{ fontSize: 64, color: "warning.main", mb: 2 }} />
-          <Typography variant="h5" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1 }}>
+      <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
+        <Paper
+          elevation={0}
+          className="!p-12 !text-center !rounded-3xl !max-w-[520px]"
+        >
+          <BlockIcon className="!text-[64px] !text-brand-warning !mb-4" />
+          <Typography variant="h5" className="!font-bold !text-brand-maroon !mb-2">
             {t("book.onHold")}
           </Typography>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
+          <Typography color="text.secondary" className="!mb-4">
             {holdMessage || t("book.onHold.default")}
           </Typography>
           {resumeDate && (
-            <Typography sx={{ fontWeight: 600 }}>
+            <Typography className="!font-semibold">
               {t("book.onHold.resume")}: {resumeDate}
             </Typography>
           )}
-          <Button component={Link} href="/dashboard" variant="outlined" sx={{ mt: 3 }}>
+          <Button component={Link} href="/dashboard" variant="outlined" className="!mt-6">
             {t("common.back")}
           </Button>
         </Paper>
@@ -213,36 +218,23 @@ export default function BookAppointment() {
     );
   }
 
-  // ── Step 1: Terms & Conditions acceptance ──
   if (step === "terms") {
     return (
-      <Box sx={s.wrapper}>
-        <Paper elevation={0} sx={{ ...s.card, maxWidth: 750 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+      <Box className={WRAPPER_CLASS}>
+        <Paper elevation={0} className={`${CARD_CLASS} !max-w-[750px]`}>
+          <Box className="flex items-center gap-2 mb-4">
             <GavelIcon color="primary" />
-            <Typography variant="h5" sx={{ fontWeight: 700, color: brandColors.maroon }}>
+            <Typography variant="h5" className="!font-bold !text-brand-maroon">
               {t("book.termsTitle")}
             </Typography>
           </Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="body2" color="text.secondary" className="!mb-6">
             {t("book.termsSubtitle")}
           </Typography>
 
-          {/* Render the admin-editable HTML T&C */}
           <Paper
             variant="outlined"
-            sx={{
-              p: 3,
-              mb: 3,
-              maxHeight: 400,
-              overflow: "auto",
-              bgcolor: "background.paper",
-              borderRadius: 3,
-              "& h1, & h2, & h3": { color: brandColors.maroon, mt: 2, mb: 1 },
-              "& ol, & ul": { pl: 3 },
-              "& li": { mb: 0.5 },
-              "& strong": { color: brandColors.textDark },
-            }}
+            className="!p-6 !mb-6 !max-h-[400px] !overflow-auto !bg-brand-ivory !rounded-2xl [&_h1]:!text-brand-maroon [&_h2]:!text-brand-maroon [&_h3]:!text-brand-maroon [&_h1]:!mt-4 [&_h2]:!mt-4 [&_h3]:!mt-4 [&_h1]:!mb-2 [&_h2]:!mb-2 [&_h3]:!mb-2 [&_ol]:!pl-6 [&_ul]:!pl-6 [&_li]:!mb-1 [&_strong]:!text-brand-text-dark"
           >
             {consultationTerms ? (
               <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(consultationTerms) }} />
@@ -251,8 +243,8 @@ export default function BookAppointment() {
             )}
           </Paper>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          <Box className="flex items-center gap-2 mb-4">
+            <Typography variant="body2" className="!font-semibold">
               {t("book.payment")}: <span style={{ color: brandColors.saffron }}>&#8377;{fee}</span>
             </Typography>
           </Box>
@@ -266,13 +258,13 @@ export default function BookAppointment() {
               />
             }
             label={
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              <Typography variant="body2" className="!font-medium">
                 {t("book.termsAccept")}
               </Typography>
             }
           />
 
-          <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+          <Box className="mt-6 flex gap-4">
             <Button
               variant="contained"
               size="large"
@@ -291,26 +283,24 @@ export default function BookAppointment() {
     );
   }
 
-  // ── Step 2: Booking form ──
   return (
-    <Box sx={s.wrapper}>
-      <Paper elevation={0} sx={s.card}>
-        <Typography variant="h4" sx={s.title}>
+    <Box className={WRAPPER_CLASS}>
+      <Paper elevation={0} className={CARD_CLASS}>
+        <Typography variant="h4" className={TITLE_CLASS}>
           {t("book.title")}
         </Typography>
-        <Typography sx={s.subtitle}>{t("book.subtitle")}</Typography>
+        <Typography className={SUBTITLE_CLASS}>{t("book.subtitle")}</Typography>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" className="!mb-4">
             {error}
           </Alert>
         )}
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Stack spacing={3}>
-            {/* Self / other toggle — drives form prefill */}
             <FormControl>
-              <FormLabel sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}>
+              <FormLabel className="!font-semibold !text-brand-text-dark !mb-2">
                 {t("book.bookingFor")}
               </FormLabel>
               <RadioGroup
@@ -331,7 +321,7 @@ export default function BookAppointment() {
               </RadioGroup>
             </FormControl>
 
-            <Box sx={s.gridTwo}>
+            <Box className={GRID_TWO_CLASS}>
               <TextField
                 label={t("auth.register.fullName")}
                 required
@@ -396,7 +386,7 @@ export default function BookAppointment() {
               slotProps={{ htmlInput: { maxLength: 2000, "aria-label": t("book.problem") } }}
             />
 
-            <Box sx={s.fileWrap}>
+            <Box className={FILE_WRAP_CLASS}>
               <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />}>
                 {selfie ? t("book.changeFile") : t("book.uploadSelfie")}
                 <input
@@ -412,8 +402,8 @@ export default function BookAppointment() {
               </Typography>
             </Box>
 
-            <Box sx={s.paymentNote}>
-              <Typography sx={s.paymentNoteTitle}>
+            <Box className={PAYMENT_NOTE_CLASS}>
+              <Typography className={PAYMENT_NOTE_TITLE_CLASS}>
                 {t("book.payment")}: &#8377;{fee}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -421,7 +411,7 @@ export default function BookAppointment() {
               </Typography>
             </Box>
 
-            <Box sx={{ display: "flex", gap: 2 }}>
+            <Box className="flex gap-4">
               <Button variant="outlined" size="large" onClick={() => setStep("terms")}>
                 {t("common.back")}
               </Button>

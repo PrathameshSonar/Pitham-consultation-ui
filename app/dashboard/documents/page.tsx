@@ -11,7 +11,9 @@ import PersonIcon from "@mui/icons-material/Person";
 import { getMyDocuments, fileUrl } from "@/services/api";
 import { useAuthQuery } from "@/services/queryHooks";
 import { useT } from "@/i18n/I18nProvider";
-import * as s from "./styles";
+
+const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4";
+const CONTAINER_CLASS = "max-w-[780px] mx-auto";
 
 interface Doc {
   id: number;
@@ -30,11 +32,9 @@ interface SourceInfo {
   icon: React.ReactNode;
 }
 
-/** Translate the raw batch_label string into a user-friendly source descriptor. */
 function deriveSource(batchLabel: string | null | undefined, t: (k: any, vars?: any) => string): SourceInfo {
   const raw = (batchLabel || "").trim();
 
-  // "Consultation #5" → extract the id and show "From Consultation #5"
   const consultMatch = raw.match(/^Consultation\s*#?(\d+)/i);
   if (consultMatch) {
     return {
@@ -44,7 +44,6 @@ function deriveSource(batchLabel: string | null | undefined, t: (k: any, vars?: 
     };
   }
 
-  // "List: Morning Group" → "From group: Morning Group"
   if (/^List:/i.test(raw)) {
     return {
       kind: "list",
@@ -53,7 +52,6 @@ function deriveSource(batchLabel: string | null | undefined, t: (k: any, vars?: 
     };
   }
 
-  // "Bulk: 12 users" → generic announcement (don't reveal recipient count)
   if (/^Bulk:/i.test(raw)) {
     return {
       kind: "bulk",
@@ -62,7 +60,6 @@ function deriveSource(batchLabel: string | null | undefined, t: (k: any, vars?: 
     };
   }
 
-  // No batch_label → assigned individually
   return {
     kind: "direct",
     label: t("docs.from.direct"),
@@ -77,7 +74,6 @@ const SOURCE_COLOR: Record<SourceKind, "primary" | "secondary" | "success" | "de
   direct: "default",
 };
 
-/** Memoized row — re-renders only if its own doc changes. */
 const DocRow = memo(function DocRow({
   doc,
   source,
@@ -88,24 +84,27 @@ const DocRow = memo(function DocRow({
   downloadLabel: string;
 }) {
   return (
-    <Paper elevation={0} sx={s.docCard}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0, flex: 1 }}>
-        <DescriptionIcon sx={s.docIcon} />
-        <Box sx={{ minWidth: 0 }}>
-          <Typography sx={s.docTitle}>{doc.title}</Typography>
+    <Paper
+      elevation={0}
+      className="!p-6 !mb-4 !rounded-3xl !border !border-brand-sand !flex !items-center !justify-between !gap-4 !transition-all !duration-200 hover:!shadow-[0_8px_25px_rgba(230,81,0,0.08)]"
+    >
+      <Box className="flex items-center gap-4 min-w-0 flex-1">
+        <DescriptionIcon className="!text-[2.5rem] !text-brand-gold" />
+        <Box className="min-w-0">
+          <Typography className="!font-bold !text-brand-maroon">{doc.title}</Typography>
           {doc.description && (
             <Typography variant="body2" color="text.secondary">
               {doc.description}
             </Typography>
           )}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.75, flexWrap: "wrap" }}>
+          <Box className="flex items-center gap-2 mt-1.5 flex-wrap">
             <Chip
               icon={source.icon as any}
               label={source.label}
               size="small"
               variant="outlined"
               color={SOURCE_COLOR[source.kind]}
-              sx={{ fontWeight: 600, fontSize: "0.72rem" }}
+              className="!font-semibold !text-[0.72rem]"
             />
             <Typography variant="caption" color="text.disabled">
               {new Date(doc.created_at).toLocaleDateString()}
@@ -120,7 +119,7 @@ const DocRow = memo(function DocRow({
         rel="noreferrer"
         variant="outlined"
         startIcon={<DownloadIcon />}
-        sx={{ flexShrink: 0 }}
+        className="!shrink-0"
       >
         {downloadLabel}
       </Button>
@@ -132,7 +131,6 @@ export default function Documents() {
   const { t } = useT();
   const { data: docs = [], isLoading } = useAuthQuery<Doc[]>(["my-documents"], getMyDocuments);
 
-  // Compute sources once per docs array — not on every row render.
   const docsWithSource = useMemo(
     () => docs.map((d) => ({ doc: d, source: deriveSource(d.batch_label, t) })),
     [docs, t],
@@ -140,22 +138,25 @@ export default function Documents() {
 
   if (isLoading) {
     return (
-      <Box sx={{ ...s.wrapper, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />
       </Box>
     );
   }
 
   return (
-    <Box sx={s.wrapper}>
-      <Box sx={s.container}>
-        <Typography variant="h4" sx={s.title}>
+    <Box className={WRAPPER_CLASS}>
+      <Box className={CONTAINER_CLASS}>
+        <Typography variant="h4" className="!text-brand-maroon !font-bold !mb-8">
           {t("docs.title")}
         </Typography>
 
         {docsWithSource.length === 0 ? (
-          <Paper elevation={0} sx={s.emptyCard}>
-            <Typography variant="h1" sx={{ fontSize: "3rem", mb: 1 }}>
+          <Paper
+            elevation={0}
+            className="!p-12 !text-center !rounded-3xl !border !border-dashed !border-brand-sand"
+          >
+            <Typography variant="h1" className="!text-[3rem] !mb-2">
               📜
             </Typography>
             <Typography color="text.secondary">{t("users.noDocs")}</Typography>

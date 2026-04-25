@@ -105,39 +105,32 @@ export default function PithamPage() {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   return (
-    <Box sx={{ minHeight: "calc(100vh - 64px)", bgcolor: "background.default" }}>
+    <Box className="min-h-[calc(100vh-64px)] bg-brand-cream">
       <HeaderBand t={t} />
       <BannerCarousel banners={banners} />
 
-      <Box sx={{ maxWidth: 1100, mx: "auto", py: { xs: 4, md: 6 }, px: { xs: 2, md: 4 } }}>
+      <Box className="max-w-[1100px] mx-auto py-8 md:py-12 px-4 md:px-8">
         {/* About + Deity */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-            gap: { xs: 3, md: 5 },
-            mb: 6,
-          }}
-        >
+        <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mb-12">
           <Paper
             elevation={0}
-            sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+            className="!p-6 md:!p-8 !rounded-3xl !border !border-brand-sand"
           >
-            <Typography variant="h5" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
+            <Typography variant="h5" className="!font-bold !text-brand-maroon !mb-4">
               {t("pitham.about.title")}
             </Typography>
-            <Typography sx={{ lineHeight: 1.9, color: "text.secondary" }}>
+            <Typography className="!leading-[1.9] !text-brand-text-medium">
               {t("pitham.about.body")}
             </Typography>
           </Paper>
           <Paper
             elevation={0}
-            sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+            className="!p-6 md:!p-8 !rounded-3xl !border !border-brand-sand"
           >
-            <Typography variant="h5" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 2 }}>
+            <Typography variant="h5" className="!font-bold !text-brand-maroon !mb-4">
               {t("pitham.deity.title")}
             </Typography>
-            <Typography sx={{ lineHeight: 1.9, color: "text.secondary" }}>
+            <Typography className="!leading-[1.9] !text-brand-text-medium">
               {t("pitham.deity.body")}
             </Typography>
           </Paper>
@@ -145,19 +138,15 @@ export default function PithamPage() {
 
         {/* Featured events */}
         {featuredEvents.length > 0 && (
-          <Box sx={{ mb: 6 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-              <StarIcon sx={{ color: brandColors.gold, fontSize: "2rem" }} />
-              <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon }}>
+          <Box className="mb-12">
+            <Box className="flex items-center gap-3 mb-6">
+              <StarIcon className="!text-brand-gold !text-[2rem]" />
+              <Typography variant="h4" className="!font-bold !text-brand-maroon">
                 {t("pitham.featured.title")}
               </Typography>
             </Box>
             <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: featuredEvents.length === 1 ? "1fr" : "1fr 1fr" },
-                gap: 3,
-              }}
+              className={`grid grid-cols-1 ${featuredEvents.length === 1 ? "md:grid-cols-1" : "md:grid-cols-2"} gap-6`}
             >
               {featuredEvents.map((ev) => (
                 <FeaturedEventCard key={ev.id} ev={ev} lang={lang} t={t} />
@@ -167,26 +156,20 @@ export default function PithamPage() {
         )}
 
         {/* Upcoming events */}
-        <Box sx={{ mb: 6 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-            <EventNoteIcon sx={{ color: brandColors.saffron, fontSize: "2rem" }} />
-            <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon }}>
+        <Box className="mb-12">
+          <Box className="flex items-center gap-3 mb-6">
+            <EventNoteIcon className="!text-brand-saffron !text-[2rem]" />
+            <Typography variant="h4" className="!font-bold !text-brand-maroon">
               {t("pitham.events.title")}
             </Typography>
           </Box>
 
           {loading ? (
-            <Box sx={{ textAlign: "center", py: 6 }}>
+            <Box className="text-center py-12">
               <CircularProgress />
             </Box>
           ) : otherUpcoming.length > 0 ? (
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(3, 1fr)" },
-                gap: 3,
-              }}
-            >
+            <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {otherUpcoming.map((ev) => (
                 <EventCard key={ev.id} ev={ev} lang={lang} t={t} />
               ))}
@@ -194,9 +177,9 @@ export default function PithamPage() {
           ) : featuredEvents.length === 0 ? (
             <Paper
               elevation={0}
-              sx={{ p: 5, borderRadius: 4, border: `1px dashed ${brandColors.sand}`, textAlign: "center" }}
+              className="!p-10 !rounded-3xl !border !border-dashed !border-brand-sand !text-center"
             >
-              <EventNoteIcon sx={{ fontSize: 56, color: brandColors.sand, mb: 1 }} />
+              <EventNoteIcon className="!text-[56px] !text-brand-sand !mb-2" />
               <Typography color="text.secondary">{t("pitham.events.empty")}</Typography>
             </Paper>
           ) : null}
@@ -204,14 +187,14 @@ export default function PithamPage() {
 
         {/* Testimonials */}
         {testimonials.length > 0 && (
-          <Box sx={{ mb: 6 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-              <FormatQuoteIcon sx={{ color: brandColors.maroon, fontSize: "2rem" }} />
-              <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon }}>
+          <Box className="mb-12">
+            <Box className="flex items-center gap-3 mb-6">
+              <FormatQuoteIcon className="!text-brand-maroon !text-[2rem]" />
+              <Typography variant="h4" className="!font-bold !text-brand-maroon">
                 {t("pitham.testimonials.title")}
               </Typography>
             </Box>
-            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" }, gap: 3 }}>
+            <Box className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {testimonials.map((tst) => (
                 <TestimonialCard key={tst.id} item={tst} />
               ))}
@@ -221,20 +204,14 @@ export default function PithamPage() {
 
         {/* Videos */}
         {videos.length > 0 && (
-          <Box sx={{ mb: 6 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-              <PlayCircleIcon sx={{ color: brandColors.saffron, fontSize: "2rem" }} />
-              <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon }}>
+          <Box className="mb-12">
+            <Box className="flex items-center gap-3 mb-6">
+              <PlayCircleIcon className="!text-brand-saffron !text-[2rem]" />
+              <Typography variant="h4" className="!font-bold !text-brand-maroon">
                 {t("pitham.videos.title")}
               </Typography>
             </Box>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(3, 1fr)" },
-                gap: 3,
-              }}
-            >
+            <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {videos.map((v) => (
                 <VideoCard key={v.id} item={v} watchLabel={t("pitham.watchOn")} />
               ))}
@@ -247,17 +224,11 @@ export default function PithamPage() {
 
         {/* Instagram */}
         {instagram.length > 0 && (
-          <Box sx={{ mb: 6 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 3 }}>
+          <Box className="mb-12">
+            <Typography variant="h4" className="!font-bold !text-brand-maroon !mb-6">
               {t("pitham.instagram.title")}
             </Typography>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(3, 1fr)" },
-                gap: 3,
-              }}
-            >
+            <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {instagram.map((ig) => (
                 <InstagramCard key={ig.id} item={ig} />
               ))}
@@ -279,51 +250,56 @@ export default function PithamPage() {
         {/* Visit & Contact */}
         <Paper
           elevation={0}
-          sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: `1px solid ${brandColors.sand}` }}
+          className="!p-6 md:!p-8 !rounded-3xl !border !border-brand-sand"
         >
-          <Typography variant="h5" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 3 }}>
+          <Typography variant="h5" className="!font-bold !text-brand-maroon !mb-6">
             {t("pitham.contact.title")}
           </Typography>
-          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
+          <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Stack spacing={2}>
               {settings.contact_address && (
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                  <LocationOnIcon sx={{ color: brandColors.saffron, mt: 0.4 }} />
+                <Box className="flex items-start gap-4">
+                  <LocationOnIcon className="!text-brand-saffron !mt-1" />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
                       {t("contact.address")}
                     </Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{settings.contact_address}</Typography>
+                    <Typography className="!font-semibold">{settings.contact_address}</Typography>
                   </Box>
                 </Box>
               )}
               {settings.contact_phone && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <PhoneIcon sx={{ color: brandColors.saffron }} />
+                <Box className="flex items-center gap-4">
+                  <PhoneIcon className="!text-brand-saffron" />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
                       {t("common.mobile")}
                     </Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{settings.contact_phone}</Typography>
+                    <Typography className="!font-semibold">{settings.contact_phone}</Typography>
                   </Box>
                 </Box>
               )}
               {settings.contact_email && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <EmailIcon sx={{ color: brandColors.saffron }} />
+                <Box className="flex items-center gap-4">
+                  <EmailIcon className="!text-brand-saffron" />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
                       {t("common.email")}
                     </Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{settings.contact_email}</Typography>
+                    <Typography className="!font-semibold">{settings.contact_email}</Typography>
                   </Box>
                 </Box>
               )}
               {!settings.contact_address && !settings.contact_phone && !settings.contact_email && (
                 <Typography color="text.secondary">{t("contact.noInfo")}</Typography>
               )}
-              <Divider sx={{ my: 1 }} />
-              <Button component={Link} href="/contact" variant="outlined" sx={{ alignSelf: "flex-start" }}>
+              <Divider className="!my-2" />
+              <Button
+                component={Link}
+                href="/contact"
+                variant="outlined"
+                className="!self-start"
+              >
                 {t("nav.contact")}
               </Button>
             </Stack>
@@ -332,14 +308,7 @@ export default function PithamPage() {
               const norm = normalizeMapUrl(settings.contact_map_url);
               return norm.embeddable;
             })() ? (
-              <Box
-                sx={{
-                  borderRadius: 3,
-                  overflow: "hidden",
-                  border: `1px solid ${brandColors.sand}`,
-                  minHeight: 280,
-                }}
-              >
+              <Box className="rounded-2xl overflow-hidden border border-brand-sand min-h-[280px]">
                 <iframe
                   src={normalizeMapUrl(settings.contact_map_url).url}
                   width="100%"
@@ -352,19 +321,9 @@ export default function PithamPage() {
                 />
               </Box>
             ) : (
-              <Box
-                sx={{
-                  p: 4,
-                  borderRadius: 3,
-                  border: `1px dashed ${brandColors.sand}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 200,
-                }}
-              >
-                <Typography color="text.secondary" sx={{ textAlign: "center" }}>
-                  <LocationOnIcon sx={{ fontSize: 40, opacity: 0.3, display: "block", mx: "auto", mb: 1 }} />
+              <Box className="p-8 rounded-2xl border border-dashed border-brand-sand flex items-center justify-center min-h-[200px]">
+                <Typography color="text.secondary" className="!text-center">
+                  <LocationOnIcon className="!text-[40px] !opacity-30 !block !mx-auto !mb-2" />
                   {t("contact.mapPlaceholder")}
                 </Typography>
               </Box>
@@ -383,24 +342,12 @@ export default function PithamPage() {
 function HeaderBand({ t }: { t: (k: any) => string }) {
   return (
     <Box
-      sx={{
+      className="text-white py-6 md:py-8 px-4 md:px-8"
+      style={{
         background: `linear-gradient(135deg, ${brandColors.maroon} 0%, ${brandColors.saffronDark} 100%)`,
-        color: "#fff",
-        py: { xs: 3, md: 4 },
-        px: { xs: 2, md: 4 },
       }}
     >
-      <Box
-        sx={{
-          maxWidth: 1100,
-          mx: "auto",
-          display: "flex",
-          alignItems: "center",
-          flexDirection: { xs: "column", sm: "row" },
-          gap: { xs: 2, sm: 3 },
-          textAlign: { xs: "center", sm: "left" },
-        }}
-      >
+      <Box className="max-w-[1100px] mx-auto flex items-center flex-col sm:flex-row gap-4 sm:gap-6 text-center sm:text-left">
         <Image
           src="/spbsp-logo.png"
           alt={t("brand.name")}
@@ -409,29 +356,13 @@ function HeaderBand({ t }: { t: (k: any) => string }) {
           priority
           style={{ filter: "drop-shadow(0 3px 10px rgba(0,0,0,0.3))", flexShrink: 0 }}
         />
-        <Box sx={{ flex: 1 }}>
-          <Typography
-            sx={{
-              fontFamily: "'Cinzel', serif",
-              fontWeight: 700,
-              fontSize: { xs: "1.4rem", md: "2rem" },
-              lineHeight: 1.2,
-              mb: 0.5,
-            }}
-          >
+        <Box className="flex-1">
+          <Typography className="!font-[Cinzel,serif] !font-bold !text-[1.4rem] md:!text-[2rem] !leading-[1.2] !mb-1">
             {t("pitham.title")}
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.75,
-              justifyContent: { xs: "center", sm: "flex-start" },
-              opacity: 0.92,
-            }}
-          >
+          <Box className="flex items-center gap-1.5 justify-center sm:justify-start opacity-90">
             <LocationOnIcon fontSize="small" />
-            <Typography sx={{ fontSize: { xs: "0.9rem", md: "1rem" }, fontWeight: 500 }}>
+            <Typography className="!text-[0.9rem] md:!text-base !font-medium">
               {t("pitham.location")}
             </Typography>
           </Box>
@@ -461,15 +392,8 @@ function BannerCarousel({ banners }: { banners: PithamMediaItem[] }) {
   const current = banners[idx];
 
   return (
-    <Box sx={{ position: "relative", bgcolor: "#000", overflow: "hidden" }}>
-      <Box
-        sx={{
-          position: "relative",
-          width: "100%",
-          aspectRatio: { xs: "16/10", sm: "21/9" },
-          maxHeight: { xs: 360, md: 560 },
-        }}
-      >
+    <Box className="relative bg-black overflow-hidden">
+      <Box className="relative w-full aspect-[16/10] sm:aspect-[21/9] max-h-[360px] md:max-h-[560px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           key={current.id}
@@ -485,26 +409,11 @@ function BannerCarousel({ banners }: { banners: PithamMediaItem[] }) {
         />
 
         {current.title && (
-          <Box
-            sx={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)",
-              color: "#fff",
-              p: { xs: 2.5, md: 4 },
-              pt: { xs: 6, md: 8 },
-            }}
-          >
-            <Box sx={{ maxWidth: 1100, mx: "auto" }}>
+          <Box className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent text-white p-5 md:p-8 pt-12 md:pt-16">
+            <Box className="max-w-[1100px] mx-auto">
               <Typography
-                sx={{
-                  fontWeight: 700,
-                  fontSize: { xs: "1.1rem", md: "1.6rem" },
-                  textShadow: "0 2px 8px rgba(0,0,0,0.6)",
-                  lineHeight: 1.3,
-                }}
+                className="!font-bold !text-[1.1rem] md:!text-[1.6rem] !leading-tight"
+                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
               >
                 {current.title}
               </Typography>
@@ -516,30 +425,14 @@ function BannerCarousel({ banners }: { banners: PithamMediaItem[] }) {
           <>
             <IconButton
               onClick={() => setIdx((i) => (i - 1 + banners.length) % banners.length)}
-              sx={{
-                position: "absolute",
-                left: { xs: 8, md: 20 },
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#fff",
-                bgcolor: "rgba(0,0,0,0.45)",
-                "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
-              }}
+              className="!absolute !left-2 md:!left-5 !top-1/2 !-translate-y-1/2 !text-white !bg-black/45 hover:!bg-black/70"
               aria-label="Previous banner"
             >
               <ChevronLeftIcon />
             </IconButton>
             <IconButton
               onClick={() => setIdx((i) => (i + 1) % banners.length)}
-              sx={{
-                position: "absolute",
-                right: { xs: 8, md: 20 },
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#fff",
-                bgcolor: "rgba(0,0,0,0.45)",
-                "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
-              }}
+              className="!absolute !right-2 md:!right-5 !top-1/2 !-translate-y-1/2 !text-white !bg-black/45 hover:!bg-black/70"
               aria-label="Next banner"
             >
               <ChevronRightIcon />
@@ -548,26 +441,15 @@ function BannerCarousel({ banners }: { banners: PithamMediaItem[] }) {
             <Stack
               direction="row"
               spacing={1}
-              sx={{
-                position: "absolute",
-                bottom: 12,
-                left: 0,
-                right: 0,
-                justifyContent: "center",
-              }}
+              className="!absolute !bottom-3 !inset-x-0 !justify-center"
             >
               {banners.map((_, i) => (
                 <Box
                   key={i}
                   onClick={() => setIdx(i)}
-                  sx={{
-                    width: i === idx ? 24 : 8,
-                    height: 8,
-                    borderRadius: 99,
-                    bgcolor: i === idx ? "#fff" : "rgba(255,255,255,0.55)",
-                    cursor: "pointer",
-                    transition: "all 0.25s",
-                  }}
+                  className={`${
+                    i === idx ? "w-6 bg-white" : "w-2 bg-white/55"
+                  } h-2 rounded-full cursor-pointer transition-all duration-[250ms]`}
                 />
               ))}
             </Stack>
@@ -587,18 +469,10 @@ function EventCard({ ev, lang, t }: { ev: EventItem; lang: string; t: (k: any) =
   return (
     <Paper
       elevation={0}
-      sx={{
-        borderRadius: 4,
-        border: `1px solid ${brandColors.sand}`,
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        transition: "all 0.2s ease",
-        "&:hover": { transform: "translateY(-3px)", boxShadow: "0 8px 24px rgba(123,30,30,0.1)" },
-      }}
+      className="!rounded-3xl !border !border-brand-sand !overflow-hidden !flex !flex-col !transition-all !duration-200 hover:!-translate-y-[3px] hover:!shadow-[0_8px_24px_rgba(123,30,30,0.1)]"
     >
       {img && (
-        <Box sx={{ position: "relative", width: "100%", aspectRatio: "16/9", bgcolor: brandColors.sand }}>
+        <Box className="relative w-full aspect-video bg-brand-sand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={img}
@@ -609,11 +483,11 @@ function EventCard({ ev, lang, t }: { ev: EventItem; lang: string; t: (k: any) =
           />
         </Box>
       )}
-      <Box sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1 }}>
+      <Box className="p-5 flex-1 flex flex-col">
+        <Typography variant="h6" className="!font-bold !text-brand-maroon !mb-2">
           {ev.title}
         </Typography>
-        <Stack direction="row" useFlexGap spacing={1} sx={{ mb: 1.5, flexWrap: "wrap" }}>
+        <Stack direction="row" useFlexGap spacing={1} className="!mb-3 !flex-wrap">
           <Chip
             size="small"
             icon={<CalendarMonthIcon />}
@@ -628,25 +502,18 @@ function EventCard({ ev, lang, t }: { ev: EventItem; lang: string; t: (k: any) =
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{
-              lineHeight: 1.6,
-              mb: 2,
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
+            className="!leading-relaxed !mb-4 !line-clamp-2"
           >
             {ev.description}
           </Typography>
         )}
-        <Box sx={{ mt: "auto", pt: 1 }}>
+        <Box className="mt-auto pt-2">
           <Button
             component={Link}
             href={`/pitham/events/${ev.id}`}
             size="small"
             variant="outlined"
-            sx={{ fontWeight: 600 }}
+            className="!font-semibold"
           >
             {t("pitham.knowMore")}
           </Button>
@@ -661,40 +528,18 @@ function FeaturedEventCard({ ev, lang, t }: { ev: EventItem; lang: string; t: (k
   return (
     <Paper
       elevation={0}
-      sx={{
-        borderRadius: 4,
-        overflow: "hidden",
-        border: `2px solid ${brandColors.gold}`,
+      className="!rounded-3xl !overflow-hidden !border-2 !border-brand-gold !flex !flex-col sm:!flex-row !relative !shadow-[0_8px_28px_rgba(201,154,46,0.15)]"
+      style={{
         background: `linear-gradient(135deg, ${brandColors.gold}10 0%, transparent 100%)`,
-        display: "flex",
-        flexDirection: { xs: "column", sm: "row" },
-        position: "relative",
-        boxShadow: `0 8px 28px ${brandColors.gold}25`,
       }}
     >
       <Chip
         icon={<StarIcon />}
         label="Featured"
-        sx={{
-          position: "absolute",
-          top: 16,
-          left: 16,
-          zIndex: 2,
-          bgcolor: brandColors.gold,
-          color: "#fff",
-          fontWeight: 700,
-        }}
+        className="!absolute !top-4 !left-4 !z-[2] !bg-brand-gold !text-white !font-bold"
       />
       {img && (
-        <Box
-          sx={{
-            width: { xs: "100%", sm: 240 },
-            aspectRatio: { xs: "16/9", sm: "auto" },
-            height: { sm: "auto" },
-            flexShrink: 0,
-            bgcolor: brandColors.sand,
-          }}
-        >
+        <Box className="w-full sm:w-60 aspect-video sm:aspect-auto sm:h-auto shrink-0 bg-brand-sand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={img}
@@ -705,14 +550,14 @@ function FeaturedEventCard({ ev, lang, t }: { ev: EventItem; lang: string; t: (k
           />
         </Box>
       )}
-      <Box sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}>
+      <Box className="p-6 flex-1 flex flex-col">
         <Typography
           variant="h5"
-          sx={{ fontWeight: 700, color: brandColors.maroon, mb: 1.5, mt: { xs: 3, sm: 0 } }}
+          className="!font-bold !text-brand-maroon !mb-3 !mt-6 sm:!mt-0"
         >
           {ev.title}
         </Typography>
-        <Stack direction="row" useFlexGap spacing={1} sx={{ mb: 1.5, flexWrap: "wrap" }}>
+        <Stack direction="row" useFlexGap spacing={1} className="!mb-3 !flex-wrap">
           <Chip
             size="small"
             icon={<CalendarMonthIcon />}
@@ -731,29 +576,17 @@ function FeaturedEventCard({ ev, lang, t }: { ev: EventItem; lang: string; t: (k
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{
-              lineHeight: 1.7,
-              mb: 2,
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
+            className="!leading-[1.7] !mb-4 !line-clamp-2"
           >
             {ev.description}
           </Typography>
         )}
-        <Box sx={{ mt: "auto" }}>
+        <Box className="mt-auto">
           <Button
             component={Link}
             href={`/pitham/events/${ev.id}`}
             variant="contained"
-            sx={{
-              bgcolor: brandColors.gold,
-              color: "#fff",
-              fontWeight: 700,
-              "&:hover": { bgcolor: brandColors.goldDark || brandColors.gold },
-            }}
+            className="!bg-brand-gold !text-white !font-bold hover:!bg-brand-gold-dark"
           >
             {t("pitham.knowMore")}
           </Button>
@@ -767,29 +600,13 @@ function TestimonialCard({ item }: { item: TestimonialItem }) {
   return (
     <Paper
       elevation={0}
-      sx={{
-        p: 3,
-        borderRadius: 4,
-        border: `1px solid ${brandColors.sand}`,
-        position: "relative",
-        height: "100%",
-      }}
+      className="!p-6 !rounded-3xl !border !border-brand-sand !relative !h-full"
     >
-      <FormatQuoteIcon
-        sx={{ position: "absolute", top: 12, right: 12, fontSize: 40, color: `${brandColors.saffron}30` }}
-      />
-      <Typography sx={{ lineHeight: 1.8, color: "text.secondary", fontStyle: "italic", mb: 3 }}>
+      <FormatQuoteIcon className="!absolute !top-3 !right-3 !text-[40px] !text-brand-saffron/20" />
+      <Typography className="!leading-[1.8] !text-brand-text-medium !italic !mb-6">
         &ldquo;{item.quote}&rdquo;
       </Typography>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1.5,
-          pt: 2,
-          borderTop: `1px solid ${brandColors.sand}`,
-        }}
-      >
+      <Box className="flex items-center gap-3 pt-4 border-t border-brand-sand">
         {item.photo_path ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -800,24 +617,12 @@ function TestimonialCard({ item }: { item: TestimonialItem }) {
             style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }}
           />
         ) : (
-          <Box
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              bgcolor: brandColors.saffron,
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 700,
-            }}
-          >
+          <Box className="w-12 h-12 rounded-full bg-brand-saffron text-white flex items-center justify-center font-bold">
             {item.name.charAt(0).toUpperCase()}
           </Box>
         )}
         <Box>
-          <Typography sx={{ fontWeight: 700, color: brandColors.maroon }}>{item.name}</Typography>
+          <Typography className="!font-bold !text-brand-maroon">{item.name}</Typography>
           {item.location && (
             <Typography variant="caption" color="text.secondary">
               {item.location}
@@ -843,18 +648,9 @@ function VideoCard({ item, watchLabel }: { item: PithamMediaItem; watchLabel: st
       target="_blank"
       rel="noreferrer"
       elevation={0}
-      sx={{
-        borderRadius: 4,
-        border: `1px solid ${brandColors.sand}`,
-        overflow: "hidden",
-        textDecoration: "none",
-        display: "flex",
-        flexDirection: "column",
-        transition: "all 0.2s ease",
-        "&:hover": { transform: "translateY(-3px)", boxShadow: "0 8px 24px rgba(123,30,30,0.1)" },
-      }}
+      className="!rounded-3xl !border !border-brand-sand !overflow-hidden !no-underline !flex !flex-col !transition-all !duration-200 hover:!-translate-y-[3px] hover:!shadow-[0_8px_24px_rgba(123,30,30,0.1)]"
     >
-      <Box sx={{ position: "relative", aspectRatio: "16/9", bgcolor: brandColors.sand }}>
+      <Box className="relative aspect-video bg-brand-sand group">
         {thumb && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -865,25 +661,15 @@ function VideoCard({ item, watchLabel }: { item: PithamMediaItem; watchLabel: st
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         )}
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(0,0,0,0.25)",
-            transition: "background 0.2s",
-            "&:hover": { background: "rgba(0,0,0,0.45)" },
-          }}
-        >
+        <Box className="absolute inset-0 flex items-center justify-center bg-black/25 transition-colors duration-200 group-hover:bg-black/45">
           <PlayCircleIcon
-            sx={{ fontSize: 64, color: "#fff", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.5))" }}
+            className="!text-[64px] !text-white"
+            style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.5))" }}
           />
         </Box>
       </Box>
-      <Box sx={{ p: 2.5 }}>
-        <Typography sx={{ fontWeight: 600, color: brandColors.maroon, lineHeight: 1.3 }}>
+      <Box className="p-5">
+        <Typography className="!font-semibold !text-brand-maroon !leading-tight">
           {item.title || watchLabel}
         </Typography>
       </Box>
@@ -909,27 +695,27 @@ function GallerySection({
   }
 
   return (
-    <Box sx={{ mb: 6 }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <PhotoLibraryIcon sx={{ color: brandColors.saffron, fontSize: "2rem" }} />
-          <Typography variant="h4" sx={{ fontWeight: 700, color: brandColors.maroon }}>
+    <Box className="mb-12">
+      <Box className="flex items-center justify-between gap-3 mb-6">
+        <Box className="flex items-center gap-3">
+          <PhotoLibraryIcon className="!text-brand-saffron !text-[2rem]" />
+          <Typography variant="h4" className="!font-bold !text-brand-maroon">
             {t("pitham.gallery.title")}
           </Typography>
         </Box>
         {items.length > 1 && (
-          <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 1 }}>
+          <Box className="hidden sm:flex gap-2">
             <IconButton
               onClick={() => scrollBy(-1)}
               aria-label="Scroll left"
-              sx={{ bgcolor: brandColors.sand, "&:hover": { bgcolor: brandColors.gold, color: "#fff" } }}
+              className="!bg-brand-sand hover:!bg-brand-gold hover:!text-white"
             >
               <ChevronLeftIcon />
             </IconButton>
             <IconButton
               onClick={() => scrollBy(1)}
               aria-label="Scroll right"
-              sx={{ bgcolor: brandColors.sand, "&:hover": { bgcolor: brandColors.gold, color: "#fff" } }}
+              className="!bg-brand-sand hover:!bg-brand-gold hover:!text-white"
             >
               <ChevronRightIcon />
             </IconButton>
@@ -937,74 +723,30 @@ function GallerySection({
         )}
       </Box>
 
-      <Box sx={{ position: "relative" }}>
+      <Box className="relative">
         <Box
           ref={scrollRef}
-          sx={{
-            display: "flex",
-            gap: 2,
-            overflowX: "auto",
-            pb: 1.5,
-            scrollSnapType: "x mandatory",
-            scrollbarWidth: "thin",
-            "&::-webkit-scrollbar": { height: 8 },
-            "&::-webkit-scrollbar-thumb": { bgcolor: brandColors.sand, borderRadius: 4 },
-          }}
+          className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-brand-sand [&::-webkit-scrollbar-thumb]:rounded"
         >
           {items.map((item, i) => (
             <Box
               key={item.id}
               onClick={() => onOpen(i)}
-              sx={{
-                flex: "0 0 auto",
-                width: { xs: 220, sm: 280, md: 320 },
-                aspectRatio: "4/3",
-                borderRadius: 3,
-                overflow: "hidden",
-                cursor: "pointer",
-                border: `1px solid ${brandColors.sand}`,
-                scrollSnapAlign: "start",
-                position: "relative",
-                transition: "all 0.2s ease",
-                "&:hover .gallery-caption": { opacity: 1 },
-                "&:hover img": { transform: "scale(1.05)" },
-              }}
+              className="group flex-none w-[220px] sm:w-[280px] md:w-[320px] aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer border border-brand-sand snap-start relative transition-all duration-200"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={fileUrl(item.image_path || "")}
                 alt={item.title || ""}
                 loading="lazy"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                  transition: "transform 0.3s ease",
-                }}
+                className="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-105"
               />
               {item.title && (
-                <Box
-                  className="gallery-caption"
-                  sx={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "flex-end",
-                    background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 55%)",
-                    opacity: { xs: 1, md: 0 },
-                    transition: "opacity 0.25s ease",
-                    p: 1.5,
-                  }}
-                >
+                <Box className="absolute inset-0 flex items-end bg-gradient-to-t from-black/75 via-black/0 via-55% to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-[250ms] p-3">
                   <Typography
                     variant="caption"
-                    sx={{
-                      color: "#fff",
-                      fontWeight: 600,
-                      lineHeight: 1.3,
-                      textShadow: "0 1px 4px rgba(0,0,0,0.6)",
-                    }}
+                    className="!text-white !font-semibold !leading-tight"
+                    style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
                   >
                     {item.title}
                   </Typography>
@@ -1054,28 +796,15 @@ function Lightbox({
       fullWidth
       slotProps={{
         paper: {
-          sx: {
-            bgcolor: "rgba(0,0,0,0.95)",
-            color: "#fff",
-            boxShadow: "none",
-            m: { xs: 0, sm: 2 },
-            maxHeight: { xs: "100vh", sm: "95vh" },
-          },
+          className:
+            "!bg-black/95 !text-white !shadow-none !m-0 sm:!m-4 !max-h-screen sm:!max-h-[95vh]",
         },
       }}
     >
-      <DialogContent sx={{ p: 0, position: "relative", display: "flex", flexDirection: "column" }}>
+      <DialogContent className="!p-0 !relative !flex !flex-col">
         <IconButton
           onClick={onClose}
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            color: "#fff",
-            bgcolor: "rgba(0,0,0,0.5)",
-            zIndex: 2,
-            "&:hover": { bgcolor: "rgba(0,0,0,0.75)" },
-          }}
+          className="!absolute !top-2 !right-2 !text-white !bg-black/50 !z-[2] hover:!bg-black/75"
           aria-label="Close"
         >
           <CloseIcon />
@@ -1085,32 +814,14 @@ function Lightbox({
           <>
             <IconButton
               onClick={onPrev}
-              sx={{
-                position: "absolute",
-                left: 8,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#fff",
-                bgcolor: "rgba(0,0,0,0.4)",
-                zIndex: 2,
-                "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
-              }}
+              className="!absolute !left-2 !top-1/2 !-translate-y-1/2 !text-white !bg-black/40 !z-[2] hover:!bg-black/70"
               aria-label="Previous"
             >
               <ChevronLeftIcon />
             </IconButton>
             <IconButton
               onClick={onNext}
-              sx={{
-                position: "absolute",
-                right: 8,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#fff",
-                bgcolor: "rgba(0,0,0,0.4)",
-                zIndex: 2,
-                "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
-              }}
+              className="!absolute !right-2 !top-1/2 !-translate-y-1/2 !text-white !bg-black/40 !z-[2] hover:!bg-black/70"
               aria-label="Next"
             >
               <ChevronRightIcon />
@@ -1118,16 +829,7 @@ function Lightbox({
           </>
         )}
 
-        <Box
-          sx={{
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: { xs: 300, sm: 500 },
-            p: 2,
-          }}
-        >
+        <Box className="flex-1 flex items-center justify-center min-h-[300px] sm:min-h-[500px] p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={fileUrl(item.image_path || "")}
@@ -1137,8 +839,8 @@ function Lightbox({
         </Box>
 
         {item.title && (
-          <Box sx={{ p: 2, borderTop: "1px solid rgba(255,255,255,0.15)", bgcolor: "rgba(0,0,0,0.5)" }}>
-            <Typography sx={{ fontWeight: 700, color: "#fff" }}>{item.title}</Typography>
+          <Box className="p-4 border-t border-white/15 bg-black/50">
+            <Typography className="!font-bold !text-white">{item.title}</Typography>
           </Box>
         )}
       </DialogContent>
@@ -1152,9 +854,9 @@ function InstagramCard({ item }: { item: PithamMediaItem }) {
     return (
       <Paper
         elevation={0}
-        sx={{ p: 3, borderRadius: 4, border: `1px solid ${brandColors.sand}`, textAlign: "center" }}
+        className="!p-6 !rounded-3xl !border !border-brand-sand !text-center"
       >
-        <Typography variant="body2" sx={{ wordBreak: "break-all" }}>
+        <Typography variant="body2" className="!break-all">
           <a href={item.url || "#"} target="_blank" rel="noreferrer">
             {item.url}
           </a>
@@ -1165,14 +867,9 @@ function InstagramCard({ item }: { item: PithamMediaItem }) {
   return (
     <Paper
       elevation={0}
-      sx={{
-        borderRadius: 4,
-        border: `1px solid ${brandColors.sand}`,
-        overflow: "hidden",
-        bgcolor: "background.paper",
-      }}
+      className="!rounded-3xl !border !border-brand-sand !overflow-hidden !bg-brand-ivory"
     >
-      <Box sx={{ position: "relative", paddingTop: "125%" /* IG embed aspect */ }}>
+      <Box className="relative pt-[125%]">
         <iframe
           src={embed}
           loading="lazy"
@@ -1182,7 +879,7 @@ function InstagramCard({ item }: { item: PithamMediaItem }) {
         />
       </Box>
       {item.title && (
-        <Typography variant="caption" sx={{ display: "block", p: 1.5, color: "text.secondary" }}>
+        <Typography variant="caption" className="!block !p-3 !text-brand-text-medium">
           {item.title}
         </Typography>
       )}
