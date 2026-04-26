@@ -23,6 +23,7 @@ import { registerUser, googleLogin, saveToken } from "@/services/api";
 import { lettersOnly } from "@/lib/inputFilters";
 import { useT } from "@/i18n/I18nProvider";
 import Captcha, { type CaptchaRef } from "@/components/Captcha";
+import PasswordField from "@/components/PasswordField";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
@@ -236,13 +237,13 @@ export default function Register() {
                 </MenuItem>
               ))}
             </TextField>
-            <TextField
+            <PasswordField
               label={t("common.password")}
-              type="password"
               required
               fullWidth
               value={form.password}
               onChange={(e) => set("password", e.target.value)}
+              slotProps={{ htmlInput: { autoComplete: "new-password", minLength: 6 } }}
             />
           </Box>
 

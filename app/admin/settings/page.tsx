@@ -55,6 +55,8 @@ import {
   adminChangeUserRole,
   adminUpdateUserPermissions,
   adminGetModeratorCount,
+  adminGetPaymentGatewaySecrets,
+  adminUpdatePaymentGatewaySecrets,
   getToken,
   isSuperAdmin,
 } from "@/services/api";
@@ -218,6 +220,7 @@ export default function AdminSettings() {
           {superAdmin && <Tab value="audit" label={t("tools.auditLog")} />}
           {superAdmin && <Tab value="export" label={t("tools.export")} />}
           {superAdmin && <Tab value="moderators" label={t("settings.tabModerators")} />}
+          {superAdmin && <Tab value="payment_gateways" label="Payment Gateways" />}
         </Tabs>
 
         {settingsTab === "search" && <GlobalSearchTab />}
@@ -468,6 +471,9 @@ export default function AdminSettings() {
         )}
 
         {settingsTab === "moderators" && superAdmin && <ModeratorsTab />}
+
+        {/* ── Payment Gateways Tab (super admin only) ── */}
+        {settingsTab === "payment_gateways" && superAdmin && <PaymentGatewaysTab />}
 
         {/* ── Pending Approvals (super admin only) ── */}
         {superAdmin && pendingChanges.length > 0 && (
@@ -1523,6 +1529,156 @@ function ModeratorsTab() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={!!snack}
+        autoHideDuration={3500}
+        onClose={() => setSnack(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        {snack ? (
+          <Alert severity={snack.severity} onClose={() => setSnack(null)} className="!w-full">
+            {snack.msg}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
+    </Stack>
+  );
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Payment Gateways tab — super-admin-only secret management
+// ─────────────────────────────────────────────────────────────────────────────
+
+const GATEWAY_GROUPS: Array<{
+  title: string;
+  hint: string;
+  fields: Array<{ key: string; label: string; type?: "password" | "text" }>;
+}> = [
+  {
+    title: "PhonePe",
+    hint: "Used for paid event registrations and consultation bookings.",
+    fields: [
+      { key: "payment.phonepe.client_id",         label: "Client ID" },
+      { key: "payment.phonepe.client_secret",     label: "Client secret",        type: "password" },
+      { key: "payment.phonepe.client_version",    label: "Client version (1)" },
+      { key: "payment.phonepe.env",               label: "Environment (production / sandbox)" },
+      { key: "payment.phonepe.callback_username", label: "Callback username" },
+      { key: "payment.phonepe.callback_password", label: "Callback password",    type: "password" },
+    ],
+  },
+  {
+    title: "Razorpay (coming soon)",
+    hint: "Phase 2. You can save credentials now; the integration ships next.",
+    fields: [
+      { key: "payment.razorpay.key_id",     label: "Key ID" },
+      { key: "payment.razorpay.key_secret", label: "Key secret", type: "password" },
+    ],
+  },
+  {
+    title: "Google Pay (coming soon)",
+    hint: "Phase 2. Save credentials now to flip on later.",
+    fields: [
+      { key: "payment.gpay.merchant_id", label: "Merchant ID" },
+      { key: "payment.gpay.api_key",     label: "API key",      type: "password" },
+    ],
+  },
+];
+
+function PaymentGatewaysTab() {
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [snack, setSnack] = useState<{ msg: string; severity: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) return;
+    adminGetPaymentGatewaySecrets(token)
+      .then(setValues)
+      .catch(() => setSnack({ msg: "Failed to load secrets", severity: "error" }))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function setField(key: string, value: string) {
+    setValues((v) => ({ ...v, [key]: value }));
+  }
+
+  async function save() {
+    const token = getToken();
+    if (!token) return;
+    setSaving(true);
+    try {
+      await adminUpdatePaymentGatewaySecrets(values, token);
+      setSnack({ msg: "Saved.", severity: "success" });
+    } catch (e: any) {
+      setSnack({ msg: e?.detail || "Failed to save", severity: "error" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <Box className="p-8 text-center">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  return (
+    <Stack spacing={3}>
+      <Alert severity="info" className="!rounded-2xl">
+        Secrets stored here override the env-vars baked at deploy time. Changes take
+        effect immediately for new event registrations and bookings — no restart
+        needed.
+      </Alert>
+
+      {GATEWAY_GROUPS.map((group) => (
+        <Paper
+          key={group.title}
+          elevation={0}
+          className="!p-5 md:!p-7 !rounded-3xl !border !border-brand-sand"
+        >
+          <Typography variant="subtitle1" className="!font-bold !text-brand-maroon !mb-1">
+            {group.title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" className="!mb-4">
+            {group.hint}
+          </Typography>
+          <Stack spacing={2}>
+            {group.fields.map((f) => (
+              <TextField
+                key={f.key}
+                label={f.label}
+                type={f.type || "text"}
+                fullWidth
+                size="small"
+                value={values[f.key] ?? ""}
+                onChange={(e) => setField(f.key, e.target.value)}
+                slotProps={{
+                  input: {
+                    autoComplete: "new-password",   // disable browser auto-fill on password fields
+                  },
+                }}
+              />
+            ))}
+          </Stack>
+        </Paper>
+      ))}
+
+      <Box className="flex justify-end">
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<SaveIcon />}
+          onClick={save}
+          disabled={saving}
+        >
+          {saving ? "Saving…" : "Save all"}
+        </Button>
+      </Box>
 
       <Snackbar
         open={!!snack}

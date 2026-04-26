@@ -20,7 +20,13 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import StarIcon from "@mui/icons-material/Star";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
-import { getPublicEvent, fileUrl, type EventItem } from "@/services/api";
+import {
+  getPublicEvent,
+  getEventAvailability,
+  fileUrl,
+  type EventItem,
+  type EventAvailability,
+} from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 
 function formatEventDate(iso: string, lang: string): string {
@@ -42,6 +48,7 @@ export default function EventDetailPage() {
   const router = useRouter();
   const { t, lang } = useT();
   const [event, setEvent] = useState<EventItem | null>(null);
+  const [availability, setAvailability] = useState<EventAvailability | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [snack, setSnack] = useState<string | null>(null);
@@ -49,10 +56,10 @@ export default function EventDetailPage() {
   useEffect(() => {
     const id = params?.id;
     if (!id) return;
-    getPublicEvent(id)
-      .then(setEvent)
-      .catch((err) => setError(err?.detail || t("pitham.event.notFound")))
-      .finally(() => setLoading(false));
+    Promise.all([
+      getPublicEvent(id).then(setEvent).catch((err) => setError(err?.detail || t("pitham.event.notFound"))),
+      getEventAvailability(Number(id)).then(setAvailability).catch(() => {}),
+    ]).finally(() => setLoading(false));
   }, [params?.id, t]);
 
   if (loading) {
@@ -180,16 +187,87 @@ export default function EventDetailPage() {
             </Typography>
           )}
 
-          <Box className="mt-8 pt-6 border-t border-brand-sand flex flex-wrap gap-4">
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<HowToRegIcon />}
-              onClick={() => setSnack(t("pitham.event.regSoon"))}
-              className="!bg-brand-gold !text-white !font-bold !px-8 hover:!bg-brand-maroon"
-            >
-              {t("pitham.event.register")}
-            </Button>
+          {/* Capacity badge — surfaced before the Register button so the
+              user knows the urgency / status before clicking. Only shown
+              when the event has a max_attendees configured. */}
+          {event.registration_config?.enabled && availability?.max_attendees ? (
+            <Box className="mt-6 inline-flex items-center gap-2">
+              {availability.is_full ? (
+                <Chip
+                  label="Sold out"
+                  color="error"
+                  className="!font-bold"
+                />
+              ) : availability.spots_remaining !== null && availability.spots_remaining <= 5 ? (
+                <Chip
+                  label={`Only ${availability.spots_remaining} spot${
+                    availability.spots_remaining === 1 ? "" : "s"
+                  } left`}
+                  color="warning"
+                  className="!font-bold"
+                />
+              ) : (
+                <Chip
+                  label={`${availability.registered} of ${availability.max_attendees} registered`}
+                  variant="outlined"
+                />
+              )}
+            </Box>
+          ) : null}
+
+          <Box className="mt-6 pt-6 border-t border-brand-sand flex flex-wrap gap-4">
+            {event.registration_config?.enabled ? (
+              availability?.is_full ? (
+                event.registration_config.waitlist_enabled ? (
+                  // Full + waitlist on → "Join waitlist" CTA. Same destination
+                  // as Register; the backend creates a waitlist row instead
+                  // of charging the gateway.
+                  <Button
+                    component={Link}
+                    href={`/pitham/events/${event.id}/register`}
+                    variant="contained"
+                    size="large"
+                    startIcon={<HowToRegIcon />}
+                    className="!bg-brand-saffron !text-white !font-bold !px-8 hover:!bg-brand-maroon"
+                  >
+                    Join waitlist
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    size="large"
+                    startIcon={<HowToRegIcon />}
+                    disabled
+                    className="!bg-brand-text-light !text-white !font-bold !px-8"
+                  >
+                    Sold out
+                  </Button>
+                )
+              ) : (
+                <Button
+                  component={Link}
+                  href={`/pitham/events/${event.id}/register`}
+                  variant="contained"
+                  size="large"
+                  startIcon={<HowToRegIcon />}
+                  className="!bg-brand-gold !text-white !font-bold !px-8 hover:!bg-brand-maroon"
+                >
+                  {event.registration_config.fee > 0
+                    ? `Register · ₹${event.registration_config.fee}`
+                    : t("pitham.event.register")}
+                </Button>
+              )
+            ) : (
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<HowToRegIcon />}
+                onClick={() => setSnack(t("pitham.event.regSoon"))}
+                className="!bg-brand-gold !text-white !font-bold !px-8 hover:!bg-brand-maroon"
+              >
+                {t("pitham.event.register")}
+              </Button>
+            )}
             <Button
               component={Link}
               href="/pitham"

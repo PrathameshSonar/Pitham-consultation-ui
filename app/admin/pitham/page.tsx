@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
@@ -22,6 +23,7 @@ import {
   Chip,
   Switch,
   FormControlLabel,
+  MenuItem,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -62,6 +64,15 @@ import {
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
 import { useRequireSection } from "@/lib/useRequireSection";
+import {
+  EVENT_FIELD_CATALOG,
+  GATEWAY_OPTIONS,
+  emptyRegistrationConfig,
+  hydrateRegistrationConfig,
+  newTierId,
+} from "@/lib/eventFields";
+import type { EventRegistrationConfig, RegistrationTier } from "@/services/api";
+import { Checkbox } from "@mui/material";
 
 const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4";
 const CONTAINER_CLASS = "max-w-[1200px] mx-auto";
@@ -495,6 +506,9 @@ function EventsPanel({ notify }: { notify: Notify }) {
     is_featured: false,
   });
   const [imgFile, setImgFile] = useState<File | null>(null);
+  // Registration is managed as its own state slice so the form below stays
+  // readable. JSON-stringified into form_data on save.
+  const [regConfig, setRegConfig] = useState<EventRegistrationConfig>(emptyRegistrationConfig());
 
   async function load() {
     const token = getToken();
@@ -522,6 +536,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
       image_url: "",
       is_featured: false,
     });
+    setRegConfig(emptyRegistrationConfig());
     setImgFile(null);
     setErr("");
     setOpen(true);
@@ -538,6 +553,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
       image_url: item.image_url && !item.image_url.startsWith("uploads/") ? item.image_url : "",
       is_featured: !!item.is_featured,
     });
+    setRegConfig(hydrateRegistrationConfig(item.registration_config));
     setImgFile(null);
     setErr("");
     setOpen(true);
@@ -557,7 +573,11 @@ function EventsPanel({ notify }: { notify: Notify }) {
     setErr("");
     setBusy(true);
     try {
-      const payload = { ...form, image: imgFile };
+      const payload = {
+        ...form,
+        image: imgFile,
+        registration_config: JSON.stringify(regConfig),
+      };
       if (editing) await adminUpdateEvent(editing.id, payload, token);
       else await adminCreateEvent(payload, token);
       notify({ msg: t("pcms.saved"), severity: "success" });
@@ -694,7 +714,7 @@ function EventsPanel({ notify }: { notify: Notify }) {
                     {ev.description}
                   </Typography>
                 )}
-                <Box className="flex gap-1 mt-2">
+                <Box className="flex gap-1 mt-2 flex-wrap items-center">
                   <IconButton size="small" onClick={() => toggleFeatured(ev)} title={t("events.featured")}>
                     {ev.is_featured ? (
                       <StarIcon fontSize="small" className="!text-brand-gold" />
@@ -705,6 +725,17 @@ function EventsPanel({ notify }: { notify: Notify }) {
                   <IconButton size="small" onClick={() => openEdit(ev)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
+                  {/* Direct link to per-event registrations dashboard. Shown
+                      regardless of whether registration is currently on, so
+                      admins can audit past signups after disabling. */}
+                  <Button
+                    component={NextLink}
+                    href={`/admin/events/${ev.id}/registrations`}
+                    size="small"
+                    className="!text-brand-saffron-dark !font-semibold !min-w-0 !px-2"
+                  >
+                    Registrations
+                  </Button>
                   <IconButton size="small" color="error" onClick={() => setDel(ev)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
@@ -827,6 +858,354 @@ function EventsPanel({ notify }: { notify: Notify }) {
               }
               label={t("events.featured")}
             />
+
+            {/* ── Registration ─────────────────────────────────────────── */}
+            <Box className="border-t border-brand-sand pt-4">
+              <Typography variant="subtitle1" className="!font-bold !text-brand-maroon !mb-2">
+                Registration
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={regConfig.enabled}
+                    onChange={(e) =>
+                      setRegConfig((c) => ({ ...c, enabled: e.target.checked }))
+                    }
+                  />
+                }
+                label="Allow attendees to register for this event"
+              />
+
+              {regConfig.enabled && (
+                <Stack spacing={2.5} className="!mt-3">
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      className="!block !mb-1 !font-semibold !uppercase !tracking-wider"
+                    >
+                      Fields to collect
+                    </Typography>
+                    <Box className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-x-4 gap-y-1 items-center">
+                      <Box />
+                      <Typography variant="caption" color="text.secondary" className="!text-center">
+                        Show
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" className="!text-center">
+                        Required
+                      </Typography>
+                      {EVENT_FIELD_CATALOG.map((f) => {
+                        const cell = regConfig.fields[f.key] ?? { enabled: false, required: false };
+                        return (
+                          <Box key={f.key} className="contents">
+                            <Typography variant="body2">{f.label}</Typography>
+                            <Box className="text-center">
+                              <Checkbox
+                                size="small"
+                                checked={cell.enabled}
+                                onChange={(e) =>
+                                  setRegConfig((c) => ({
+                                    ...c,
+                                    fields: {
+                                      ...c.fields,
+                                      [f.key]: {
+                                        enabled: e.target.checked,
+                                        // Required only meaningful when enabled.
+                                        required: e.target.checked ? cell.required : false,
+                                      },
+                                    },
+                                  }))
+                                }
+                              />
+                            </Box>
+                            <Box className="text-center">
+                              <Checkbox
+                                size="small"
+                                checked={cell.required}
+                                disabled={!cell.enabled}
+                                onChange={(e) =>
+                                  setRegConfig((c) => ({
+                                    ...c,
+                                    fields: {
+                                      ...c.fields,
+                                      [f.key]: { ...cell, required: e.target.checked },
+                                    },
+                                  }))
+                                }
+                              />
+                            </Box>
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  </Box>
+
+                  <Box className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <TextField
+                      label="Fee (₹)"
+                      type="number"
+                      size="small"
+                      value={regConfig.fee}
+                      onChange={(e) => {
+                        const fee = Math.max(0, parseInt(e.target.value || "0", 10) || 0);
+                        setRegConfig((c) => ({
+                          ...c,
+                          fee,
+                          // Fee 0 forces gateway=free for consistency with backend.
+                          gateway: fee === 0 ? "free" : c.gateway === "free" ? "phonepe" : c.gateway,
+                        }));
+                      }}
+                      slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                      helperText="0 = free event"
+                    />
+                    <TextField
+                      select
+                      label="Payment gateway"
+                      size="small"
+                      value={regConfig.gateway}
+                      onChange={(e) =>
+                        setRegConfig((c) => ({ ...c, gateway: e.target.value as EventRegistrationConfig["gateway"] }))
+                      }
+                      disabled={regConfig.fee === 0}
+                      helperText={regConfig.fee === 0 ? "Free events use no gateway" : ""}
+                    >
+                      {GATEWAY_OPTIONS.map((g) => (
+                        <MenuItem key={g.key} value={g.key} disabled={!g.implemented}>
+                          {g.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    <TextField
+                      label="Max attendees"
+                      type="number"
+                      size="small"
+                      value={regConfig.max_attendees ?? ""}
+                      onChange={(e) => {
+                        const v = e.target.value.trim();
+                        setRegConfig((c) => {
+                          const cap = v === "" ? null : Math.max(1, parseInt(v, 10) || 1);
+                          return {
+                            ...c,
+                            max_attendees: cap,
+                            // Waitlist only makes sense with a cap. Drop the
+                            // toggle when cap is cleared so we don't persist
+                            // a meaningless waitlist_enabled=true.
+                            waitlist_enabled: cap === null ? false : c.waitlist_enabled,
+                          };
+                        });
+                      }}
+                      helperText="Blank = unlimited"
+                    />
+                    <TextField
+                      label="Registration deadline"
+                      type="datetime-local"
+                      size="small"
+                      value={regConfig.deadline ? regConfig.deadline.slice(0, 16) : ""}
+                      onChange={(e) =>
+                        setRegConfig((c) => ({
+                          ...c,
+                          deadline: e.target.value ? new Date(e.target.value).toISOString() : null,
+                        }))
+                      }
+                      slotProps={{ inputLabel: { shrink: true } }}
+                      helperText="Blank = closes when event starts"
+                    />
+                  </Box>
+
+                  {/* ── Registration options (tiers) ────────────────── */}
+                  <Box className="border-t border-dashed border-brand-sand pt-4">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      className="!block !font-semibold !uppercase !tracking-wider"
+                    >
+                      Registration options
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" className="!mb-3">
+                      Add multiple options like &ldquo;Mukhya Yajmaan ₹11000&rdquo; or
+                      &ldquo;Annadan Seva ₹8500&rdquo;. Users pick one when registering.
+                      Leave empty for single-fee mode.
+                    </Typography>
+
+                    {regConfig.tiers.length > 0 && (
+                      <Box className="flex flex-col gap-3 mb-3">
+                        {regConfig.tiers.map((tier, idx) => (
+                          <Box
+                            key={tier.id}
+                            className="rounded-2xl border border-brand-sand bg-brand-cream/40 p-3"
+                          >
+                            <Box className="flex items-center justify-between gap-2 mb-2">
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                className="!font-semibold"
+                              >
+                                Option {idx + 1}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                aria-label="Remove option"
+                                onClick={() =>
+                                  setRegConfig((c) => ({
+                                    ...c,
+                                    tiers: c.tiers.filter((t) => t.id !== tier.id),
+                                  }))
+                                }
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                            <Box className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_1fr] gap-2">
+                              <TextField
+                                label="Name"
+                                size="small"
+                                required
+                                value={tier.name}
+                                onChange={(e) =>
+                                  setRegConfig((c) => ({
+                                    ...c,
+                                    tiers: c.tiers.map((t) =>
+                                      t.id === tier.id ? { ...t, name: e.target.value } : t,
+                                    ),
+                                  }))
+                                }
+                              />
+                              <TextField
+                                label="Fee (₹)"
+                                size="small"
+                                type="number"
+                                value={tier.fee}
+                                onChange={(e) =>
+                                  setRegConfig((c) => ({
+                                    ...c,
+                                    tiers: c.tiers.map((t) =>
+                                      t.id === tier.id
+                                        ? {
+                                            ...t,
+                                            fee: Math.max(
+                                              0,
+                                              parseInt(e.target.value || "0", 10) || 0,
+                                            ),
+                                          }
+                                        : t,
+                                    ),
+                                  }))
+                                }
+                                slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                              />
+                              <TextField
+                                label="Max attendees"
+                                size="small"
+                                type="number"
+                                value={tier.max_attendees ?? ""}
+                                onChange={(e) =>
+                                  setRegConfig((c) => ({
+                                    ...c,
+                                    tiers: c.tiers.map((t) =>
+                                      t.id === tier.id
+                                        ? {
+                                            ...t,
+                                            max_attendees:
+                                              e.target.value === ""
+                                                ? null
+                                                : Math.max(
+                                                    1,
+                                                    parseInt(e.target.value, 10) || 1,
+                                                  ),
+                                          }
+                                        : t,
+                                    ),
+                                  }))
+                                }
+                                helperText="Blank = unlimited"
+                                slotProps={{ htmlInput: { min: 1, step: 1 } }}
+                              />
+                            </Box>
+                            <TextField
+                              label="Description (optional)"
+                              size="small"
+                              fullWidth
+                              multiline
+                              rows={2}
+                              value={tier.description ?? ""}
+                              onChange={(e) =>
+                                setRegConfig((c) => ({
+                                  ...c,
+                                  tiers: c.tiers.map((t) =>
+                                    t.id === tier.id
+                                      ? { ...t, description: e.target.value }
+                                      : t,
+                                  ),
+                                }))
+                              }
+                              className="!mt-2"
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+
+                    <Button
+                      size="small"
+                      startIcon={<AddIcon />}
+                      onClick={() =>
+                        setRegConfig((c) => {
+                          const tier: RegistrationTier = {
+                            id: newTierId(),
+                            name: "",
+                            description: "",
+                            fee: 0,
+                            max_attendees: null,
+                            sort_order: c.tiers.length,
+                          };
+                          return { ...c, tiers: [...c.tiers, tier] };
+                        })
+                      }
+                    >
+                      Add option
+                    </Button>
+                  </Box>
+
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={regConfig.waitlist_enabled}
+                        disabled={!regConfig.max_attendees}
+                        onChange={(e) =>
+                          setRegConfig((c) => ({ ...c, waitlist_enabled: e.target.checked }))
+                        }
+                      />
+                    }
+                    label={
+                      <Box>
+                        <Typography variant="body2" className="!font-medium">
+                          Allow waitlist when full
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {regConfig.max_attendees
+                            ? "When the cap is reached, new signups go on a waitlist. Cancellations auto-promote the oldest waitlisted user."
+                            : "Set a max attendees count to enable a waitlist."}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+
+                  <TextField
+                    label="Confirmation message"
+                    multiline
+                    rows={3}
+                    fullWidth
+                    size="small"
+                    value={regConfig.confirmation_message}
+                    onChange={(e) =>
+                      setRegConfig((c) => ({ ...c, confirmation_message: e.target.value }))
+                    }
+                    helperText="Shown on the success screen and in the confirmation email."
+                  />
+                </Stack>
+              )}
+            </Box>
           </Stack>
         </DialogContent>
         <DialogActions className="!px-6 !pb-4">

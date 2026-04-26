@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Box, Paper, TextField, Button, Typography, Alert, Stack } from "@mui/material";
 import { forgotPassword, resetPassword } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
+import PasswordField from "@/components/PasswordField";
 
 export default function ForgotPassword() {
   const { t } = useT();
@@ -139,23 +140,32 @@ export default function ForgotPassword() {
                     },
                   }}
                 />
-                <TextField
+                <PasswordField
                   label={t("auth.forgot.newPassword")}
-                  type="password"
                   fullWidth
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  slotProps={{ htmlInput: { minLength: 6, "aria-label": t("auth.forgot.newPassword") } }}
+                  slotProps={{
+                    htmlInput: {
+                      minLength: 6,
+                      autoComplete: "new-password",
+                      "aria-label": t("auth.forgot.newPassword"),
+                    },
+                  }}
                 />
-                <TextField
+                <PasswordField
                   label={t("auth.forgot.confirmPassword")}
-                  type="password"
                   fullWidth
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  slotProps={{ htmlInput: { "aria-label": t("auth.forgot.confirmPassword") } }}
+                  slotProps={{
+                    htmlInput: {
+                      autoComplete: "new-password",
+                      "aria-label": t("auth.forgot.confirmPassword"),
+                    },
+                  }}
                 />
                 <Button type="submit" variant="contained" size="large" fullWidth disabled={loading}>
                   {loading ? t("common.loading") : t("auth.forgot.resetBtn")}

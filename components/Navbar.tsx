@@ -133,6 +133,7 @@ export default function Navbar() {
     { href: "/dashboard/history", labelKey: "nav.history", icon: <HistoryIcon fontSize="small" /> },
     { href: "/dashboard/documents", labelKey: "nav.documents", icon: <DescriptionIcon fontSize="small" /> },
     { href: "/dashboard/queries", labelKey: "nav.queries", icon: <ChatBubbleIcon fontSize="small" /> },
+    { href: "/dashboard/events", labelKey: "nav.events", icon: <EventNoteIcon fontSize="small" /> },
     {
       href: "/dashboard/notifications",
       labelKey: "nav.notifications",

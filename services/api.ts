@@ -867,6 +867,33 @@ export async function checkPhonePeStatus(transactionId: string, token: string) {
 
 // ── Events (public + admin) ──────────────────────────────────────────────────
 
+export interface RegistrationTier {
+  id: string;
+  name: string;
+  description?: string;
+  fee: number;
+  max_attendees?: number | null;
+  sort_order: number;
+}
+
+export interface EventRegistrationConfig {
+  enabled: boolean;
+  fee: number;
+  gateway: "free" | "manual" | "phonepe" | "razorpay" | "gpay";
+  fields: Record<string, { enabled: boolean; required: boolean }>;
+  max_attendees: number | null;
+  deadline: string | null;
+  confirmation_message: string;
+  /** When the event is full and this is true, further registrations land
+   *  on the waitlist instead of being rejected. Promotion happens
+   *  automatically on cancellation or manually via the admin dashboard. */
+  waitlist_enabled: boolean;
+  /** Optional registration "options" (Mukhya Yajmaan, Annadan Seva, …).
+   *  When this array is non-empty, the public form shows a picker and the
+   *  chosen tier's fee replaces the single `fee` above. Empty = simple mode. */
+  tiers: RegistrationTier[];
+}
+
 export interface EventItem {
   id: number;
   title: string;
@@ -877,6 +904,7 @@ export interface EventItem {
   location_map_url?: string | null;
   image_url?: string | null;
   is_featured?: boolean;
+  registration_config?: EventRegistrationConfig;
   created_at: string;
 }
 
@@ -889,6 +917,8 @@ export interface EventInput {
   location_map_url?: string;
   image_url?: string;
   is_featured?: boolean;
+  /** JSON-stringified EventRegistrationConfig — backend validates + normalises. */
+  registration_config?: string;
   image?: File | null;
 }
 
@@ -902,6 +932,7 @@ function _eventForm(data: Partial<EventInput>): FormData {
   if (data.location_map_url !== undefined) fd.append("location_map_url", data.location_map_url);
   if (data.image_url !== undefined) fd.append("image_url", data.image_url);
   if (data.is_featured !== undefined) fd.append("is_featured", String(data.is_featured));
+  if (data.registration_config !== undefined) fd.append("registration_config", data.registration_config);
   if (data.image) fd.append("image", data.image);
   return fd;
 }
@@ -1218,6 +1249,223 @@ export async function markAllBroadcastsRead(token: string) {
   const res = await cfetch(`${BASE}/broadcasts/read-all`, {
     method: "POST",
     headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+// ── Event registrations ─────────────────────────────────────────────────────
+
+export interface EventRegistration {
+  id: number;
+  event_id: number;
+  user_id: number;
+  name: string;
+  email?: string | null;
+  mobile?: string | null;
+  field_values: Record<string, string>;
+  status: "pending_payment" | "confirmed" | "cancelled" | "attended" | "waitlist";
+  payment_status: "pending" | "paid" | "refunded" | "n/a";
+  payment_gateway?: string | null;
+  payment_reference?: string | null;
+  fee_amount: number;
+  /** Snapshot of the selected tier at registration time. Renaming a tier
+   *  later doesn't rewrite this — admin views read it directly. */
+  tier_id?: string | null;
+  tier_name?: string | null;
+  created_at: string;
+}
+
+export interface RazorpayOrderInfo {
+  key_id: string;
+  order_id: string;
+  amount: number;       // paise
+  currency: string;
+  receipt: string;
+}
+
+export interface EventRegistrationInitResult {
+  registration_id: number;
+  status: string;
+  gateway?: string | null;
+  requires_payment_action: boolean;
+  redirect_url?: string | null;
+  razorpay_order?: RazorpayOrderInfo | null;
+}
+
+export async function verifyRazorpayPayment(
+  registrationId: number,
+  payload: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string },
+  token: string,
+): Promise<{ success: boolean; registration_id: number }> {
+  const res = await cfetch(`${BASE}/events/registrations/${registrationId}/razorpay-verify`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export interface MyEventRegistration {
+  registration: EventRegistration;
+  event: {
+    id: number;
+    title: string;
+    event_date: string;
+    event_time?: string | null;
+    location?: string | null;
+    image_url?: string | null;
+  };
+}
+
+export interface TierAvailability {
+  id: string;
+  max_attendees: number | null;
+  registered: number;
+  spots_remaining: number | null;
+  is_full: boolean;
+}
+
+export interface EventAvailability {
+  max_attendees: number | null;
+  registered: number;
+  spots_remaining: number | null;
+  is_full: boolean;
+  tiers: TierAvailability[];
+}
+
+export async function getEventAvailability(eventId: number): Promise<EventAvailability> {
+  const res = await cfetch(`${BASE}/events/${eventId}/availability`);
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function registerForEvent(
+  eventId: number,
+  fieldValues: Record<string, string>,
+  token: string,
+  tierId?: string | null,
+): Promise<EventRegistrationInitResult> {
+  const res = await cfetch(`${BASE}/events/${eventId}/register`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({
+      field_values: fieldValues,
+      ...(tierId ? { tier_id: tierId } : {}),
+    }),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function getMyEventRegistration(eventId: number, token: string): Promise<EventRegistration | null> {
+  const res = await cfetch(`${BASE}/events/${eventId}/registration`, { headers: authHeaders(token) });
+  if (!res.ok) {
+    if (res.status === 401) return null;
+    throw await res.json();
+  }
+  const body = await res.json();
+  return body || null;
+}
+
+export async function getMyEventRegistrations(token: string): Promise<MyEventRegistration[]> {
+  const res = await cfetch(`${BASE}/me/event-registrations`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function checkEventPaymentStatus(
+  txn: string,
+  token: string,
+): Promise<{ success: boolean; state: string; registration_id: number }> {
+  const res = await cfetch(
+    `${BASE}/events/registrations/payment-status?txn=${encodeURIComponent(txn)}`,
+    { headers: authHeaders(token) },
+  );
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminListEventRegistrations(
+  eventId: number,
+  token: string,
+): Promise<EventRegistration[]> {
+  const res = await cfetch(`${BASE}/admin/events/${eventId}/registrations`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminConfirmManualRegistration(regId: number, token: string) {
+  const res = await cfetch(`${BASE}/admin/event-registrations/${regId}/confirm-manual`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminCancelRegistration(regId: number, token: string) {
+  const res = await cfetch(`${BASE}/admin/event-registrations/${regId}/cancel`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminMarkRegistrationAttended(regId: number, token: string) {
+  const res = await cfetch(`${BASE}/admin/event-registrations/${regId}/attended`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminPromoteFromWaitlist(regId: number, token: string) {
+  const res = await cfetch(`${BASE}/admin/event-registrations/${regId}/promote-waitlist`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+// ── Payment gateway secrets (super admin only) ────────────────────────────
+// These are just namespaced site_settings keys — reuse the existing
+// admin-settings GET/PUT instead of dedicated endpoints. Helpers exist for
+// readability in the UI.
+
+export const PAYMENT_GATEWAY_KEYS = [
+  "payment.phonepe.client_id",
+  "payment.phonepe.client_secret",
+  "payment.phonepe.client_version",
+  "payment.phonepe.env",
+  "payment.phonepe.callback_username",
+  "payment.phonepe.callback_password",
+  "payment.razorpay.key_id",
+  "payment.razorpay.key_secret",
+  "payment.gpay.merchant_id",
+  "payment.gpay.api_key",
+] as const;
+
+export async function adminGetPaymentGatewaySecrets(
+  token: string,
+): Promise<Record<string, string>> {
+  const res = await cfetch(`${BASE}/admin/payment-gateways`, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminUpdatePaymentGatewaySecrets(
+  values: Record<string, string>,
+  token: string,
+) {
+  const res = await cfetch(`${BASE}/admin/payment-gateways`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ values }),
   });
   if (!res.ok) throw await res.json();
   return res.json();

@@ -90,8 +90,11 @@ export default function AdminUserLists() {
       const [u, l] = await Promise.all([adminLookupUsers(token, { limit: 500 }), adminGetUserLists(token)]);
       setUsers(u);
       setLists(l);
-    } catch {
-      router.push("/login");
+    } catch (e: any) {
+      // Don't kick the admin out on validation/server errors — only show the
+      // message. Auth errors are handled by useRequireSection on next nav and
+      // by the no-token branch above.
+      setError(e?.detail || "Failed to load. Please refresh.");
     } finally {
       setLoading(false);
     }

@@ -8,6 +8,7 @@ import { Box, Paper, TextField, Button, Typography, Alert, Divider } from "@mui/
 import { loginUser, googleLogin, saveToken } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import Captcha, { type CaptchaRef } from "@/components/Captcha";
+import PasswordField from "@/components/PasswordField";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
@@ -127,13 +128,13 @@ export default function Login() {
             onChange={(e) => setIdentifier(e.target.value)}
             placeholder={t("auth.login.identifierHint")}
           />
-          <TextField
+          <PasswordField
             label={t("common.password")}
-            type="password"
             fullWidth
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            slotProps={{ htmlInput: { autoComplete: "current-password" } }}
           />
           <Captcha ref={captchaRef} />
           <Button type="submit" variant="contained" size="large" fullWidth disabled={loading}>
