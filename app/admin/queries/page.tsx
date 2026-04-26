@@ -7,6 +7,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { adminGetQueries, adminReplyQuery, getToken } from "@/services/api";
 import { statusChipColors } from "@/theme/sharedStyles";
 import { useT } from "@/i18n/I18nProvider";
+import { useRequireSection } from "@/lib/useRequireSection";
 
 const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4";
 const CONTAINER_CLASS = "max-w-[900px] mx-auto";
@@ -14,6 +15,7 @@ const CONTAINER_CLASS = "max-w-[900px] mx-auto";
 export default function AdminQueries() {
   const router = useRouter();
   const { t } = useT();
+  const gate = useRequireSection("queries");
   const [queries, setQueries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyingId, setReplyingId] = useState<number | null>(null);
@@ -50,7 +52,7 @@ export default function AdminQueries() {
     }
   }
 
-  if (loading) {
+  if (gate !== "allowed" || loading) {
     return (
       <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />

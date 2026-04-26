@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import DOMPurify from "dompurify";
 import {
   Box,
   Paper,
@@ -17,6 +18,7 @@ import {
   Tabs,
   Tab,
   Chip,
+  Checkbox,
   Table,
   TableHead,
   TableBody,
@@ -51,10 +53,12 @@ import {
   adminSendReminders,
   adminGetUsers,
   adminChangeUserRole,
+  adminUpdateUserPermissions,
   adminGetModeratorCount,
   getToken,
   isSuperAdmin,
 } from "@/services/api";
+import { ADMIN_SECTIONS, type AdminSectionKey } from "@/lib/adminSections";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import GroupIcon from "@mui/icons-material/Group";
@@ -72,6 +76,7 @@ import {
 } from "@mui/material";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
+import { useRequireSection } from "@/lib/useRequireSection";
 
 const ReactQuill = nextDynamic(() => import("react-quill-new"), { ssr: false });
 import "react-quill-new/dist/quill.snow.css";
@@ -93,6 +98,7 @@ const PAPER_CARD_CLASS =
 export default function AdminSettings() {
   const router = useRouter();
   const { t } = useT();
+  const gate = useRequireSection("super_admin");
   const superAdmin = isSuperAdmin();
   const [settingsTab, setSettingsTab] = useState("search");
   const [loading, setLoading] = useState(true);
@@ -182,7 +188,7 @@ export default function AdminSettings() {
     }
   }
 
-  if (loading) {
+  if (gate !== "allowed" || loading) {
     return (
       <Box className="min-h-[60vh] flex items-center justify-center">
         <CircularProgress color="primary" />
@@ -483,7 +489,19 @@ export default function AdminSettings() {
                       variant="outlined"
                       className="!p-6 !my-3 !rounded-2xl !bg-brand-cream [&_h1]:!text-brand-saffron-dark [&_h2]:!text-brand-saffron-dark [&_h3]:!text-brand-saffron-dark [&_h1]:!mt-4 [&_h2]:!mt-4 [&_h3]:!mt-4 [&_h1]:!mb-2 [&_h2]:!mb-2 [&_h3]:!mb-2 [&_h1]:!text-[1.1rem] [&_h2]:!text-[1.1rem] [&_h3]:!text-[1.1rem] [&_ol]:!pl-6 [&_ul]:!pl-6 [&_li]:!mb-1 [&_p]:!mb-2 [&_strong]:!font-bold"
                     >
-                      <div dangerouslySetInnerHTML={{ __html: pc.value }} />
+                      {/* Defense in depth: backend already bleach-cleans
+                          consultation_terms, but a moderator with DB access or
+                          a future bleach config change must not be able to land
+                          script in the super admin's browser. DOMPurify strips
+                          anything that survived the server filter. */}
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: DOMPurify.sanitize(pc.value, {
+                            FORBID_TAGS: ["script", "style", "iframe", "object", "embed"],
+                            FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
+                          }),
+                        }}
+                      />
                     </Paper>
                   ) : (
                     <Typography variant="body1" className="!font-semibold !mb-2">
@@ -1063,10 +1081,74 @@ function ModeratorsTab() {
   const [searching, setSearching] = useState(false);
 
   const [promoteTarget, setPromoteTarget] = useState<any>(null);
+  // Permission picker shown in the promotion dialog. Keyed off the dialog
+  // open, so reopening on a different user resets to a sane default.
+  const [promotePerms, setPromotePerms] = useState<Set<AdminSectionKey>>(new Set());
   const [revokeTarget, setRevokeTarget] = useState<any>(null);
   const [busy, setBusy] = useState(false);
   const [snack, setSnack] = useState<{ msg: string; severity: "success" | "error" } | null>(null);
   const [error, setError] = useState("");
+
+  // Per-moderator pending permission edits. Keyed by user id; absent key = no
+  // local edits (we read from the moderator row's `permissions` field).
+  const [permsDraft, setPermsDraft] = useState<Record<number, Set<AdminSectionKey>>>({});
+  const [savingPermsFor, setSavingPermsFor] = useState<number | null>(null);
+
+  function getEffectivePerms(m: any): Set<AdminSectionKey> {
+    const draft = permsDraft[m.id];
+    if (draft) return draft;
+    const arr: string[] = Array.isArray(m.permissions) ? m.permissions : [];
+    return new Set(arr.filter((p): p is AdminSectionKey =>
+      ADMIN_SECTIONS.some((s) => s.key === p),
+    ));
+  }
+
+  function isDirty(m: any): boolean {
+    const draft = permsDraft[m.id];
+    if (!draft) return false;
+    const baseline = new Set<string>(Array.isArray(m.permissions) ? m.permissions : []);
+    if (draft.size !== baseline.size) return true;
+    for (const k of draft) if (!baseline.has(k)) return true;
+    return false;
+  }
+
+  function togglePerm(userId: number, key: AdminSectionKey) {
+    setPermsDraft((prev) => {
+      const baseline = moderators.find((m) => m.id === userId);
+      const current = new Set<AdminSectionKey>(
+        prev[userId] ?? (baseline?.permissions ?? []).filter((p: string): p is AdminSectionKey =>
+          ADMIN_SECTIONS.some((s) => s.key === p),
+        ),
+      );
+      if (current.has(key)) current.delete(key);
+      else current.add(key);
+      return { ...prev, [userId]: current };
+    });
+  }
+
+  async function savePermsFor(m: any) {
+    const token = getToken();
+    if (!token) return;
+    const draft = permsDraft[m.id];
+    if (!draft) return;
+    setSavingPermsFor(m.id);
+    try {
+      const res = await adminUpdateUserPermissions(m.id, Array.from(draft), token);
+      // Persist server-confirmed list back onto the row so it becomes the new baseline.
+      setModerators((prev) =>
+        prev.map((x) => (x.id === m.id ? { ...x, permissions: res.permissions } : x)),
+      );
+      setPermsDraft((prev) => {
+        const { [m.id]: _, ...rest } = prev;
+        return rest;
+      });
+      setSnack({ msg: "Permissions saved", severity: "success" });
+    } catch (e: any) {
+      setSnack({ msg: e?.detail || "Failed to save permissions", severity: "error" });
+    } finally {
+      setSavingPermsFor(null);
+    }
+  }
 
   async function load() {
     const token = getToken();
@@ -1108,13 +1190,20 @@ function ModeratorsTab() {
     }
   }
 
+  function openPromote(target: any) {
+    setPromoteTarget(target);
+    // Default to no permissions — super admin must explicitly grant. Forces
+    // intentional access decisions instead of the old all-or-nothing flag.
+    setPromotePerms(new Set());
+  }
+
   async function confirmPromote() {
     if (!promoteTarget) return;
     const token = getToken();
     if (!token) return;
     setBusy(true);
     try {
-      await adminChangeUserRole(promoteTarget.id, "moderator", token);
+      await adminChangeUserRole(promoteTarget.id, "moderator", token, Array.from(promotePerms));
       setSnack({ msg: t("mod.promoted"), severity: "success" });
       setPromoteTarget(null);
       setSearch("");
@@ -1193,37 +1282,84 @@ function ModeratorsTab() {
         {moderators.length === 0 ? (
           <Typography color="text.secondary">{t("mod.empty")}</Typography>
         ) : (
-          <List disablePadding>
-            {moderators.map((m: any, i: number) => (
-              <ListItem
-                key={m.id}
-                divider={i < moderators.length - 1}
-                secondaryAction={
-                  <Button
-                    size="small"
-                    color="error"
-                    variant="outlined"
-                    startIcon={<PersonRemoveIcon />}
-                    onClick={() => setRevokeTarget(m)}
+          <Stack spacing={2}>
+            {moderators.map((m: any) => {
+              const perms = getEffectivePerms(m);
+              const dirty = isDirty(m);
+              return (
+                <Paper
+                  key={m.id}
+                  variant="outlined"
+                  className="!p-4 !rounded-2xl !border-brand-sand"
+                >
+                  <Box className="flex items-center justify-between flex-wrap gap-3 mb-3">
+                    <Box className="flex items-center gap-3 min-w-0">
+                      <Avatar style={{ backgroundColor: brandColors.maroon }}>
+                        {m.name?.charAt(0).toUpperCase() || "?"}
+                      </Avatar>
+                      <Box className="min-w-0">
+                        <Typography className="!font-semibold !break-words">{m.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {`${m.email || m.mobile || ""}${m.city ? " · " + m.city : ""}`}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Button
+                      size="small"
+                      color="error"
+                      variant="outlined"
+                      startIcon={<PersonRemoveIcon />}
+                      onClick={() => setRevokeTarget(m)}
+                    >
+                      {t("mod.revoke")}
+                    </Button>
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    className="!block !mb-2 !font-semibold !uppercase !tracking-wider"
                   >
-                    {t("mod.revoke")}
-                  </Button>
-                }
-              >
-                <ListItemAvatar>
-                  <Avatar
-                    style={{ backgroundColor: brandColors.maroon }}
-                  >
-                    {m.name?.charAt(0).toUpperCase() || "?"}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={<Typography className="!font-semibold">{m.name}</Typography>}
-                  secondary={`${m.email || m.mobile || ""}${m.city ? " · " + m.city : ""}`}
-                />
-              </ListItem>
-            ))}
-          </List>
+                    Section access
+                  </Typography>
+                  <Box className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                    {ADMIN_SECTIONS.map((s) => (
+                      <FormControlLabel
+                        key={s.key}
+                        className="!m-0"
+                        control={
+                          <Checkbox
+                            size="small"
+                            checked={perms.has(s.key)}
+                            onChange={() => togglePerm(m.id, s.key)}
+                          />
+                        }
+                        label={
+                          <Box>
+                            <Typography variant="body2" className="!font-medium">
+                              {s.label}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {s.description}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    ))}
+                  </Box>
+                  <Box className="mt-3 flex justify-end">
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={() => savePermsFor(m)}
+                      disabled={!dirty || savingPermsFor === m.id}
+                    >
+                      {savingPermsFor === m.id ? t("common.saving") : "Save permissions"}
+                    </Button>
+                  </Box>
+                </Paper>
+              );
+            })}
+          </Stack>
         )}
       </Paper>
 
@@ -1284,7 +1420,7 @@ function ModeratorsTab() {
                     size="small"
                     variant="contained"
                     startIcon={<PersonAddIcon />}
-                    onClick={() => setPromoteTarget(u)}
+                    onClick={() => openPromote(u)}
                     disabled={atLimit}
                   >
                     {t("mod.addBtn")}
@@ -1304,10 +1440,64 @@ function ModeratorsTab() {
         )}
       </Paper>
 
-      <Dialog open={!!promoteTarget} onClose={() => !busy && setPromoteTarget(null)} maxWidth="xs" fullWidth>
+      <Dialog open={!!promoteTarget} onClose={() => !busy && setPromoteTarget(null)} maxWidth="sm" fullWidth>
         <DialogTitle className="!font-bold !text-brand-maroon">{t("mod.addBtn")}</DialogTitle>
         <DialogContent>
-          <Typography>{t("mod.promoteConfirm", { name: promoteTarget?.name || "" })}</Typography>
+          <Typography className="!mb-4">
+            {t("mod.promoteConfirm", { name: promoteTarget?.name || "" })}
+          </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            className="!block !mb-2 !font-semibold !uppercase !tracking-wider"
+          >
+            Grant access to sections
+          </Typography>
+          <Box className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+            {ADMIN_SECTIONS.map((s) => (
+              <FormControlLabel
+                key={s.key}
+                className="!m-0"
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={promotePerms.has(s.key)}
+                    onChange={() => {
+                      setPromotePerms((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(s.key)) next.delete(s.key);
+                        else next.add(s.key);
+                        return next;
+                      });
+                    }}
+                  />
+                }
+                label={
+                  <Box>
+                    <Typography variant="body2" className="!font-medium">
+                      {s.label}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {s.description}
+                    </Typography>
+                  </Box>
+                }
+              />
+            ))}
+          </Box>
+          <Box className="mt-2 flex gap-2">
+            <Button
+              size="small"
+              onClick={() =>
+                setPromotePerms(new Set(ADMIN_SECTIONS.map((s) => s.key)))
+              }
+            >
+              Select all
+            </Button>
+            <Button size="small" onClick={() => setPromotePerms(new Set())}>
+              Clear
+            </Button>
+          </Box>
         </DialogContent>
         <DialogActions className="!px-6 !pb-4">
           <Button onClick={() => setPromoteTarget(null)} disabled={busy}>

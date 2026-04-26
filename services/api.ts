@@ -20,14 +20,19 @@ export function fileUrl(path: string): string {
   return `${API_BASE}/${path.replace(/\\/g, "/")}`;
 }
 
-/** Wrap fetch so the httpOnly auth cookie is always sent.
- *  We still send the Authorization header (legacy Bearer auth) until all clients migrate. */
+/** Wrap fetch so the httpOnly auth cookie is always sent. The cookie is the
+ *  source of truth for authentication — we deliberately do NOT keep the JWT
+ *  in localStorage, so XSS can't exfiltrate it for off-site replay. */
 function cfetch(url: string, init: RequestInit = {}): Promise<Response> {
   return fetch(url, { credentials: "include", ...init });
 }
 
-function authHeaders(token: string): Record<string, string> {
-  return token ? { Authorization: `Bearer ${token}` } : {};
+/** Kept for source-compat with existing callers that pass `authHeaders(token)`.
+ *  Returns an empty object — auth flows entirely via the httpOnly cookie now.
+ *  Backend still accepts Bearer for non-browser clients (mobile etc.) but we
+ *  never expose the JWT to JavaScript. */
+function authHeaders(_token: string): Record<string, string> {
+  return {};
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -683,13 +688,62 @@ export async function adminGetAnalytics(token: string) {
   return res.json();
 }
 
+// ── User Lookup (cross-section name resolution) ─────────────────────────────
+// Lighter than adminGetUsers — returns only id/name/email/mobile/city/state.
+// Available to any admin/moderator regardless of "users" section permission.
+
+export interface UserLookup {
+  id: number;
+  name: string;
+  email?: string | null;
+  mobile: string;
+  city?: string | null;
+  state?: string | null;
+}
+
+export async function adminLookupUsers(
+  token: string,
+  opts: { ids?: number[]; search?: string; limit?: number } = {},
+): Promise<UserLookup[]> {
+  const params = new URLSearchParams();
+  if (opts.ids && opts.ids.length > 0) params.set("ids", opts.ids.join(","));
+  if (opts.search) params.set("search", opts.search);
+  if (opts.limit) params.set("limit", String(opts.limit));
+  const qs = params.toString();
+  const url = `${BASE}/admin/users/lookup${qs ? `?${qs}` : ""}`;
+  const res = await cfetch(url, { headers: authHeaders(token) });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
 // ── Role Management ──────────────────────────────────────────────────────────
 
-export async function adminChangeUserRole(userId: number, role: string, token: string) {
+export async function adminChangeUserRole(
+  userId: number,
+  role: string,
+  token: string,
+  permissions?: string[],
+) {
+  const body: Record<string, unknown> = { role };
+  if (permissions !== undefined) body.permissions = permissions;
   const res = await cfetch(`${BASE}/admin/users/${userId}/role`, {
     method: "PUT",
     headers: { ...authHeaders(token), "Content-Type": "application/json" },
-    body: JSON.stringify({ role }),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
+export async function adminUpdateUserPermissions(
+  userId: number,
+  permissions: string[],
+  token: string,
+): Promise<{ message: string; permissions: string[] }> {
+  const res = await cfetch(`${BASE}/admin/users/${userId}/permissions`, {
+    method: "PUT",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ permissions }),
   });
   if (!res.ok) throw await res.json();
   return res.json();
@@ -1171,33 +1225,46 @@ export async function markAllBroadcastsRead(token: string) {
   return res.json();
 }
 
-// ── Token helpers ─────────────────────────────────────────────────────────────
+// ── Session helpers ───────────────────────────────────────────────────────────
+// Authentication itself lives in the httpOnly auth cookie set by the backend.
+// localStorage only mirrors role/name/permissions for UI gating (navbar, page
+// guards). The JWT is intentionally never persisted to JavaScript-readable
+// storage so XSS cannot exfiltrate it for off-site replay.
+//
 // All of these are SSR-safe — `window`/`localStorage` don't exist when Next.js
 // prerenders pages on the build server, so every read is guarded. Writes
 // no-op on the server (callers only invoke them from event handlers anyway).
 
 const isBrowser = (): boolean => typeof window !== "undefined";
 
-export function saveToken(token: string, role: string, name: string) {
+/** Persist UI-only session data after a successful login. The `_token` arg is
+ *  kept in the signature for source-compat with existing callers but is NOT
+ *  written anywhere — authentication is the cookie set by the backend. */
+export function saveToken(_token: string, role: string, name: string, permissions: readonly string[] = []) {
   if (!isBrowser()) return;
-  localStorage.setItem("token", token);
   localStorage.setItem("role", role);
   localStorage.setItem("name", name);
-  document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 3600}`;
+  localStorage.setItem("permissions", JSON.stringify(Array.isArray(permissions) ? permissions : []));
 }
 
 export function clearToken() {
   if (!isBrowser()) return;
+  // Wipe any legacy 'token' key that older sessions may have written, plus
+  // the current UI session keys.
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("name");
+  localStorage.removeItem("permissions");
   // Tell the backend to clear the httpOnly session cookie (fire-and-forget).
   cfetch(`${BASE}/auth/logout`, { method: "POST" }).catch(() => {});
 }
 
+/** Returns a truthy "logged-in" sentinel for legacy `if (!token)` call sites.
+ *  The string itself (the user's role) is not the auth credential — the
+ *  cookie is. Treat the return value strictly as truthy/falsy. */
 export function getToken(): string {
   if (!isBrowser()) return "";
-  return localStorage.getItem("token") || "";
+  return localStorage.getItem("role") || "";
 }
 
 export function getRole(): string {

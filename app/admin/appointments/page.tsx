@@ -48,7 +48,7 @@ import {
   adminCreateZoomMeeting,
   adminMarkCompleted,
   adminGetGallery,
-  adminGetUsers,
+  adminLookupUsers,
   adminGetUserDocuments,
   adminGenerateReceipt,
   adminGenerateInvoice,
@@ -59,6 +59,7 @@ import {
 import { statusChipColors } from "@/theme/sharedStyles";
 import { TIME_SLOTS, formatTime12h } from "@/lib/timeSlots";
 import { useT } from "@/i18n/I18nProvider";
+import { useRequireSection } from "@/lib/useRequireSection";
 
 const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-12 px-2 sm:px-4";
 const CONTAINER_CLASS = "max-w-[1200px] mx-auto w-full";
@@ -87,6 +88,7 @@ const EMPTY_FORM: SlotForm = {
 export default function AdminAppointments() {
   const router = useRouter();
   const { t } = useT();
+  const gate = useRequireSection("appointments");
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(0);
@@ -134,7 +136,7 @@ export default function AdminAppointments() {
   useEffect(() => {
     const token = getToken();
     if (!token) return;
-    Promise.all([reload(), adminGetUsers(token)])
+    Promise.all([reload(), adminLookupUsers(token, { limit: 200 })])
       .then(([, users]) => {
         const map: Record<number, any> = {};
         users.forEach((u: any) => {
@@ -307,7 +309,7 @@ export default function AdminAppointments() {
     setPage(0);
   }, [tab, search, sort, filterDate]);
 
-  if (loading) {
+  if (gate !== "allowed" || loading) {
     return (
       <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />

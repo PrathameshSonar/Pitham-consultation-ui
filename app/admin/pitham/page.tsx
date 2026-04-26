@@ -61,6 +61,7 @@ import {
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
+import { useRequireSection } from "@/lib/useRequireSection";
 
 const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4";
 const CONTAINER_CLASS = "max-w-[1200px] mx-auto";
@@ -86,6 +87,7 @@ export default function AdminPithamCms() {
   const router = useRouter();
   const params = useSearchParams();
   const { t } = useT();
+  const gate = useRequireSection("pitham_cms");
 
   const initialTab = (params.get("tab") as TabKey) || "banners";
   const [tab, setTab] = useState<TabKey>(TAB_ORDER.includes(initialTab) ? initialTab : "banners");
@@ -111,15 +113,16 @@ export default function AdminPithamCms() {
     router.replace(`/admin/pitham?${sp.toString()}`);
   }
 
-  if (forbidden) {
+  if (gate !== "allowed") {
     return (
       <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
-        <Alert severity="warning" className="!max-w-[480px]">
-          Only super admins can manage the Pitham page. Moderators do not have access to this section.
-        </Alert>
+        <CircularProgress />
       </Box>
     );
   }
+  // forbidden flag is now redundant — useRequireSection handles redirect when
+  // the user lacks access. Kept the variable to preserve any future UX hooks.
+  void forbidden;
 
   return (
     <Box className={WRAPPER_CLASS}>

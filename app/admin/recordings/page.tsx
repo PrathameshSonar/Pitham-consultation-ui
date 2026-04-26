@@ -35,11 +35,12 @@ import {
   adminGetRecordings,
   adminBulkAssignRecording,
   adminDeleteRecording,
-  adminGetUsers,
+  adminLookupUsers,
   adminGetUserLists,
   getToken,
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
+import { useRequireSection } from "@/lib/useRequireSection";
 
 const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-8 md:py-12 px-4";
 const CONTAINER_CLASS = "max-w-[900px] mx-auto";
@@ -57,6 +58,7 @@ interface RecordingGroup {
 export default function AdminRecordings() {
   const router = useRouter();
   const { t } = useT();
+  const gate = useRequireSection("recordings");
   const [recordings, setRecordings] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [lists, setLists] = useState<any[]>([]);
@@ -88,7 +90,7 @@ export default function AdminRecordings() {
       router.push("/login");
       return;
     }
-    Promise.all([adminGetRecordings(token), adminGetUsers(token), adminGetUserLists(token)])
+    Promise.all([adminGetRecordings(token), adminLookupUsers(token, { limit: 200 }), adminGetUserLists(token)])
       .then(([r, u, l]) => {
         setRecordings(r);
         setUsers(u);
@@ -216,7 +218,7 @@ export default function AdminRecordings() {
     }
   }
 
-  if (loading) {
+  if (gate !== "allowed" || loading) {
     return (
       <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />

@@ -48,6 +48,7 @@ import {
 import { formatTime12h } from "@/lib/timeSlots";
 import { statusChipColors } from "@/theme/sharedStyles";
 import { useT } from "@/i18n/I18nProvider";
+import { useRequireSection } from "@/lib/useRequireSection";
 
 const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-12 px-2 sm:px-4";
 const CONTAINER_CLASS = "max-w-[1200px] mx-auto w-full";
@@ -63,6 +64,7 @@ type SortKey = "newest" | "oldest" | "name" | "joinedOn";
 export default function AdminUsers() {
   const router = useRouter();
   const { t } = useT();
+  const gate = useRequireSection("users");
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
@@ -130,6 +132,14 @@ export default function AdminUsers() {
     return sort === "oldest" ? ad - bd : bd - ad;
   });
   const paged = sortedUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  if (gate !== "allowed") {
+    return (
+      <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
+        <CircularProgress color="primary" />
+      </Box>
+    );
+  }
 
   return (
     <Box className={WRAPPER_CLASS}>

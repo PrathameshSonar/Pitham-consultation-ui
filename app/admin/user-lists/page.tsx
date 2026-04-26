@@ -29,7 +29,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import PeopleIcon from "@mui/icons-material/People";
 import SearchIcon from "@mui/icons-material/Search";
 import {
-  adminGetUsers,
+  adminLookupUsers,
   adminGetUserLists,
   adminCreateUserList,
   adminUpdateUserList,
@@ -38,6 +38,7 @@ import {
   getToken,
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
+import { useRequireSection } from "@/lib/useRequireSection";
 
 const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-[#FAF6EE] py-8 md:py-12 px-4";
 const CONTAINER_CLASS = "max-w-[1100px] mx-auto";
@@ -58,6 +59,7 @@ type Mode = "create" | "edit-name" | "edit-members" | null;
 export default function AdminUserLists() {
   const router = useRouter();
   const { t } = useT();
+  const gate = useRequireSection("user_lists");
   const [users, setUsers] = useState<any[]>([]);
   const [lists, setLists] = useState<UserListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +87,7 @@ export default function AdminUserLists() {
     }
     setLoading(true);
     try {
-      const [u, l] = await Promise.all([adminGetUsers(token), adminGetUserLists(token)]);
+      const [u, l] = await Promise.all([adminLookupUsers(token, { limit: 500 }), adminGetUserLists(token)]);
       setUsers(u);
       setLists(l);
     } catch {
@@ -229,7 +231,7 @@ export default function AdminUserLists() {
     }
   }
 
-  if (loading) {
+  if (gate !== "allowed" || loading) {
     return (
       <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />

@@ -47,12 +47,17 @@ import { clearToken } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import { useThemeMode } from "@/theme/ThemeContext";
 import { LANGUAGES, Lang, MessageKey } from "@/i18n/messages";
+import { getAccessibleSections, isSuperAdminClient } from "@/lib/permissions";
+import type { AdminSectionKey } from "@/lib/adminSections";
 import * as styles from "./navbarStyles";
 
 interface NavLink {
   href: string;
   labelKey: MessageKey;
   icon: ReactNode;
+  /** If set, this link is hidden unless the current user has the section
+   * permission OR is super admin. Settings is super-admin only. */
+  section?: AdminSectionKey | "super_admin";
 }
 
 export default function Navbar() {
@@ -62,12 +67,16 @@ export default function Navbar() {
   const { mode, toggleMode } = useThemeMode();
   const [role, setRole] = useState("");
   const [name, setName] = useState("");
+  const [allowedSections, setAllowedSections] = useState<readonly AdminSectionKey[]>([]);
+  const [isSuper, setIsSuper] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [langMenuAnchor, setLangMenuAnchor] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     setRole(localStorage.getItem("role") || "");
     setName(localStorage.getItem("name") || "");
+    setAllowedSections(getAccessibleSections());
+    setIsSuper(isSuperAdminClient());
   }, [pathname]);
 
   function logout() {
@@ -114,19 +123,28 @@ export default function Navbar() {
     },
   ];
 
-  const adminLinks: NavLink[] = [
+  // The full admin nav as authored. Each entry tagged with the section that
+  // governs it (or "super_admin" for the settings page). The filter below
+  // hides items the current user can't reach.
+  const allAdminLinks: NavLink[] = [
     { href: "/admin", labelKey: "nav.dashboard", icon: <DashboardIcon fontSize="small" /> },
-    { href: "/admin/appointments", labelKey: "nav.appointments", icon: <EventNoteIcon fontSize="small" /> },
-    { href: "/admin/users", labelKey: "nav.users", icon: <PeopleIcon fontSize="small" /> },
-    { href: "/admin/user-lists", labelKey: "nav.lists", icon: <ListAltIcon fontSize="small" /> },
-    { href: "/admin/calendar", labelKey: "nav.calendar", icon: <CalendarTodayIcon fontSize="small" /> },
-    { href: "/admin/documents", labelKey: "nav.sadhna", icon: <AutoStoriesIcon fontSize="small" /> },
-    { href: "/admin/recordings", labelKey: "nav.recordings", icon: <VideocamIcon fontSize="small" /> },
-    { href: "/admin/queries", labelKey: "nav.queries", icon: <ChatBubbleIcon fontSize="small" /> },
-    { href: "/admin/broadcasts", labelKey: "adm.tile.broadcast", icon: <CampaignIcon fontSize="small" /> },
-    { href: "/admin/pitham", labelKey: "adm.tile.pcms", icon: <EventAvailableIcon fontSize="small" /> },
-    { href: "/admin/settings", labelKey: "nav.settings", icon: <SettingsIcon fontSize="small" /> },
+    { href: "/admin/appointments", labelKey: "nav.appointments", icon: <EventNoteIcon fontSize="small" />, section: "appointments" },
+    { href: "/admin/users", labelKey: "nav.users", icon: <PeopleIcon fontSize="small" />, section: "users" },
+    { href: "/admin/user-lists", labelKey: "nav.lists", icon: <ListAltIcon fontSize="small" />, section: "user_lists" },
+    { href: "/admin/calendar", labelKey: "nav.calendar", icon: <CalendarTodayIcon fontSize="small" />, section: "appointments" },
+    { href: "/admin/documents", labelKey: "nav.sadhna", icon: <AutoStoriesIcon fontSize="small" />, section: "documents" },
+    { href: "/admin/recordings", labelKey: "nav.recordings", icon: <VideocamIcon fontSize="small" />, section: "recordings" },
+    { href: "/admin/queries", labelKey: "nav.queries", icon: <ChatBubbleIcon fontSize="small" />, section: "queries" },
+    { href: "/admin/broadcasts", labelKey: "adm.tile.broadcast", icon: <CampaignIcon fontSize="small" />, section: "broadcasts" },
+    { href: "/admin/pitham", labelKey: "adm.tile.pcms", icon: <EventAvailableIcon fontSize="small" />, section: "pitham_cms" },
+    { href: "/admin/settings", labelKey: "nav.settings", icon: <SettingsIcon fontSize="small" />, section: "super_admin" },
   ];
+
+  const adminLinks: NavLink[] = allAdminLinks.filter((l) => {
+    if (!l.section) return true;                            // /admin home always visible
+    if (l.section === "super_admin") return isSuper;        // /admin/settings → super only
+    return isSuper || allowedSections.includes(l.section);  // gated by permissions
+  });
 
   const currentLang = LANGUAGES.find((l) => l.code === lang) || LANGUAGES[0];
 
@@ -302,7 +320,9 @@ export default function Navbar() {
   if (!role) return null;
 
   const links = isAdmin ? adminLinks : userLinks;
-  const profileHref = isAdmin ? "/admin/settings" : "/dashboard/profile";
+  // Super admins land in settings (where they manage roles/permissions).
+  // Moderators don't have settings access, so they go to their own profile.
+  const profileHref = isSuper ? "/admin/settings" : "/dashboard/profile";
 
   return (
     <>
@@ -334,55 +354,75 @@ export default function Navbar() {
             </Typography>
           </Box>
 
-          <Box sx={styles.navLinksWrap}>
-            {links.map((l) => (
-              <Button
-                key={l.href}
-                component={Link}
-                href={l.href}
-                startIcon={l.icon}
-                sx={styles.navLink(pathname === l.href)}
-              >
-                {t(l.labelKey)}
-              </Button>
-            ))}
-          </Box>
+          {/* Admin nav (~11 entries) overflows even at lg, so admins always
+              use the hamburger drawer. Regular users only have 6 entries and
+              keep the inline experience from the lg breakpoint up. */}
+          {!isAdmin && (
+            <Box sx={styles.navLinksWrap}>
+              {links.map((l) => (
+                <Button
+                  key={l.href}
+                  component={Link}
+                  href={l.href}
+                  startIcon={l.icon}
+                  sx={styles.navLink(pathname === l.href)}
+                >
+                  {t(l.labelKey)}
+                </Button>
+              ))}
+            </Box>
+          )}
 
-          <Box sx={{ display: { xs: "none", lg: "flex" }, alignItems: "center", gap: 1.5 }}>
-            <IconButton onClick={toggleMode} sx={{ color: "#fff" }} aria-label="Toggle dark mode">
-              {mode === "dark" ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
-            </IconButton>
-            <NotificationBell ariaLabel={t("nav.notifications")} />
-            {langSwitcher}
-            <Button
-              component={Link}
-              href={profileHref}
-              startIcon={<AccountCircleIcon />}
-              sx={{
-                color: "#fff",
-                bgcolor: pathname === profileHref ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                textTransform: "none",
-                fontWeight: 600,
-              }}
-            >
-              {name || t("nav.profile")}
-            </Button>
-            <IconButton
-              onClick={logout}
-              sx={{
-                color: "#fff",
-                bgcolor: "rgba(255,255,255,0.08)",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.18)" },
-              }}
-              aria-label={t("common.logout")}
-            >
-              <LogoutIcon fontSize="small" />
-            </IconButton>
-          </Box>
+          {!isAdmin && (
+            <Box sx={{ display: { xs: "none", lg: "flex" }, alignItems: "center", gap: 1.5 }}>
+              <IconButton onClick={toggleMode} sx={{ color: "#fff" }} aria-label="Toggle dark mode">
+                {mode === "dark" ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+              </IconButton>
+              <NotificationBell ariaLabel={t("nav.notifications")} />
+              {langSwitcher}
+              <Button
+                component={Link}
+                href={profileHref}
+                startIcon={<AccountCircleIcon />}
+                sx={{
+                  color: "#fff",
+                  bgcolor: pathname === profileHref ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                  textTransform: "none",
+                  fontWeight: 600,
+                }}
+              >
+                {name || t("nav.profile")}
+              </Button>
+              <IconButton
+                onClick={logout}
+                sx={{
+                  color: "#fff",
+                  bgcolor: "rgba(255,255,255,0.08)",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.18)" },
+                }}
+                aria-label={t("common.logout")}
+              >
+                <LogoutIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
+
+          {/* Admins: keep the notification bell visible on the bar even when
+              the rest collapses to the drawer — unread broadcasts are the
+              one signal worth surfacing without opening the menu. */}
+          {isAdmin && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: "auto" }}>
+              <NotificationBell ariaLabel={t("nav.notifications")} />
+            </Box>
+          )}
 
           <IconButton
-            sx={{ display: { xs: "flex", lg: "none" }, color: "#fff", ml: "auto" }}
+            sx={{
+              display: isAdmin ? "flex" : { xs: "flex", lg: "none" },
+              color: "#fff",
+              ml: isAdmin ? 0 : "auto",
+            }}
             onClick={() => setDrawerOpen(true)}
             aria-label="Open menu"
           >

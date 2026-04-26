@@ -70,7 +70,7 @@ export default function Register() {
     setLoading(true);
     try {
       const res = await googleLogin(response.credential);
-      saveToken(res.token, res.role, res.name);
+      saveToken(res.token, res.role, res.name, res.permissions || []);
       router.push("/dashboard");
     } catch (err: any) {
       setError(err?.detail || "Google sign-up failed");
@@ -110,7 +110,7 @@ export default function Register() {
         tob: tob.format("HH:mm:ss"),
       };
       const res = await registerUser(payload);
-      saveToken(res.token, res.role, res.name);
+      saveToken(res.token, res.role, res.name, res.permissions || []);
       router.push("/dashboard");
     } catch (err: any) {
       setError(err?.detail || t("auth.failed"));

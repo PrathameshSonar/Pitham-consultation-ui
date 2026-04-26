@@ -43,7 +43,7 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await googleLogin(response.credential);
-      saveToken(res.token, res.role, res.name);
+      saveToken(res.token, res.role, res.name, res.permissions || []);
       router.push(["admin", "moderator"].includes(res.role) ? "/admin/appointments" : "/dashboard");
     } catch (err: any) {
       setError(err?.detail || "Google sign-in failed");
@@ -67,7 +67,7 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await loginUser({ email: identifier, password });
-      saveToken(res.token, res.role, res.name);
+      saveToken(res.token, res.role, res.name, res.permissions || []);
       router.push(["admin", "moderator"].includes(res.role) ? "/admin/appointments" : "/dashboard");
     } catch (err: any) {
       setError(err?.detail || t("auth.login.error"));

@@ -51,12 +51,13 @@ import {
   adminDeleteAssignedDocument,
   adminBulkAssignFromGallery,
   adminBulkUploadDocument,
-  adminGetUsers,
+  adminLookupUsers,
   adminGetUserLists,
   getToken,
   fileUrl,
 } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
+import { useRequireSection } from "@/lib/useRequireSection";
 
 const WRAPPER_CLASS = "min-h-[calc(100vh-64px)] bg-[#FAF6EE] py-8 md:py-12 px-4";
 const CONTAINER_CLASS = "max-w-[1100px] mx-auto";
@@ -81,6 +82,7 @@ interface AssignedGroup {
 export default function AdminDocuments() {
   const router = useRouter();
   const { t } = useT();
+  const gate = useRequireSection("documents");
 
   const [tab, setTab] = useState(0);
   const [gallery, setGallery] = useState<any[]>([]);
@@ -132,7 +134,7 @@ export default function AdminDocuments() {
       const [g, d, u, l] = await Promise.all([
         adminGetGallery(token),
         adminGetDocuments(token),
-        adminGetUsers(token),
+        adminLookupUsers(token, { limit: 500 }),
         adminGetUserLists(token),
       ]);
       setGallery(g);
@@ -443,7 +445,7 @@ export default function AdminDocuments() {
 
   const paged = groupedAssigned.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  if (loading) {
+  if (gate !== "allowed" || loading) {
     return (
       <Box className={`${WRAPPER_CLASS} flex items-center justify-center`}>
         <CircularProgress color="primary" />

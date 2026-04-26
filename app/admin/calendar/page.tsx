@@ -10,6 +10,8 @@ import { adminGetAppointments, getToken } from "@/services/api";
 import { formatTime12h } from "@/lib/timeSlots";
 import { useT } from "@/i18n/I18nProvider";
 import { brandColors } from "@/theme/colors";
+import { useRequireSection } from "@/lib/useRequireSection";
+import { CircularProgress } from "@mui/material";
 
 const MONTH_NAMES = [
   "January",
@@ -50,6 +52,7 @@ function dayCellStyle(isSelected: boolean, isToday: boolean, hasCount: boolean):
 export default function AdminCalendar() {
   const router = useRouter();
   const { t } = useT();
+  const gate = useRequireSection("appointments");
   const today = new Date();
   const todayStr = today.toISOString().slice(0, 10);
 
@@ -111,6 +114,14 @@ export default function AdminCalendar() {
   }, [appointments]);
 
   const displayed = selectedDay ? upcoming.filter((a) => a.scheduled_date === selectedDay) : upcoming;
+
+  if (gate !== "allowed") {
+    return (
+      <Box className="min-h-[calc(100vh-64px)] bg-brand-cream flex items-center justify-center">
+        <CircularProgress color="primary" />
+      </Box>
+    );
+  }
 
   return (
     <Box className="min-h-[calc(100vh-64px)] bg-brand-cream py-6 md:py-10 px-4">
