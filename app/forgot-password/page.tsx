@@ -6,6 +6,11 @@ import { Box, Paper, TextField, Button, Typography, Alert, Stack } from "@mui/ma
 import { forgotPassword, resetPassword } from "@/services/api";
 import { useT } from "@/i18n/I18nProvider";
 import PasswordField from "@/components/PasswordField";
+import {
+  PASSWORD_HELPER_TEXT,
+  PASSWORD_MIN_LENGTH,
+  checkPassword,
+} from "@/lib/passwordPolicy";
 
 export default function ForgotPassword() {
   const { t } = useT();
@@ -47,8 +52,9 @@ export default function ForgotPassword() {
       setError(t("auth.forgot.enterToken"));
       return;
     }
-    if (newPassword.length < 6) {
-      setError(t("auth.forgot.minPassword"));
+    const pwErr = checkPassword(newPassword);
+    if (pwErr) {
+      setError(pwErr);
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -146,9 +152,10 @@ export default function ForgotPassword() {
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  helperText={PASSWORD_HELPER_TEXT}
                   slotProps={{
                     htmlInput: {
-                      minLength: 6,
+                      minLength: PASSWORD_MIN_LENGTH,
                       autoComplete: "new-password",
                       "aria-label": t("auth.forgot.newPassword"),
                     },

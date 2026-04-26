@@ -19,6 +19,47 @@ const nextConfig: NextConfig = {
 
   // Security headers
   async headers() {
+    // Build CSP from the same env vars we use elsewhere so it stays in sync
+    // with whichever backend the frontend talks to. We can't fully lock down
+    // script-src without first wiring nonce/hash generation through the
+    // server components, so 'unsafe-inline' + 'unsafe-eval' are kept for now —
+    // CSP still buys us the explicit allowlist for outbound script/connect/
+    // frame origins, which is the bulk of the value for our threat model
+    // (XSS exfil + clickjacking + unintended third-party loads).
+    const apiOrigin = (process.env.NEXT_PUBLIC_API_URL || "")
+      .replace(/\/$/, "");
+    const csp = [
+      "default-src 'self'",
+      // Sentry, Google Sign-In, Razorpay checkout. Inline + eval are still
+      // permitted to keep Next.js / MUI working — see comment above.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://*.razorpay.com https://*.sentry.io",
+      // MUI emits inline styles; Google fonts/MUI ship CSS from gstatic too.
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      // data: for inline SVGs we generate at runtime; blob: for in-app PDF previews.
+      "img-src 'self' data: blob: https:",
+      // Razorpay popup, Google Sign-In iframe, embedded Google Maps on the contact page.
+      "frame-src 'self' https://*.razorpay.com https://accounts.google.com https://www.google.com https://*.google.com",
+      // XHR/fetch targets: same-origin (Sentry tunnel, internal APIs) + the
+      // backend host, plus Google/Razorpay for direct calls.
+      [
+        "connect-src 'self'",
+        apiOrigin,
+        "https://accounts.google.com",
+        "https://*.razorpay.com",
+        "https://*.sentry.io",
+      ]
+        .filter(Boolean)
+        .join(" "),
+      "worker-src 'self' blob:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      // Belt-and-braces alongside X-Frame-Options DENY below.
+      "frame-ancestors 'none'",
+      "upgrade-insecure-requests",
+    ].join("; ");
+
     return [
       {
         source: "/(.*)",
@@ -32,6 +73,7 @@ const nextConfig: NextConfig = {
           // the credential. Default `same-origin` blocks that — `same-origin-allow-popups`
           // keeps cross-origin isolation on but lets our own popups talk back.
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+          { key: "Content-Security-Policy", value: csp },
         ],
       },
     ];

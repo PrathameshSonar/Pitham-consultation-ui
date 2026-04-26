@@ -24,6 +24,11 @@ import { lettersOnly } from "@/lib/inputFilters";
 import { useT } from "@/i18n/I18nProvider";
 import Captcha, { type CaptchaRef } from "@/components/Captcha";
 import PasswordField from "@/components/PasswordField";
+import {
+  PASSWORD_HELPER_TEXT,
+  PASSWORD_MIN_LENGTH,
+  checkPassword,
+} from "@/lib/passwordPolicy";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
@@ -100,6 +105,11 @@ export default function Register() {
     }
     if (captchaRef.current && !captchaRef.current.getToken()) {
       setError(t("auth.captchaRequired"));
+      return;
+    }
+    const pwErr = checkPassword(form.password);
+    if (pwErr) {
+      setError(pwErr);
       return;
     }
     setError("");
@@ -243,7 +253,10 @@ export default function Register() {
               fullWidth
               value={form.password}
               onChange={(e) => set("password", e.target.value)}
-              slotProps={{ htmlInput: { autoComplete: "new-password", minLength: 6 } }}
+              helperText={PASSWORD_HELPER_TEXT}
+              slotProps={{
+                htmlInput: { autoComplete: "new-password", minLength: PASSWORD_MIN_LENGTH },
+              }}
             />
           </Box>
 
