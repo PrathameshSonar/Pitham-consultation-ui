@@ -20,19 +20,17 @@ export function fileUrl(path: string): string {
   return `${API_BASE}/${path.replace(/\\/g, "/")}`;
 }
 
-/** Wrap fetch so the httpOnly auth cookie is always sent. The cookie is the
- *  source of truth for authentication — we deliberately do NOT keep the JWT
- *  in localStorage, so XSS can't exfiltrate it for off-site replay. */
+/** Wrap fetch so the httpOnly auth cookie is always sent. The Bearer token is
+ *  also forwarded for cross-site deployments where third-party cookies are
+ *  blocked by the browser (Safari ITP, Chrome 3rd-party cookie phaseout) —
+ *  in those setups the cookie can't flow and Bearer is the only thing that
+ *  keeps auth working. For same-origin deployments the cookie alone would do. */
 function cfetch(url: string, init: RequestInit = {}): Promise<Response> {
   return fetch(url, { credentials: "include", ...init });
 }
 
-/** Kept for source-compat with existing callers that pass `authHeaders(token)`.
- *  Returns an empty object — auth flows entirely via the httpOnly cookie now.
- *  Backend still accepts Bearer for non-browser clients (mobile etc.) but we
- *  never expose the JWT to JavaScript. */
-function authHeaders(_token: string): Record<string, string> {
-  return {};
+function authHeaders(token: string): Record<string, string> {
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -1226,10 +1224,17 @@ export async function markAllBroadcastsRead(token: string) {
 }
 
 // ── Session helpers ───────────────────────────────────────────────────────────
-// Authentication itself lives in the httpOnly auth cookie set by the backend.
-// localStorage only mirrors role/name/permissions for UI gating (navbar, page
-// guards). The JWT is intentionally never persisted to JavaScript-readable
-// storage so XSS cannot exfiltrate it for off-site replay.
+// Authentication has two parallel paths:
+//   1. httpOnly auth cookie (preferred — XSS can't read it). Works in
+//      same-origin and same-site deployments.
+//   2. Bearer token in localStorage. Required when the frontend and backend
+//      live on different registrable domains (e.g. *.onrender.com subdomains)
+//      because browsers' third-party cookie blocking prevents the cookie from
+//      flowing. The token is sent via Authorization header.
+//
+// Both are accepted server-side. For the strongest XSS posture, deploy
+// frontend and backend on the same registrable domain so the cookie alone
+// suffices and the localStorage token can be removed.
 //
 // All of these are SSR-safe — `window`/`localStorage` don't exist when Next.js
 // prerenders pages on the build server, so every read is guarded. Writes
@@ -1237,11 +1242,9 @@ export async function markAllBroadcastsRead(token: string) {
 
 const isBrowser = (): boolean => typeof window !== "undefined";
 
-/** Persist UI-only session data after a successful login. The `_token` arg is
- *  kept in the signature for source-compat with existing callers but is NOT
- *  written anywhere — authentication is the cookie set by the backend. */
-export function saveToken(_token: string, role: string, name: string, permissions: readonly string[] = []) {
+export function saveToken(token: string, role: string, name: string, permissions: readonly string[] = []) {
   if (!isBrowser()) return;
+  localStorage.setItem("token", token);
   localStorage.setItem("role", role);
   localStorage.setItem("name", name);
   localStorage.setItem("permissions", JSON.stringify(Array.isArray(permissions) ? permissions : []));
@@ -1249,8 +1252,6 @@ export function saveToken(_token: string, role: string, name: string, permission
 
 export function clearToken() {
   if (!isBrowser()) return;
-  // Wipe any legacy 'token' key that older sessions may have written, plus
-  // the current UI session keys.
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("name");
@@ -1259,12 +1260,9 @@ export function clearToken() {
   cfetch(`${BASE}/auth/logout`, { method: "POST" }).catch(() => {});
 }
 
-/** Returns a truthy "logged-in" sentinel for legacy `if (!token)` call sites.
- *  The string itself (the user's role) is not the auth credential — the
- *  cookie is. Treat the return value strictly as truthy/falsy. */
 export function getToken(): string {
   if (!isBrowser()) return "";
-  return localStorage.getItem("role") || "";
+  return localStorage.getItem("token") || "";
 }
 
 export function getRole(): string {

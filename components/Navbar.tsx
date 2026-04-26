@@ -49,7 +49,24 @@ import { useThemeMode } from "@/theme/ThemeContext";
 import { LANGUAGES, Lang, MessageKey } from "@/i18n/messages";
 import { getAccessibleSections, isSuperAdminClient } from "@/lib/permissions";
 import type { AdminSectionKey } from "@/lib/adminSections";
-import * as styles from "./navbarStyles";
+import { brandColors } from "@/theme/colors";
+
+// Linear gradients with brand-color stops are easier to read inline than
+// expanded into Tailwind arbitrary properties. They're set on the AppBar
+// `style` prop so we don't pay per-render emotion overhead.
+const USER_BAR_GRADIENT = `linear-gradient(90deg, ${brandColors.saffronDark} 0%, ${brandColors.saffron} 100%)`;
+const ADMIN_BAR_GRADIENT = `linear-gradient(90deg, #2C1810 0%, ${brandColors.maroon} 100%)`;
+
+const BRAND_LOGO_CLASS =
+  "!font-['Cinzel',serif] !font-bold !tracking-[0.08em] !cursor-pointer !whitespace-nowrap !flex-shrink-0";
+
+function navLinkClass(active: boolean): string {
+  return [
+    "!text-white !px-3 !py-1.5 !rounded-lg !text-[0.82rem] !whitespace-nowrap !min-w-0 !flex-shrink-0",
+    active ? "!font-bold !bg-white/[0.18]" : "!font-medium !bg-transparent",
+    "hover:!bg-white/[0.12]",
+  ].join(" ");
+}
 
 interface NavLink {
   href: string;
@@ -141,9 +158,9 @@ export default function Navbar() {
   ];
 
   const adminLinks: NavLink[] = allAdminLinks.filter((l) => {
-    if (!l.section) return true;                            // /admin home always visible
-    if (l.section === "super_admin") return isSuper;        // /admin/settings → super only
-    return isSuper || allowedSections.includes(l.section);  // gated by permissions
+    if (!l.section) return true;
+    if (l.section === "super_admin") return isSuper;
+    return isSuper || allowedSections.includes(l.section);
   });
 
   const currentLang = LANGUAGES.find((l) => l.code === lang) || LANGUAGES[0];
@@ -153,18 +170,11 @@ export default function Navbar() {
       <IconButton
         size="small"
         onClick={(e) => setLangMenuAnchor(e.currentTarget)}
-        sx={{
-          color: "inherit",
-          border: "1px solid",
-          borderColor: "rgba(255,255,255,0.25)",
-          borderRadius: 2,
-          px: 1,
-          py: 0.5,
-        }}
+        className="!text-inherit !border !border-white/25 !rounded-lg !px-2 !py-1"
         aria-label="Change language"
       >
-        <LanguageIcon fontSize="small" sx={{ mr: 0.5 }} />
-        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+        <LanguageIcon fontSize="small" className="!mr-1" />
+        <Typography variant="caption" className="!font-semibold">
           {currentLang.native}
         </Typography>
       </IconButton>
@@ -179,7 +189,7 @@ export default function Navbar() {
         {LANGUAGES.map((l) => (
           <MenuItem key={l.code} onClick={() => changeLang(l.code)} selected={l.code === lang}>
             {l.native}{" "}
-            <Typography variant="caption" sx={{ ml: 1, color: "text.disabled" }}>
+            <Typography variant="caption" className="!ml-2 !text-brand-text-light">
               {l.label}
             </Typography>
           </MenuItem>
@@ -200,7 +210,7 @@ export default function Navbar() {
       <>
         <AppBar
           position="sticky"
-          sx={styles.publicAppBar}
+          className="!bg-white !text-brand-maroon !border-b !border-brand-sand"
           elevation={0}
           component="nav"
           aria-label="Main navigation"
@@ -210,31 +220,37 @@ export default function Navbar() {
             <Box
               component={Link}
               href="/"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                color: "inherit",
-                textDecoration: "none",
-                flexShrink: 0,
-              }}
+              className="flex items-center gap-2 text-inherit no-underline shrink-0"
             >
               <Image src="/spbsp-logo.png" alt={t("brand.name")} width={36} height={36} priority />
-              <Typography sx={{ ...styles.brandLogo, color: "inherit" }}>{t("brand.short")}</Typography>
+              <Typography
+                className={`${BRAND_LOGO_CLASS} !text-inherit !text-[1.1rem] md:!text-[1.4rem]`}
+              >
+                {t("brand.short")}
+              </Typography>
             </Box>
-            <Box sx={{ flexGrow: 1 }} />
+            <Box className="grow" />
 
             {/* Desktop: inline nav + lang + auth buttons */}
-            <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5, mr: 1 }}>
+            <Box className="hidden md:flex items-center gap-1 mr-2">
               {publicLinks.map((l) => (
-                <Button key={l.href} component={Link} href={l.href} sx={styles.publicNavLink}>
+                <Button
+                  key={l.href}
+                  component={Link}
+                  href={l.href}
+                  className="!text-brand-maroon !font-medium !px-4"
+                >
                   {l.label}
                 </Button>
               ))}
             </Box>
-            <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
+            <Box className="hidden md:flex items-center gap-2">
               {langSwitcher}
-              <Button component={Link} href="/login" sx={styles.publicNavLink}>
+              <Button
+                component={Link}
+                href="/login"
+                className="!text-brand-maroon !font-medium !px-4"
+              >
                 {t("common.login")}
               </Button>
               <Button component={Link} href="/register" variant="contained" color="primary">
@@ -245,7 +261,7 @@ export default function Navbar() {
             {/* Mobile: hamburger */}
             <IconButton
               onClick={() => setDrawerOpen(true)}
-              sx={{ display: { xs: "flex", md: "none" }, color: "inherit" }}
+              className="!flex md:!hidden !text-inherit"
               aria-label="Open menu"
             >
               <MenuIcon />
@@ -255,7 +271,7 @@ export default function Navbar() {
 
         {/* Mobile drawer for public users */}
         <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-          <Box sx={styles.mobileDrawer} role="presentation">
+          <Box className="w-[260px] sm:w-[300px] pt-4" role="presentation">
             <List>
               {publicLinks.map((l) => (
                 <ListItem key={l.href} disablePadding>
@@ -265,13 +281,13 @@ export default function Navbar() {
                     selected={pathname === l.href}
                     onClick={() => setDrawerOpen(false)}
                   >
-                    <ListItemText primary={l.label} slotProps={{ primary: { sx: { fontWeight: 600 } } }} />
+                    <ListItemText primary={l.label} slotProps={{ primary: { className: "!font-semibold" } }} />
                   </ListItemButton>
                 </ListItem>
               ))}
             </List>
             <Divider />
-            <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1.25 }}>
+            <Box className="p-4 flex flex-col gap-2.5">
               <Button
                 component={Link}
                 href="/login"
@@ -294,11 +310,11 @@ export default function Navbar() {
               </Button>
             </Box>
             <Divider />
-            <Box sx={{ p: 2 }}>
-              <Typography variant="caption" color="text.disabled" sx={{ display: "block", mb: 1 }}>
+            <Box className="p-4">
+              <Typography variant="caption" color="text.disabled" className="!block !mb-2">
                 Language
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              <Box className="flex gap-2 flex-wrap">
                 {LANGUAGES.map((l) => (
                   <Button
                     key={l.code}
@@ -328,7 +344,8 @@ export default function Navbar() {
     <>
       <AppBar
         position="sticky"
-        sx={isAdmin ? styles.adminAppBar : styles.userAppBar}
+        className="!text-white"
+        style={{ background: isAdmin ? ADMIN_BAR_GRADIENT : USER_BAR_GRADIENT }}
         elevation={0}
         component="nav"
         aria-label="Main navigation"
@@ -337,20 +354,32 @@ export default function Navbar() {
           <Box
             component={Link}
             href={isAdmin ? "/admin" : "/dashboard"}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              color: "inherit",
-              textDecoration: "none",
-              flexShrink: 0,
-            }}
+            className="flex items-center gap-2 text-inherit no-underline min-w-0 shrink overflow-hidden"
           >
-            <Image src="/spbsp-logo.png" alt={t("brand.name")} width={36} height={36} priority />
-            <Typography sx={{ ...styles.brandLogo, color: "inherit" }}>
-              {t("brand.short")}{" "}
-              {role === "admin" && <span style={{ fontSize: "0.7em", opacity: 0.8 }}>· ADMIN</span>}
-              {role === "moderator" && <span style={{ fontSize: "0.7em", opacity: 0.8 }}>· MODERATOR</span>}
+            <Image
+              src="/spbsp-logo.png"
+              alt={t("brand.name")}
+              width={36}
+              height={36}
+              priority
+              style={{ flexShrink: 0 }}
+            />
+            <Typography
+              className={`${BRAND_LOGO_CLASS} !text-inherit !min-w-0 !overflow-hidden !text-ellipsis !text-[0.95rem] sm:!text-[1.1rem] md:!text-[1.4rem]`}
+            >
+              {t("brand.short")}
+              {/* ADMIN / MODERATOR suffix hides on xs so the toolbar fits the
+                  brand + bell + hamburger on a 360-wide phone. */}
+              {role === "admin" && (
+                <Box component="span" className="hidden sm:inline text-[0.7em] opacity-80">
+                  {" "}· ADMIN
+                </Box>
+              )}
+              {role === "moderator" && (
+                <Box component="span" className="hidden sm:inline text-[0.7em] opacity-80">
+                  {" "}· MODERATOR
+                </Box>
+              )}
             </Typography>
           </Box>
 
@@ -358,14 +387,14 @@ export default function Navbar() {
               use the hamburger drawer. Regular users only have 6 entries and
               keep the inline experience from the lg breakpoint up. */}
           {!isAdmin && (
-            <Box sx={styles.navLinksWrap}>
+            <Box className="hidden lg:flex gap-1 ml-4 grow flex-nowrap overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {links.map((l) => (
                 <Button
                   key={l.href}
                   component={Link}
                   href={l.href}
                   startIcon={l.icon}
-                  sx={styles.navLink(pathname === l.href)}
+                  className={navLinkClass(pathname === l.href)}
                 >
                   {t(l.labelKey)}
                 </Button>
@@ -374,8 +403,8 @@ export default function Navbar() {
           )}
 
           {!isAdmin && (
-            <Box sx={{ display: { xs: "none", lg: "flex" }, alignItems: "center", gap: 1.5 }}>
-              <IconButton onClick={toggleMode} sx={{ color: "#fff" }} aria-label="Toggle dark mode">
+            <Box className="hidden lg:flex items-center gap-3">
+              <IconButton onClick={toggleMode} className="!text-white" aria-label="Toggle dark mode">
                 {mode === "dark" ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
               </IconButton>
               <NotificationBell ariaLabel={t("nav.notifications")} />
@@ -384,23 +413,15 @@ export default function Navbar() {
                 component={Link}
                 href={profileHref}
                 startIcon={<AccountCircleIcon />}
-                sx={{
-                  color: "#fff",
-                  bgcolor: pathname === profileHref ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                  textTransform: "none",
-                  fontWeight: 600,
-                }}
+                className={`!text-white !normal-case !font-semibold hover:!bg-white/20 ${
+                  pathname === profileHref ? "!bg-white/20" : "!bg-white/[0.08]"
+                }`}
               >
                 {name || t("nav.profile")}
               </Button>
               <IconButton
                 onClick={logout}
-                sx={{
-                  color: "#fff",
-                  bgcolor: "rgba(255,255,255,0.08)",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.18)" },
-                }}
+                className="!text-white !bg-white/[0.08] hover:!bg-white/[0.18]"
                 aria-label={t("common.logout")}
               >
                 <LogoutIcon fontSize="small" />
@@ -410,19 +431,19 @@ export default function Navbar() {
 
           {/* Admins: keep the notification bell visible on the bar even when
               the rest collapses to the drawer — unread broadcasts are the
-              one signal worth surfacing without opening the menu. */}
+              one signal worth surfacing without opening the menu. shrink-0
+              guarantees the hamburger is always reachable even when the brand
+              text is wide. */}
           {isAdmin && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: "auto" }}>
+            <Box className="flex items-center gap-1 ml-auto shrink-0">
               <NotificationBell ariaLabel={t("nav.notifications")} />
             </Box>
           )}
 
           <IconButton
-            sx={{
-              display: isAdmin ? "flex" : { xs: "flex", lg: "none" },
-              color: "#fff",
-              ml: isAdmin ? 0 : "auto",
-            }}
+            className={`!text-white !shrink-0 ${
+              isAdmin ? "!flex" : "!flex lg:!hidden !ml-auto"
+            }`}
             onClick={() => setDrawerOpen(true)}
             aria-label="Open menu"
           >
@@ -433,41 +454,41 @@ export default function Navbar() {
 
       {/* Mobile drawer */}
       <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <Box sx={styles.mobileDrawer} role="presentation">
+        <Box className="w-[260px] sm:w-[300px] pt-4" role="presentation">
           <Button
             component={Link}
             href={profileHref}
             startIcon={<AccountCircleIcon />}
             onClick={() => setDrawerOpen(false)}
-            sx={{ px: 2, py: 1.5, justifyContent: "flex-start", fontWeight: 700, color: "primary.main" }}
+            className="!px-4 !py-3 !justify-start !font-bold !text-brand-saffron"
           >
             {name || t("nav.profile")}
           </Button>
-          <Divider sx={{ my: 1 }} />
+          <Divider className="!my-2" />
           <List>
             {links.map((l) => (
               <ListItem key={l.href} disablePadding>
                 <ListItemButton component={Link} href={l.href} onClick={() => setDrawerOpen(false)}>
-                  <ListItemIcon sx={{ minWidth: 36 }}>{l.icon}</ListItemIcon>
+                  <ListItemIcon className="!min-w-9">{l.icon}</ListItemIcon>
                   <ListItemText primary={t(l.labelKey)} />
                 </ListItemButton>
               </ListItem>
             ))}
           </List>
           <Divider />
-          <Box sx={{ p: 2 }}>
+          <Box className="p-4">
             <Button
               size="small"
               onClick={toggleMode}
               startIcon={mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-              sx={{ mb: 1 }}
+              className="!mb-2"
             >
               {mode === "dark" ? "Light Mode" : "Dark Mode"}
             </Button>
             <Typography variant="caption" color="text.disabled">
               Language
             </Typography>
-            <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
+            <Box className="flex gap-2 mt-2 flex-wrap">
               {LANGUAGES.map((l) => (
                 <Button
                   key={l.code}
@@ -484,7 +505,7 @@ export default function Navbar() {
           <List>
             <ListItem disablePadding>
               <ListItemButton onClick={logout}>
-                <ListItemIcon sx={{ minWidth: 36 }}>
+                <ListItemIcon className="!min-w-9">
                   <LogoutIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("common.logout")} />
