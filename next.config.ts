@@ -28,6 +28,18 @@ const nextConfig: NextConfig = {
     const isDev = process.env.NODE_ENV !== "production";
     const apiOrigin = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
+    // Loud warning if NEXT_PUBLIC_API_URL is missing in a prod build. Without
+    // it the JS bundle bakes in `localhost:8000` AND the CSP omits the
+    // backend origin — every login/fetch on the deployed site silently fails
+    // with "Refused to connect" in the console. The build still succeeds (we
+    // don't want to block deploys), but the next.js build log will scream.
+    if (!isDev && !apiOrigin) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "\n[build] WARNING: NEXT_PUBLIC_API_URL is not set. The deployed site will try to call http://localhost:8000 and the CSP will block it. Set NEXT_PUBLIC_API_URL in your hosting platform's environment settings BEFORE building.\n",
+      );
+    }
+
     // In dev the backend is on localhost:8000 by convention. We add it
     // unconditionally so a fresh checkout without NEXT_PUBLIC_API_URL set
     // doesn't silently lose its connect-src and break every fetch.
