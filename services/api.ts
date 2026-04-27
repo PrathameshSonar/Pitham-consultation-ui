@@ -1,16 +1,16 @@
-// Backend URL precedence:
-//   1. NEXT_PUBLIC_API_URL  — set at BUILD time on the deployment platform.
-//                             Must be present for any non-localhost deploy.
+// Backend URL:
+//   1. NEXT_PUBLIC_API_URL   — set at BUILD time on the deployment platform.
+//                              Must be present for any non-localhost deploy.
 //   2. http://localhost:8000 — implicit fallback for `npm run dev`.
 //
 // We deliberately do NOT hardcode a production URL: every domain change
-// would otherwise need a code edit + redeploy. If you forget to set
-// NEXT_PUBLIC_API_URL on prod, fetches will hit localhost:8000 and fail
-// loudly — that's the intended signal to fix the env, not paper over it.
+// would otherwise need a code edit + redeploy. If NEXT_PUBLIC_API_URL is
+// missing on prod, fetches will hit localhost:8000 and fail loudly — that's
+// the intended signal to fix the env, not paper over it.
 //
-// We also deliberately do NOT fall back to NEXT_PUBLIC_SITE_URL — that's the
-// frontend origin (used for OG tags / metadata) and pointing API calls at it
-// turns every request into a same-origin 404.
+// We also do NOT fall back to NEXT_PUBLIC_SITE_URL — that's the frontend
+// origin used by app/sitemap.ts for SEO canonicals; pointing API calls at
+// it would make every request a same-origin 404.
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const BASE = API_BASE;
 

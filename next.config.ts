@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
     // it the JS bundle bakes in `localhost:8000` AND the CSP omits the
     // backend origin — every login/fetch on the deployed site silently fails
     // with "Refused to connect" in the console. The build still succeeds (we
-    // don't want to block deploys), but the next.js build log will scream.
+    // don't want to block deploys), but the build log will scream.
     if (!isDev && !apiOrigin) {
       // eslint-disable-next-line no-console
       console.warn(
