@@ -57,8 +57,9 @@ const nextConfig: NextConfig = {
         "https://*.sentry.io",
         ...recaptchaScript,
       ].join(" "),
-      // MUI emits inline styles; Google fonts/MUI ship CSS from gstatic too.
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      // MUI emits inline styles; Google fonts ship CSS from googleapis;
+      // Google Sign-In's GSI button pulls /gsi/style from accounts.google.com.
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       // data: for inline SVGs we generate at runtime; blob: for in-app PDF previews.
       "img-src 'self' data: blob: https:",
