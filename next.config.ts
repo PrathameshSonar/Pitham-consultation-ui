@@ -33,6 +33,13 @@ const nextConfig: NextConfig = {
     // doesn't silently lose its connect-src and break every fetch.
     const devApiOrigins = isDev ? ["http://localhost:8000"] : [];
 
+    // No production fallback — NEXT_PUBLIC_API_URL must be set as a
+    // build-time env var on the deployment platform. Hardcoding a default
+    // here would re-create the breakage every time the backend domain
+    // moves. If the var is missing in a prod build, connect-src will not
+    // include the API origin and fetches will fail loudly — that's the
+    // intended signal to fix the env config, not paper over it here.
+
     // Google reCAPTCHA loads its widget script + frame from www.google.com,
     // pulls assets from www.gstatic.com, and posts solve XHRs back to
     // www.google.com / www.recaptcha.net. Missing any of these breaks the

@@ -1,17 +1,17 @@
 // Backend URL precedence:
-//   1. NEXT_PUBLIC_API_URL  — preferred, for environment-specific overrides
-//   2. Hardcoded Render URL — last-resort safety net so prod is never broken by a missing env var
-//   3. localhost            — for `npm run dev`
+//   1. NEXT_PUBLIC_API_URL  — set at BUILD time on the deployment platform.
+//                             Must be present for any non-localhost deploy.
+//   2. http://localhost:8000 — implicit fallback for `npm run dev`.
 //
-// NOTE: We deliberately do NOT fall back to NEXT_PUBLIC_SITE_URL — that's the
+// We deliberately do NOT hardcode a production URL: every domain change
+// would otherwise need a code edit + redeploy. If you forget to set
+// NEXT_PUBLIC_API_URL on prod, fetches will hit localhost:8000 and fail
+// loudly — that's the intended signal to fix the env, not paper over it.
+//
+// We also deliberately do NOT fall back to NEXT_PUBLIC_SITE_URL — that's the
 // frontend origin (used for OG tags / metadata) and pointing API calls at it
 // turns every request into a same-origin 404.
-const PROD_API_FALLBACK = "https://pitham-consultation-api.onrender.com";
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? PROD_API_FALLBACK
-    : "http://localhost:8000");
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const BASE = API_BASE;
 
 /** Build a full URL for a backend file path (uploads, receipts, etc.) */
